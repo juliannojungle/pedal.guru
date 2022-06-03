@@ -1,3 +1,6 @@
+#Dependencies are not modified here
+src/dependencies/**
+
 # Prerequisites
 *.d
 

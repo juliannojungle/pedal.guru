@@ -1,0 +1,28 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "deprecated pi@raspberrypi build && run",
+            "group": "build",
+            "type": "shell",
+            "command": "ssh",
+            "args": [
+                "pi@raspberrypi",
+                "\"",
+                    "g++",
+                    "-g", "/home/pi/git/raspitx/raspitx.cpp",
+                    "-o", "/home/pi/git/raspitx/raspitx",
+                    "&&","chmod","+x","/home/pi/git/raspitx/raspitx",
+                    "&&","/home/pi/git/raspitx/raspitx",
+                "\""
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "showReuseMessage": false,
+                "panel": "shared",
+                "clear": true
+            }
+        }
+    ]
+}

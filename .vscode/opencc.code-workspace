@@ -1,0 +1,35 @@
+{
+	"folders": [
+    {
+      "name": "SSH FS - raspitx",
+      "uri": "ssh://raspitx/"
+    }
+  ],
+  "settings": {
+    "build_flags": "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
+    "raylib": "../raylib-cpp/vendor/raylib/src",
+    "raylib-cpp": "../raylib-cpp/include"
+  },
+  "tasks": {
+      "version": "2.0.0",
+      "tasks": [
+          {
+              "label": "raspitx build && run",
+              "group": "build",
+              "type": "ssh-shell",
+              "host": "raspitx",
+              "options": {
+                  "cwd": "${remoteWorkspaceFolder}"
+              },
+              "command": "g++ -g -L./lib -L/opt/vc/lib -I./lib -I./include ./raspitx.cpp -o raspitx ${config:build_flags} && sudo ./raspitx",
+              "problemMatcher": [],
+              "presentation": {
+                  "reveal": "always",
+                  "showReuseMessage": false,
+                  "panel": "shared",
+                  "clear": true
+              }
+          }
+      ]
+  }
+}

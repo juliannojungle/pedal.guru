@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "run (Windows)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceRoot}/makertx.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false, // SET TO TRUE FOR WSL
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/dev/mingw64/bin/gdb.exe",
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            },
+            "preLaunchTask": "g++ build",
+            "internalConsoleOptions": "openOnSessionStart"
+        }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "armv6",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/dev/mingw64/bin/gcc",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x86",
+            "cStandard": "c11"
+        }
+    ],
+    "version": 4
+}
