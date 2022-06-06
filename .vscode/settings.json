@@ -1,5 +1,8 @@
 {
-  "files.associations": {
-    "cstdarg": "cpp"
-  }
+    "editor.rulers": [120],
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "files.associations": {
+        "cstdarg": "cpp"
+    }
 }
