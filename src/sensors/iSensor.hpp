@@ -17,3 +17,22 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+class iSensor {
+    protected:
+        bool _enabled;
+
+    public:
+        virtual ~iSensor() {}
+
+        bool GetActive() const {
+            return this->_enabled;
+        }
+
+        virtual void Enable() {
+            this->_enabled = true;
+        };
+
+        virtual void Disable() {
+            this->_enabled = false;
+        }
+};

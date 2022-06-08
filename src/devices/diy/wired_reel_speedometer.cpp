@@ -17,3 +17,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iDevice.hpp"
+
+class WiredReelSpeedometer: public iDevice {
+    public:
+        void Connect() override {
+            // Do nothing, since it's wired.
+            this->_connected = true;
+        }
+};

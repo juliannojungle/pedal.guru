@@ -17,3 +17,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include <list>
+#include "iSensor.hpp"
+
+class iDevice {
+    protected:
+        bool _connected;
+        std::list<iSensor *> _sensors;
+
+    public:
+        virtual ~iDevice() {}
+
+        virtual void Connect() = 0;
+
+        virtual bool Connected() {
+            return this->_connected;
+        }
+};
