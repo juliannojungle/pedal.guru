@@ -27,6 +27,8 @@ classDiagram
 
 class SettingsData
 
+link SettingsData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+
 class TaskManager {
     -SettingsData *_settings
     -List~*iDevice~ _devices
@@ -37,7 +39,7 @@ class TaskManager {
     +Run()
 }
 
-link TaskManager "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+link TaskManager "https://github.com/juliannojungle/OpenCC/blob/main/src/task_manager.cpp"
 TaskManager ..|> iPage
 TaskManager ..|> iDevice
 TaskManager ..> SettingsData : Reads
@@ -77,6 +79,8 @@ class iDevice {
 link iDevice "https://github.com/juliannojungle/OpenCC/blob/main/src/devices/iDevice.hpp"
 
 class SensorData
+
+link SensorData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
 
 iDevice "1" --* "1..*" iSensor : Contains
 SensorData <.. iDevice : Writes
