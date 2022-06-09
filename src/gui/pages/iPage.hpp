@@ -17,22 +17,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-class iSensor {
+#include "../../opencc.hpp"
+
+class iPage {
     protected:
-        bool _enabled;
-
+        SensorData *_data;
+        SettingsData *_settings;
+        virtual SensorData ReadData() const = 0;
+        virtual void WriteSettings(SettingsData *settings) = 0;
+        virtual SettingsData ReadSettings() const = 0;
     public:
-        virtual ~iSensor() {}
-
-        bool Enabled() const {
-            return this->_enabled;
-        }
-
-        virtual void Enable() {
-            this->_enabled = true;
-        };
-
-        virtual void Disable() {
-            this->_enabled = false;
-        }
+        virtual ~iPage() {}
+        virtual void PreviousPage() = 0;
+        virtual void NextPage() = 0;
 };

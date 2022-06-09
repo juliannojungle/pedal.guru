@@ -17,22 +17,35 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-class iSensor {
-    protected:
-        bool _enabled;
+#include <list>
+#include "opencc.hpp"
+#include "devices/iDevice.hpp"
+#include "gui/pages/iPage.hpp"
 
+class TaskManager {
+    private:
+        SettingsData *_settings;
+        std::list<iDevice*> _devices;
+        std::list<iPage*> _pages;
+        SettingsData ReadSettings();
+        void DisplayPage(iPage *page);
+        void StartDevice(iDevice *device);
     public:
-        virtual ~iSensor() {}
-
-        bool Enabled() const {
-            return this->_enabled;
-        }
-
-        virtual void Enable() {
-            this->_enabled = true;
-        };
-
-        virtual void Disable() {
-            this->_enabled = false;
-        }
+        void Run();
 };
+
+void TaskManager::Run() {
+    //TODO
+}
+
+SettingsData TaskManager::ReadSettings() {
+    //TODO
+}
+
+void TaskManager::DisplayPage(iPage *page) {
+    //TODO
+}
+
+void TaskManager::StartDevice(iDevice *device) {
+    //TODO
+}

@@ -20,3 +20,11 @@
 #pragma once
 
 #include "gui/gui.hpp";
+
+struct SensorData {
+
+};
+
+struct SettingsData {
+
+};
