@@ -19,7 +19,7 @@
     For syntax reference about diagram's markdown, see <https://mermaid-js.github.io/mermaid/#/./classDiagram>.
 --->
 
-#Class diagram
+# Class diagram
 - Basic structure of the project.
 
 ```mermaid
