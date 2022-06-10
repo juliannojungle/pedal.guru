@@ -28,7 +28,7 @@ classDiagram
 
 class SettingsData
 
-link SettingsData "src/opencc.hpp"
+link SettingsData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
 
 class TaskManager {
     -SettingsData *settings_
