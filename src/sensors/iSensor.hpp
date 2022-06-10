@@ -19,20 +19,20 @@
 
 class iSensor {
     protected:
-        bool _enabled;
+        bool enabled_;
 
     public:
         virtual ~iSensor() {}
 
         bool Enabled() const {
-            return this->_enabled;
+            return this->enabled_;
         }
 
         virtual void Enable() {
-            this->_enabled = true;
+            this->enabled_ = true;
         };
 
         virtual void Disable() {
-            this->_enabled = false;
+            this->enabled_ = false;
         }
 };

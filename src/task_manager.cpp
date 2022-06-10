@@ -24,9 +24,9 @@
 
 class TaskManager {
     private:
-        SettingsData *_settings;
-        std::list<iDevice*> _devices;
-        std::list<iPage*> _pages;
+        SettingsData *settings_;
+        std::list<iDevice*> devices_;
+        std::list<iPage*> pages_;
         SettingsData ReadSettings();
         void DisplayPage(iPage *page);
         void StartDevice(iDevice *device);

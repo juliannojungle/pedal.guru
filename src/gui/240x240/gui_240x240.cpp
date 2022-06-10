@@ -17,14 +17,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-using namespace std;
 #include <string>
 #include "gui_240x240.hpp"
 
 void StartGui() {
     Color textColor = LIGHTGRAY;
 
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, string("raylib [core] example - basic window").c_str());
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("raylib [core] example - basic window").c_str());
 
     SetTargetFPS(60);
 
@@ -33,7 +32,7 @@ void StartGui() {
         BeginDrawing();
         {
             ClearBackground(RAYWHITE);
-            DrawText(string("Congrats! You created your first window!").c_str(), 190, 200, 20, textColor);
+            DrawText(std::string("Congrats! You created your first window!").c_str(), 190, 200, 20, textColor);
         }
         EndDrawing();
     }

@@ -22,8 +22,8 @@
 
 class iDevice {
     protected:
-        bool _connected;
-        std::list<iSensor *> _sensors;
+        bool connected_;
+        std::list<iSensor&> sensors_;
 
     public:
         virtual ~iDevice() {}
@@ -31,6 +31,6 @@ class iDevice {
         virtual void Connect() = 0;
 
         virtual bool Connected() {
-            return this->_connected;
+            return this->connected_;
         }
 };

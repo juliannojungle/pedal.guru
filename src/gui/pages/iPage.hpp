@@ -21,11 +21,11 @@
 
 class iPage {
     protected:
-        SensorData *_data;
-        SettingsData *_settings;
+        SensorData data_;
+        SettingsData settings_;
         virtual SensorData ReadData() const = 0;
-        virtual void WriteSettings(SettingsData *settings) = 0;
-        virtual SettingsData ReadSettings() const = 0;
+        virtual void WriteSettings(SettingsData& settings) = 0;
+        virtual SettingsData& ReadSettings() const = 0;
     public:
         virtual ~iPage() {}
         virtual void PreviousPage() = 0;

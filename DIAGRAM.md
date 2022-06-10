@@ -15,24 +15,25 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
-
-    For syntax reference about diagram's markdown, see <https://mermaid-js.github.io/mermaid/#/./classDiagram>.
 --->
 
 # Class diagram
 - Basic structure of the project.
 
+<!---
+    For syntax reference about diagram's markdown, see <https://mermaid-js.github.io/mermaid/#/./classDiagram>.
+--->
 ```mermaid
 classDiagram
 
 class SettingsData
 
-link SettingsData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+link SettingsData "src/opencc.hpp"
 
 class TaskManager {
-    -SettingsData *_settings
-    -List~*iDevice~ _devices
-    -List~*iPage~ _pages
+    -SettingsData *settings_
+    -List~*iDevice~ devices_
+    -List~*iPage~ pages_
     -ReadSettings() SettingsData
     -DisplayPage(iPage *page)
     -StartDevice(iDevice *device)
@@ -46,8 +47,8 @@ TaskManager ..> SettingsData : Reads
 
 class iPage {
     <<interface>>
-    -SensorData *data
-    -SettingsData *settings
+    -SensorData *data_
+    -SettingsData *settings_
     -ReadData() SensorData
     -WriteSettings(SettingsData *settings)
     -ReadSettings() SettingsData
@@ -59,7 +60,7 @@ link iPage "https://github.com/juliannojungle/OpenCC/blob/main/src/gui/pages/iPa
 
 class iSensor {
     <<interface>>
-    #bool _enabled
+    #bool enabled_
     +Enabled()
     +Enable()
     +Disable()
@@ -69,8 +70,8 @@ link iSensor "https://github.com/juliannojungle/OpenCC/blob/main/src/sensors/iSe
 
 class iDevice {
     <<interface>>
-    #bool _connected
-    #List~iSensor~ _sensors
+    #bool connected_
+    #List~iSensor~ sensors_
     -SettingsData *settings
     +Connect()
     +Connected()

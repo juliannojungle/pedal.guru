@@ -23,6 +23,6 @@ class WiredReelSpeedometer: public iDevice {
     public:
         void Connect() override {
             // Do nothing, since it's wired.
-            this->_connected = true;
+            this->connected_ = true;
         }
 };
