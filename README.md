@@ -8,9 +8,11 @@ Open Cycle Computer is an open-source DIY project with the intention to bring us
 This very first interaction of the project is based on the following devices:
 
 - **[1.28inch LCD Module](https://www.waveshare.com/wiki/1.28inch_LCD_Module)**, from WaveShare
+
 ![1.28inch LCD Module](Documentation/Image/waveshare_1.28inch_round_lcd.jpg)
 
 - **[Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/)**, from Raspberry Pi Foundation
+
 ![Raspberry Pi Zero W](Documentation/Image/raspberry_pi_zero_w.jpg)
 
 # Software
