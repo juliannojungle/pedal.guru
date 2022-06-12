@@ -19,7 +19,9 @@
 
 #pragma once
 
-#include "gui/gui.hpp";
+#include "GUI/GUI.hpp";
+
+namespace OpenCC {
 
 struct SensorData {
 
@@ -28,3 +30,4 @@ struct SensorData {
 struct SettingsData {
 
 };
+}

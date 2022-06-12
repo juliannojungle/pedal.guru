@@ -20,6 +20,8 @@
 #include <string>
 #include "gui_240x240.hpp"
 
+namespace OpenCC {
+
 void StartGui() {
     Color textColor = LIGHTGRAY;
 
@@ -36,4 +38,5 @@ void StartGui() {
         }
         EndDrawing();
     }
+}
 }

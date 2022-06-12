@@ -19,5 +19,9 @@
 
 #include "../gui.hpp"
 
+namespace OpenCC {
+
 #define SCREEN_HEIGHT 240
 #define SCREEN_WIDTH 240
+
+}

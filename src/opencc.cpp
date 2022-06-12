@@ -17,10 +17,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "opencc.hpp"
+#include "OpenCC.hpp"
+
+namespace OpenCC {
 
 int main(void) {
     StartGui();
 
     return 0;
+}
 }

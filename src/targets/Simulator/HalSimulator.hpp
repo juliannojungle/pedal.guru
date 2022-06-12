@@ -17,35 +17,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include <list>
-#include "opencc.hpp"
-#include "devices/iDevice.hpp"
-#include "gui/pages/iPage.hpp"
+namespace OpenCC {
 
-class TaskManager {
-    private:
-        SettingsData *settings_;
-        std::list<iDevice*> devices_;
-        std::list<iPage*> pages_;
-        SettingsData ReadSettings();
-        void DisplayPage(iPage *page);
-        void StartDevice(iDevice *device);
-    public:
-        void Run();
-};
-
-void TaskManager::Run() {
-    //TODO
-}
-
-SettingsData TaskManager::ReadSettings() {
-    //TODO
-}
-
-void TaskManager::DisplayPage(iPage *page) {
-    //TODO
-}
-
-void TaskManager::StartDevice(iDevice *device) {
-    //TODO
 }

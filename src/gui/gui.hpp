@@ -21,4 +21,8 @@ extern "C" {
     #include "../dependencies/raylib/src/raylib.h"
 }
 
-void StartGui();
+namespace OpenCC {
+
+extern void StartGui();
+
+}

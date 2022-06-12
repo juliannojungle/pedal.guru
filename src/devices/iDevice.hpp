@@ -20,6 +20,8 @@
 #include <list>
 #include "iSensor.hpp"
 
+namespace OpenCC {
+
 class iDevice {
     protected:
         bool connected_;
@@ -34,3 +36,4 @@ class iDevice {
             return this->connected_;
         }
 };
+}

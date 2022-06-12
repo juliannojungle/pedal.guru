@@ -19,6 +19,8 @@
 
 #include "../../opencc.hpp"
 
+namespace OpenCC {
+
 class iPage {
     protected:
         SensorData data_;
@@ -31,3 +33,4 @@ class iPage {
         virtual void PreviousPage() = 0;
         virtual void NextPage() = 0;
 };
+}
