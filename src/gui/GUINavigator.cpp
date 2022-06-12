@@ -17,23 +17,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include <list>
-#include "iSensor.hpp"
-
 namespace OpenCC {
 
-class iDevice {
-    protected:
-        bool connected_;
-        std::list<iSensor&> sensors_;
-
+class GUINavigator {
     public:
-        virtual ~iDevice() {}
-
-        virtual void Connect() = 0;
-
-        virtual bool Connected() {
-            return this->connected_;
-        }
+        
 };
 }

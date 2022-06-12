@@ -18,7 +18,7 @@
 */
 
 extern "C" {
-    #include "../dependencies/raylib/src/raylib.h"
+    #include "../Dependency/raylib/src/raylib.h"
 }
 
 namespace OpenCC {

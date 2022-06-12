@@ -17,11 +17,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "OpenCC.hpp"
-#include "GUI/GUI.hpp";
+namespace OpenCC {
 
-int main(void) {
-    OpenCC::StartGui();
+struct SettingsData {
 
-    return 0;
+};
 }

@@ -18,16 +18,3 @@
 */
 
 #pragma once
-
-#include "GUI/GUI.hpp";
-
-namespace OpenCC {
-
-struct SensorData {
-
-};
-
-struct SettingsData {
-
-};
-}

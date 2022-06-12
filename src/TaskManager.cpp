@@ -19,8 +19,8 @@
 
 #include <list>
 #include "OpenCC.hpp"
-#include "Devices/iDevice.hpp"
-#include "GUI/Pages/iPage.hpp"
+#include "Device/iDevice.hpp"
+#include "GUI/Page/iPage.hpp"
 
 namespace OpenCC {
 

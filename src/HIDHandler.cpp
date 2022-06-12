@@ -17,11 +17,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "OpenCC.hpp"
-#include "GUI/GUI.hpp";
+namespace OpenCC {
 
-int main(void) {
-    OpenCC::StartGui();
-
-    return 0;
+class HIDHandler {
+    public:
+        void ButtonEnterPressed();
+        void ButtonEnterPressed2Seconds();
+        void ButtonEnterPressed5Seconds();
+        void ButtonExitPressed();
+        void ButtonExitPressed2Seconds();
+        void ButtonExitPressed5Seconds();
+};
 }
