@@ -1,5 +1,8 @@
-#Dependencies are not modified here
-src/dependencies/**
+# No need to commit builds
+build/**
+
+# Dependencies should not be modified here
+src/Dependency/**
 
 # Prerequisites
 *.d

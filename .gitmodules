@@ -1,11 +1,11 @@
 [submodule "raylib"]
-    path = src/Dependencies/raylib
+    path = src/Dependency/raylib
     url = https://github.com/raysan5/raylib.git
     shallow = true
     branch = master
 
 [submodule "pigpio"]
-    path = src/Dependencies/pigpio
+    path = src/Dependency/pigpio
     url = https://github.com/joan2937/pigpio.git
     shallow = true
     branch = master
