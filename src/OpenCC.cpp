@@ -18,10 +18,11 @@
 */
 
 #include "OpenCC.hpp"
-#include "GUI/GUI.hpp";
+#include "TaskManager.cpp"
 
 int main(void) {
-    OpenCC::StartGui();
+    OpenCC::TaskManager taskManager;
+    taskManager.Run();
 
     return 0;
 }

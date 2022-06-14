@@ -21,23 +21,33 @@
 #include "OpenCC.hpp"
 #include "Device/iDevice.hpp"
 #include "GUI/Page/iPage.hpp"
+#include "GUI/Page/PageAltimetry.cpp"
+#include "Model/SettingsData.hpp"
 
 namespace OpenCC {
 
 class TaskManager {
     private:
         SettingsData *settings_;
-        std::list<iDevice*> devices_;
-        std::list<iPage*> pages_;
+        std::list<iDevice> devices_;
+        std::list<iPage> pages_;
         SettingsData ReadSettings();
         void DisplayPage(iPage *page);
         void StartDevice(iDevice *device);
+        void CreatePages();
     public:
         void Run();
 };
 
 void TaskManager::Run() {
-    //TODO
+    CreatePages();
+}
+
+void TaskManager::CreatePages() {
+    if (settings_->pageAltimetryEnabled) {
+        PageAltimetry pageAltimetry;
+        pages_.push_back(pageAltimetry);
+    }
 }
 
 SettingsData TaskManager::ReadSettings() {

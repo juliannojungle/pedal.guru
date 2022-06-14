@@ -17,15 +17,72 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include <list>
+#include "Model/HIDEventType.hpp"
+
 namespace OpenCC {
 
 class HIDHandler {
+    private:
+        std::list<void*> OnEnterPressed_;
+        std::list<void*> OnEnterPressed2Seconds_;
+        std::list<void*> OnEnterPressed5Seconds_;
+        std::list<void*> OnExitPressed_;
+        std::list<void*> OnExitPressed2Seconds_;
+        std::list<void*> OnExitPressed5Seconds_;
     public:
-        void ButtonEnterPressed();
-        void ButtonEnterPressed2Seconds();
-        void ButtonEnterPressed5Seconds();
-        void ButtonExitPressed();
-        void ButtonExitPressed2Seconds();
-        void ButtonExitPressed5Seconds();
+        void RegisterEventHandler(HIDEventType event, void* handler);
+        void UnregisterEventHandler(HIDEventType event, void* handler);
 };
+
+void HIDHandler::RegisterEventHandler(HIDEventType eventType, void* handler) {
+    switch (eventType) {
+        case ENTER_PRESSED:
+            OnEnterPressed_.push_back(handler);
+            break;
+        case ENTER_PRESSED_2_SECONDS:
+            OnEnterPressed2Seconds_.push_back(handler);
+            break;
+        case ENTER_PRESSED_5_SECONDS:
+            OnEnterPressed5Seconds_.push_back(handler);
+            break;
+        case EXIT_PRESSED:
+            OnExitPressed_.push_back(handler);
+            break;
+        case EXIT_PRESSED_2_SECONDS:
+            OnExitPressed2Seconds_.push_back(handler);
+            break;
+        case EXIT_PRESSED_5_SECONDS:
+            OnExitPressed5Seconds_.push_back(handler);
+            break;
+        default:
+            break;
+    }
+}
+
+void HIDHandler::UnregisterEventHandler(HIDEventType eventType, void* handler) {
+    switch (eventType) {
+        case ENTER_PRESSED:
+            OnEnterPressed_.remove(handler);
+            break;
+        case ENTER_PRESSED_2_SECONDS:
+            OnEnterPressed2Seconds_.remove(handler);
+            break;
+        case ENTER_PRESSED_5_SECONDS:
+            OnEnterPressed5Seconds_.remove(handler);
+            break;
+        case EXIT_PRESSED:
+            OnExitPressed_.remove(handler);
+            break;
+        case EXIT_PRESSED_2_SECONDS:
+            OnExitPressed2Seconds_.remove(handler);
+            break;
+        case EXIT_PRESSED_5_SECONDS:
+            OnExitPressed5Seconds_.remove(handler);
+            break;
+        default:
+            break;
+    }
+}
+
 }

@@ -17,6 +17,35 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iPage.hpp"
+
 namespace OpenCC {
 
+class PageAltimetry : public iPage {
+    protected:
+        SensorData ReadData() const override;
+        void WriteSettings(SettingsData& settings) override;
+        SettingsData ReadSettings() const override;
+    public:
+};
+
+SensorData PageAltimetry::ReadData() const {
+
+}
+
+void PageAltimetry::WriteSettings(SettingsData& settings) {
+
+}
+
+SettingsData PageAltimetry::ReadSettings() const {
+
+}
+
+void PageAltimetry::PreviousPage() {
+
+}
+
+void PageAltimetry::NextPage() {
+
+}
 }

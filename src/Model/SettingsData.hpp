@@ -20,6 +20,11 @@
 namespace OpenCC {
 
 struct SettingsData {
-
+    bool pageAltimetryEnabled;
+    bool pageDistanceEnabled;
+    bool pageHillsGraphEnabled;
+    bool pageMapEnabled;
+    bool pageRouteEnabled;
+    bool pageSummaryEnabled;
 };
 }

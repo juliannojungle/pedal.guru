@@ -17,38 +17,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include <list>
-#include "GUI/Page/iPage.hpp"
-#include "../HIDHandler.cpp"
-
 namespace OpenCC {
 
-class GUINavigator {
-    private:
-        HIDHandler *handler_;
-        std::list<iPage> pages_;
-        void RegisterEvents();
-        void GoToNextPage();
-        void GoToPreviousPage();
-    public:
-        GUINavigator(HIDHandler *handler);
-};
-
-GUINavigator::GUINavigator(HIDHandler *handler) {
-    this->handler_ = handler;
-    RegisterEvents();
-}
-
-void GUINavigator::RegisterEvents() {
-    handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, &GoToNextPage);
-    handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, &GoToPreviousPage);
-}
-
-void GUINavigator::GoToNextPage() {
-
-}
-
-void GUINavigator::GoToPreviousPage() {
-
-}
+    enum HIDEventType {
+        ENTER_PRESSED,
+        ENTER_PRESSED_2_SECONDS,
+        ENTER_PRESSED_5_SECONDS,
+        EXIT_PRESSED,
+        EXIT_PRESSED_2_SECONDS,
+        EXIT_PRESSED_5_SECONDS
+    };
 }
