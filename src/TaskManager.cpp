@@ -20,8 +20,10 @@
 #include <list>
 #include "OpenCC.hpp"
 #include "Device/iDevice.hpp"
+#include "GUI/GUINavigator.cpp"
 #include "GUI/Page/iPage.hpp"
 #include "GUI/Page/PageAltimetry.cpp"
+#include "HIDHandler.cpp"
 #include "Model/SettingsData.hpp"
 
 namespace OpenCC {
@@ -41,6 +43,8 @@ class TaskManager {
 
 void TaskManager::Run() {
     CreatePages();
+    HIDHandler hidHandler;
+    GUINavigator guiNavigator(hidHandler*, this->pages_);
 }
 
 void TaskManager::CreatePages() {

@@ -17,6 +17,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include <functional>
 #include <list>
 #include "Model/HIDEventType.hpp"
 
@@ -24,18 +25,33 @@ namespace OpenCC {
 
 class HIDHandler {
     private:
-        std::list<void*> OnEnterPressed_;
-        std::list<void*> OnEnterPressed2Seconds_;
-        std::list<void*> OnEnterPressed5Seconds_;
-        std::list<void*> OnExitPressed_;
-        std::list<void*> OnExitPressed2Seconds_;
-        std::list<void*> OnExitPressed5Seconds_;
+        void ExecuteHandlers(std::list<std::function<void()>> handlers);
+        std::list<std::function<void()>> OnEnterPressed_;
+        std::list<std::function<void()>> OnEnterPressed2Seconds_;
+        std::list<std::function<void()>> OnEnterPressed5Seconds_;
+        std::list<std::function<void()>> OnExitPressed_;
+        std::list<std::function<void()>> OnExitPressed2Seconds_;
+        std::list<std::function<void()>> OnExitPressed5Seconds_;
+
+        //TODO: Functions below should be callbacks from GPIO
+        void EnterPressed() { ExecuteHandlers(this->OnEnterPressed_); };
+        void EnterPressed2Seconds() { ExecuteHandlers(this->OnEnterPressed2Seconds_); }
+        void EnterPressed5Seconds() { ExecuteHandlers(this->OnEnterPressed5Seconds_); }
+        void ExitPressed() { ExecuteHandlers(this->OnExitPressed_); }
+        void ExitPressed2Seconds() { ExecuteHandlers(this->OnExitPressed2Seconds_); }
+        void ExitPressed5Seconds() { ExecuteHandlers(this->OnExitPressed5Seconds_); }
     public:
-        void RegisterEventHandler(HIDEventType event, void* handler);
-        void UnregisterEventHandler(HIDEventType event, void* handler);
+        void RegisterEventHandler(HIDEventType event, std::function<void()> handler);
+        void UnregisterEventHandler(HIDEventType event, std::function<void()> handler);
 };
 
-void HIDHandler::RegisterEventHandler(HIDEventType eventType, void* handler) {
+void HIDHandler::ExecuteHandlers(std::list<std::function<void()>> handlers) {
+    for (std::function<void()> handler : handlers) {
+        std::invoke(handler);
+    }
+}
+
+void HIDHandler::RegisterEventHandler(HIDEventType eventType, std::function<void()> handler) {
     switch (eventType) {
         case ENTER_PRESSED:
             OnEnterPressed_.push_back(handler);
@@ -60,7 +76,7 @@ void HIDHandler::RegisterEventHandler(HIDEventType eventType, void* handler) {
     }
 }
 
-void HIDHandler::UnregisterEventHandler(HIDEventType eventType, void* handler) {
+void HIDHandler::UnregisterEventHandler(HIDEventType eventType, std::function<void()> handler) {
     switch (eventType) {
         case ENTER_PRESSED:
             OnEnterPressed_.remove(handler);
