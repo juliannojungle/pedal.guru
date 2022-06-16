@@ -17,6 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iPage.hpp"
+
 namespace OpenCC {
 
+class PageRoute : public OpenCC::iPage {
+    public:
+        PageRoute(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        ~PageRoute();
+        void Show() override;
+        void Hide() override;
+};
+
+void PageRoute::Show() {
+
+}
+
+void PageRoute::Hide() {
+
+}
 }

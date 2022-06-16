@@ -27,18 +27,18 @@ namespace OpenCC {
 class GUINavigator {
     private:
         HIDHandler *handler_;
-        std::list<iPage> pages_;
-        std::list<iPage>::iterator pageIndex_;
+        std::list<iPage*> pages_;
+        std::list<iPage*>::iterator pageIndex_;
         void RegisterEvents();
         void UnregisterEvents();
         std::function<void()> GoToNextPage();
         std::function<void()> GoToPreviousPage();
     public:
-        GUINavigator(HIDHandler *handler, std::list<iPage> pages);
+        GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*> pages);
         ~GUINavigator();
 };
 
-GUINavigator::GUINavigator(HIDHandler *handler, std::list<iPage> pages) {
+GUINavigator::GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*> pages) {
     this->handler_ = handler;
     this->pages_ = pages;
     this->pageIndex_ = this->pages_.begin();

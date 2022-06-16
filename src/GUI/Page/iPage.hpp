@@ -17,21 +17,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "../../Model/SensorData.hpp"
-#include "../../Model/SettingsData.hpp""
+#include "../../Model/SettingsData.hpp"
 
 namespace OpenCC {
 
 class iPage {
     protected:
-        SensorData data_;
-        SettingsData settings_;
-        virtual SensorData ReadData() const = 0;
-        virtual void WriteSettings(SettingsData& settings) = 0;
-        virtual SettingsData ReadSettings() const = 0;
+        OpenCC::SettingsData *settings_;
     public:
-        virtual ~iPage() {}
-        virtual void PreviousPage() = 0;
-        virtual void NextPage() = 0;
+        iPage(OpenCC::SettingsData *settings) { this->settings_ = settings; }
+        ~iPage() {}
+        virtual void Show() = 0;
+        virtual void Hide() = 0;
 };
 }

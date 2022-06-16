@@ -18,7 +18,7 @@
 */
 
 extern "C" {
-    #include "../../dependencies/pigpio/pigpio.h"
+    #include "../../Dependency/pigpio/pigpio.h"
 }
 
 namespace OpenCC {

@@ -21,31 +21,19 @@
 
 namespace OpenCC {
 
-class PageAltimetry : public iPage {
-    protected:
-        SensorData ReadData() const override;
-        void WriteSettings(SettingsData& settings) override;
-        SettingsData ReadSettings() const override;
+class PageAltimetry : public OpenCC::iPage {
     public:
+        PageAltimetry(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        ~PageAltimetry();
+        void Show() override;
+        void Hide() override;
 };
 
-SensorData PageAltimetry::ReadData() const {
+void PageAltimetry::Show() {
 
 }
 
-void PageAltimetry::WriteSettings(SettingsData& settings) {
-
-}
-
-SettingsData PageAltimetry::ReadSettings() const {
-
-}
-
-void PageAltimetry::PreviousPage() {
-
-}
-
-void PageAltimetry::NextPage() {
+void PageAltimetry::Hide() {
 
 }
 }

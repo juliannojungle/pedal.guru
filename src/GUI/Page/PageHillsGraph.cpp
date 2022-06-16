@@ -17,6 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iPage.hpp"
+
 namespace OpenCC {
 
+class PageHillsGraph : public OpenCC::iPage {
+    public:
+        PageHillsGraph(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        ~PageHillsGraph();
+        void Show() override;
+        void Hide() override;
+};
+
+void PageHillsGraph::Show() {
+
+}
+
+void PageHillsGraph::Hide() {
+
+}
 }

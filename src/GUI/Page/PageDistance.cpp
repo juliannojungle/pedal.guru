@@ -17,6 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iPage.hpp"
+
 namespace OpenCC {
 
+class PageDistance : public OpenCC::iPage {
+    public:
+        PageDistance(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        ~PageDistance();
+        void Show() override;
+        void Hide() override;
+};
+
+void PageDistance::Show() {
+
+}
+
+void PageDistance::Hide() {
+
+}
 }

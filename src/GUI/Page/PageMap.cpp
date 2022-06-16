@@ -17,6 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iPage.hpp"
+
 namespace OpenCC {
 
+class PageMap : public OpenCC::iPage {
+    public:
+        PageMap(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        ~PageMap();
+        void Show() override;
+        void Hide() override;
+};
+
+void PageMap::Show() {
+
+}
+
+void PageMap::Hide() {
+
+}
 }

@@ -17,6 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include "iPage.hpp"
+
 namespace OpenCC {
 
+class PageSummary : public OpenCC::iPage {
+    public:
+        PageSummary(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        ~PageSummary();
+        void Show() override;
+        void Hide() override;
+};
+
+void PageSummary::Show() {
+
+}
+
+void PageSummary::Hide() {
+
+}
 }
