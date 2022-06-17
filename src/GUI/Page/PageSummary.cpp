@@ -35,7 +35,7 @@ std::function<void()> PageSummary::DrawPageContents() {
     int posX = 190;
     int posY = 200;
     int fontSize = 20;
-    drawer_->DrawText(std::string("Test summary!").c_str(), posX, posY, fontSize, LIGHTGRAY_);
+    drawer_->DrawText("Test summary!", posX, posY, fontSize, drawer_->COLOR_LIGHT_GRAY);
 }
 
 void PageSummary::Show() {

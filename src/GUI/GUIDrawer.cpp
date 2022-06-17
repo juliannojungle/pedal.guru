@@ -17,7 +17,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-namespace GUILib {
+namespace GUIDriver {
 #ifdef GUI240X240
     #include "Interface/Spi240x240.hpp"
 #else
@@ -31,27 +31,27 @@ namespace GUILib {
 
 namespace OpenCC {
 
-#define COLOR2RAYLIB(color) CLITERAL(GUILib::Color){ color.r, color.g, color.b, color.a }
+#define COLOR2RAYLIB(color) CLITERAL(GUIDriver::Color){ color.r, color.g, color.b, color.a }
 
 void GUIDrawer::Execute() {
-    GUILib::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC Simulator").c_str());
+    GUIDriver::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC Simulator").c_str());
 
-    GUILib::SetTargetFPS(FRAME_RATE);
+    GUIDriver::SetTargetFPS(FRAME_RATE);
 
-    while (GUILib::WindowShouldClose())
+    while (GUIDriver::WindowShouldClose())
     {
-        GUILib::BeginDrawing();
+        GUIDriver::BeginDrawing();
         {
-            GUILib::ClearBackground(GUILib::WHITE);
+            GUIDriver::ClearBackground(GUIDriver::WHITE);
 
             if (drawPageContentsMethod_ != nullptr)
                 std::invoke(*drawPageContentsMethod_);
         }
-        GUILib::EndDrawing();
+        GUIDriver::EndDrawing();
     }
 }
 
 void GUIDrawer::DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::Color color) {
-    GUILib::DrawText(text.c_str(), posX, posY, fontSize, COLOR2RAYLIB(color));
+    GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR2RAYLIB(color));
 }
 }
