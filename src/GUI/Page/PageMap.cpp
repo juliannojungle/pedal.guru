@@ -22,18 +22,19 @@
 namespace OpenCC {
 
 class PageMap : public OpenCC::iPage {
+    protected:
+        std::function<void()> DrawPageContents() override;
     public:
-        PageMap(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        PageMap(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
         ~PageMap();
         void Show() override;
-        void Hide() override;
 };
 
-void PageMap::Show() {
+std::function<void()> PageMap::DrawPageContents() {
 
 }
 
-void PageMap::Hide() {
-
+void PageMap::Show() {
+    drawer_->SetDrawPageContentsMethod(&DrawPageContents());
 }
 }

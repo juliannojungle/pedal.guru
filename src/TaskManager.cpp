@@ -19,6 +19,7 @@
 
 #include <list>
 #include "Device/iDevice.hpp"
+#include "GUI/GUIDrawer.cpp"
 #include "GUI/GUINavigator.cpp"
 #include "GUI/Page/iPage.hpp"
 #include "GUI/Page/PageAltimetry.cpp"
@@ -38,59 +39,60 @@ class TaskManager {
         std::list<OpenCC::iDevice*> devices_;
         std::list<OpenCC::iPage*> pages_;
         void ReadSettings();
-        void DisplayPage(OpenCC::iPage *page);
         void StartDevice(OpenCC::iDevice *device);
-        void CreatePages();
+        void CreatePages(OpenCC::GUIDrawer *drawer);
     public:
-        void Run();
+        void Execute();
 };
 
-void TaskManager::Run() {
+void TaskManager::Execute() {
     ReadSettings();
-    CreatePages();
+    OpenCC::GUIDrawer drawer;
+    CreatePages(&drawer);
     OpenCC::HIDHandler hidHandler;
     OpenCC::GUINavigator guiNavigator(&hidHandler, this->pages_);
+    drawer.Execute();
 }
 
-void TaskManager::CreatePages() {
+void TaskManager::CreatePages(OpenCC::GUIDrawer *drawer) {
     if (settings_->pageAltimetryEnabled) {
         OpenCC::iPage *page;
-        OpenCC::PageAltimetry pageAltimetry(this->settings_);
+        OpenCC::PageAltimetry pageAltimetry(drawer, this->settings_);
         page = &pageAltimetry;
         pages_.push_back(page);
     }
 
     if (settings_->pageDistanceEnabled) {
         OpenCC::iPage *page;
-        OpenCC::PageDistance pageDistance(this->settings_);
+        OpenCC::PageDistance pageDistance(drawer, this->settings_);
         page = &pageDistance;
         pages_.push_back(page);
     }
 
     if (settings_->pageHillsGraphEnabled) {
         OpenCC::iPage *page;
-        OpenCC::PageHillsGraph pageHillsGraph(this->settings_);
+        OpenCC::PageHillsGraph pageHillsGraph(drawer, this->settings_);
         page = &pageHillsGraph;
         pages_.push_back(page);
     }
 
     if (settings_->pageMapEnabled) {
         OpenCC::iPage *page;
-        OpenCC::PageMap pageMap(this->settings_);
+        OpenCC::PageMap pageMap(drawer, this->settings_);
         page = &pageMap;
         pages_.push_back(page);
     }
 
     if (settings_->pageRouteEnabled) {
         OpenCC::iPage *page;
-        OpenCC::PageRoute pageRoute(this->settings_);
+        OpenCC::PageRoute pageRoute(drawer, this->settings_);
         page = &pageRoute;
         pages_.push_back(page);
     }
 
     if (settings_->pageSummaryEnabled) {
         OpenCC::iPage *page;
-        OpenCC::PageSummary pageSummary(this->settings_);
+        OpenCC::PageSummary pageSummary(drawer, this->settings_);
         page = &pageSummary;
         pages_.push_back(page);
     }
@@ -105,10 +107,6 @@ void TaskManager::ReadSettings() {
     settings.pageRouteEnabled = true;
     settings.pageSummaryEnabled = true;
     this->settings_ = &settings;
-}
-
-void TaskManager::DisplayPage(OpenCC::iPage *page) {
-    //TODO
 }
 
 void TaskManager::StartDevice(OpenCC::iDevice *device) {

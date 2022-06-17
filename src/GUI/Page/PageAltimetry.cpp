@@ -22,18 +22,19 @@
 namespace OpenCC {
 
 class PageAltimetry : public OpenCC::iPage {
+    protected:
+        std::function<void()> DrawPageContents() override;
     public:
-        PageAltimetry(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        PageAltimetry(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
         ~PageAltimetry();
         void Show() override;
-        void Hide() override;
 };
 
-void PageAltimetry::Show() {
+std::function<void()> PageAltimetry::DrawPageContents() {
 
 }
 
-void PageAltimetry::Hide() {
-
+void PageAltimetry::Show() {
+    drawer_->SetDrawPageContentsMethod(&DrawPageContents());
 }
 }

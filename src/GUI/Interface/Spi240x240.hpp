@@ -17,12 +17,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-extern "C" {
-    #include "../Dependency/raylib/src/raylib.h"
-}
-
 namespace OpenCC {
 
-extern void StartGui();
+#define SCREEN_HEIGHT 240
+#define SCREEN_WIDTH 240
+#define FRAME_RATE 60
 
 }

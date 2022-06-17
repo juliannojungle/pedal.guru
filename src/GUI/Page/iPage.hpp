@@ -17,17 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include <functional>
 #include "../../Model/SettingsData.hpp"
+#include "../GUIDrawer.hpp"
 
 namespace OpenCC {
 
 class iPage {
     protected:
         OpenCC::SettingsData *settings_;
+        OpenCC::GUIDrawer *drawer_;
+        virtual std::function<void()> DrawPageContents() = 0;
     public:
-        iPage(OpenCC::SettingsData *settings) { this->settings_ = settings; }
+        iPage(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) {
+            this->drawer_ = drawer;
+            this->settings_ = settings;
+        }
         ~iPage() {}
         virtual void Show() = 0;
-        virtual void Hide() = 0;
 };
 }

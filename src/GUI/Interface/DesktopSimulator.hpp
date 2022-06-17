@@ -17,26 +17,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include <string>
-#include "gui_240x240.hpp"
+extern "C" {
+    #include "../../Dependency/raylib/src/raylib.h"
+}
 
 namespace OpenCC {
 
-void StartGui() {
-    Color textColor = LIGHTGRAY;
+#define SCREEN_HEIGHT 800
+#define SCREEN_WIDTH 800
+#define FRAME_RATE 60
 
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("raylib [core] example - basic window").c_str());
-
-    SetTargetFPS(60);
-
-    while (WindowShouldClose())
-    {
-        BeginDrawing();
-        {
-            ClearBackground(RAYWHITE);
-            DrawText(std::string("Congrats! You created your first window!").c_str(), 190, 200, 20, textColor);
-        }
-        EndDrawing();
-    }
-}
 }

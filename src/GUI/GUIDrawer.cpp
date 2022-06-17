@@ -17,28 +17,41 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+namespace GUILib {
+#ifdef GUI240X240
+    #include "Interface/Spi240x240.hpp"
+#else
+    #include "Interface/DesktopSimulator.hpp"
+#endif
+}
+
 #include <string>
-#include "iPage.hpp"
+#include <functional>
+#include "GUIDrawer.hpp"
 
 namespace OpenCC {
 
-class PageSummary : public OpenCC::iPage {
-    protected:
-        std::function<void()> DrawPageContents() override;
-    public:
-        PageSummary(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        ~PageSummary() {}
-        void Show() override;
-};
+#define COLOR2RAYLIB(color) CLITERAL(GUILib::Color){ color.r, color.g, color.b, color.a }
 
-std::function<void()> PageSummary::DrawPageContents() {
-    int posX = 190;
-    int posY = 200;
-    int fontSize = 20;
-    drawer_->DrawText(std::string("Test summary!").c_str(), posX, posY, fontSize, LIGHTGRAY_);
+void GUIDrawer::Execute() {
+    GUILib::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC Simulator").c_str());
+
+    GUILib::SetTargetFPS(FRAME_RATE);
+
+    while (GUILib::WindowShouldClose())
+    {
+        GUILib::BeginDrawing();
+        {
+            GUILib::ClearBackground(GUILib::WHITE);
+
+            if (drawPageContentsMethod_ != nullptr)
+                std::invoke(*drawPageContentsMethod_);
+        }
+        GUILib::EndDrawing();
+    }
 }
 
-void PageSummary::Show() {
-    drawer_->SetDrawPageContentsMethod(&DrawPageContents());
+void GUIDrawer::DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::Color color) {
+    GUILib::DrawText(text.c_str(), posX, posY, fontSize, COLOR2RAYLIB(color));
 }
 }

@@ -43,6 +43,7 @@ GUINavigator::GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*
     this->pages_ = pages;
     this->pageIndex_ = this->pages_.begin();
     RegisterEvents();
+    (*pageIndex_)->Show();
 }
 
 GUINavigator::~GUINavigator() {
@@ -50,13 +51,13 @@ GUINavigator::~GUINavigator() {
 }
 
 void GUINavigator::RegisterEvents() {
-    handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, GoToNextPage());
-    handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, GoToPreviousPage());
+    handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, &GoToNextPage());
+    handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, &GoToPreviousPage());
 }
 
 void GUINavigator::UnregisterEvents() {
-    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, GoToNextPage());
-    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, GoToPreviousPage());
+    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, &GoToNextPage());
+    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, &GoToPreviousPage());
 }
 
 std::function<void()> GUINavigator::GoToNextPage() {
@@ -65,6 +66,8 @@ std::function<void()> GUINavigator::GoToNextPage() {
     } else {
         std::advance(this->pageIndex_, 1);
     }
+
+    (*pageIndex_)->Show();
 }
 
 std::function<void()> GUINavigator::GoToPreviousPage() {
@@ -73,5 +76,7 @@ std::function<void()> GUINavigator::GoToPreviousPage() {
     } else {
         std::advance(this->pageIndex_, -1);
     }
+
+    (*pageIndex_)->Show();
 }
 }

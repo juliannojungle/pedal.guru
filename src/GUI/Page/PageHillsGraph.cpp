@@ -22,18 +22,19 @@
 namespace OpenCC {
 
 class PageHillsGraph : public OpenCC::iPage {
+    protected:
+        std::function<void()> DrawPageContents() override;
     public:
-        PageHillsGraph(OpenCC::SettingsData *settings) : OpenCC::iPage(settings) {};
+        PageHillsGraph(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
         ~PageHillsGraph();
         void Show() override;
-        void Hide() override;
 };
 
-void PageHillsGraph::Show() {
+std::function<void()> PageHillsGraph::DrawPageContents() {
 
 }
 
-void PageHillsGraph::Hide() {
-
+void PageHillsGraph::Show() {
+    drawer_->SetDrawPageContentsMethod(&DrawPageContents());
 }
 }
