@@ -47,7 +47,7 @@ void GUIDrawer::Execute() {
             GUIDriver::ClearBackground(GUIDriver::WHITE);
 
             if (drawPageContentsMethod_ != nullptr)
-                std::invoke(*drawPageContentsMethod_);
+                (*drawPageContentsMethod_)();
         }
         GUIDriver::EndDrawing();
     }

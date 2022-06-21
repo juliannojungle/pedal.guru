@@ -49,7 +49,7 @@ class HIDHandler {
 
 void HIDHandler::ExecuteHandlers(std::list<std::function<void()>*> handlers) {
     for (std::function<void()>* handler : handlers) {
-        std::invoke(*handler);
+        (*handler)();
     }
 }
 
