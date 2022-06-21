@@ -27,7 +27,7 @@ namespace OpenCC {
 class iDevice {
     protected:
         bool connected_;
-        std::list<iSensor&> sensors_;
+        std::list<iSensor*> sensors_;
 
     public:
         virtual ~iDevice() {}
