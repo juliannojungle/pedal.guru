@@ -22,7 +22,7 @@
 
 int main(void) {
     OpenCC::TaskManager taskManager;
-    taskManager.Run();
+    taskManager.Execute();
 
     return 0;
 }

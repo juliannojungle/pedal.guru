@@ -17,7 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "iDevice.hpp"
+#pragma once
+
+#include "../iDevice.hpp"
+
+namespace OpenCC {
 
 class WiredReelSpeedometer: public iDevice {
     public:
@@ -26,3 +30,4 @@ class WiredReelSpeedometer: public iDevice {
             this->connected_ = true;
         }
 };
+}

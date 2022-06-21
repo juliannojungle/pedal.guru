@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "deprecated pi@raspberrypi build && run",
+            "label": "ssh pi@raspberrypi build && run",
             "group": "build",
             "type": "shell",
             "command": "ssh",
@@ -10,10 +10,14 @@
                 "pi@raspberrypi",
                 "\"",
                     "g++",
-                    "-g", "/home/pi/git/raspitx/raspitx.cpp",
-                    "-o", "/home/pi/git/raspitx/raspitx",
-                    "&&","chmod","+x","/home/pi/git/raspitx/raspitx",
-                    "&&","/home/pi/git/raspitx/raspitx",
+                    "-L", "/home/pi/OpenCC/src/Dependency/raylib",
+                    "-L", "/opt/vc/lib",
+                    "-I", "/home/pi/OpenCC/src/Dependency/raylib",
+                    "-g", "/home/pi/OpenCC/src/OpenCC.cpp",
+                    "-o", "/home/pi/OpenCC/src/opencc",
+                    "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
+                    "&&","chmod","+x","/home/pi/OpenCC/src/opencc",
+                    "&&","/home/pi/OpenCC/src/opencc",
                 "\""
             ],
             "problemMatcher": [],

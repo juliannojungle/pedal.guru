@@ -17,9 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#pragma once
+
 #include <functional>
 #include <list>
-#include "GUI/Page/iPage.hpp"
+#include "Page/iPage.hpp"
 #include "../HIDHandler.cpp"
 
 namespace OpenCC {
