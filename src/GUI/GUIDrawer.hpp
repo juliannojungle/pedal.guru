@@ -32,38 +32,40 @@ class GUIDrawer {
         void SetDrawPageContentsMethod(std::function<void()>* drawPage) { this->drawPageContentsMethod_ = drawPage; };
 
         // PARSER MEMBERS: ONLY the GUIDrawer should know the implementations types!
-        const OpenCC::Color COLOR_LIGHT_GRAY  { 200, 200, 200, 255 };
-        const OpenCC::Color COLOR_GRAY        { 130, 130, 130, 255 };
-        const OpenCC::Color COLOR_DARK_GRAY   { 80, 80, 80, 255 };
-        const OpenCC::Color COLOR_YELLOW      { 253, 249, 0, 255 };
-        const OpenCC::Color COLOR_GOLD        { 255, 203, 0, 255 };
-        const OpenCC::Color COLOR_ORANGE      { 255, 161, 0, 255 };
-        const OpenCC::Color COLOR_PINK        { 255, 109, 194, 255 };
-        const OpenCC::Color COLOR_RED         { 230, 41, 55, 255 };
-        const OpenCC::Color COLOR_MAROON      { 190, 33, 55, 255 };
-        const OpenCC::Color COLOR_GREEN       { 0, 228, 48, 255 };
-        const OpenCC::Color COLOR_LIME        { 0, 158, 47, 255 };
-        const OpenCC::Color COLOR_DARK_GREEN  { 0, 117, 44, 255 };
-        const OpenCC::Color COLOR_SKY_BLUE    { 102, 191, 255, 255 };
-        const OpenCC::Color COLOR_BLUE        { 0, 121, 241, 255 };
-        const OpenCC::Color COLOR_DARK_BLUE   { 0, 82, 172, 255 };
-        const OpenCC::Color COLOR_PURPLE      { 200, 122, 255, 255 };
-        const OpenCC::Color COLOR_VIOLET      { 135, 60, 190, 255 };
-        const OpenCC::Color COLOR_DARK_PURPLE { 112, 31, 126, 255 };
-        const OpenCC::Color COLOR_BEIGE       { 211, 176, 131, 255 };
-        const OpenCC::Color COLOR_BROWN       { 127, 106, 79, 255 };
-        const OpenCC::Color COLOR_DARK_BROWN  { 76, 63, 47, 255 };
-        const OpenCC::Color COLOR_WHITE       { 255, 255, 255, 255 };
-        const OpenCC::Color COLOR_BLACK       { 0, 0, 0, 255 };
-        const OpenCC::Color COLOR_TRANSPARENT { 0, 0, 0, 0 };
-        const OpenCC::Color COLOR_MAGENTA     { 255, 0, 255, 255 };
+        const OpenCC::Color COLOR_LIGHT_GRAY  {200, 200, 200, 255};
+        const OpenCC::Color COLOR_GRAY        {130, 130, 130, 255};
+        const OpenCC::Color COLOR_DARK_GRAY   {80, 80, 80, 255};
+        const OpenCC::Color COLOR_YELLOW      {253, 249, 0, 255};
+        const OpenCC::Color COLOR_GOLD        {255, 203, 0, 255};
+        const OpenCC::Color COLOR_ORANGE      {255, 161, 0, 255};
+        const OpenCC::Color COLOR_PINK        {255, 109, 194, 255};
+        const OpenCC::Color COLOR_RED         {230, 41, 55, 255};
+        const OpenCC::Color COLOR_MAROON      {190, 33, 55, 255};
+        const OpenCC::Color COLOR_GREEN       {0, 228, 48, 255};
+        const OpenCC::Color COLOR_LIME        {0, 158, 47, 255};
+        const OpenCC::Color COLOR_DARK_GREEN  {0, 117, 44, 255};
+        const OpenCC::Color COLOR_SKY_BLUE    {102, 191, 255, 255};
+        const OpenCC::Color COLOR_BLUE        {0, 121, 241, 255};
+        const OpenCC::Color COLOR_DARK_BLUE   {0, 82, 172, 255};
+        const OpenCC::Color COLOR_PURPLE      {200, 122, 255, 255};
+        const OpenCC::Color COLOR_VIOLET      {135, 60, 190, 255};
+        const OpenCC::Color COLOR_DARK_PURPLE {112, 31, 126, 255};
+        const OpenCC::Color COLOR_BEIGE       {211, 176, 131, 255};
+        const OpenCC::Color COLOR_BROWN       {127, 106, 79, 255};
+        const OpenCC::Color COLOR_DARK_BROWN  {76, 63, 47, 255};
+        const OpenCC::Color COLOR_WHITE       {255, 255, 255, 255};
+        const OpenCC::Color COLOR_BLACK       {0, 0, 0, 255};
+        const OpenCC::Color COLOR_TRANSPARENT {0, 0, 0, 0};
+        const OpenCC::Color COLOR_MAGENTA     {255, 0, 255, 255};
         void DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::Color color);
 };
 
-typedef struct Color {
+struct Color {
     unsigned char r;
     unsigned char g;
     unsigned char b;
     unsigned char a;
-} Color;
+    Color(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+        : r(red), g(green), b(blue), a(alpha) {}
+};
 }
