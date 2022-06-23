@@ -19,22 +19,14 @@
 
 #pragma once
 
-#include "iPage.hpp"
+#include <functional>
 
 namespace OpenCC {
 
-class PageHillsGraph : public OpenCC::iPage {
+class Callback {
     public:
-        void DrawPageContents() override;
-        PageHillsGraph(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        void Show() override;
+        std::function<void()> Method;
+        Callback() {}
+        Callback(std::function<void()> method) : Method(method) {}
 };
-
-void PageHillsGraph::DrawPageContents() {
-
-}
-
-void PageHillsGraph::Show() {
-    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
-}
 }

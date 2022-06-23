@@ -18,7 +18,7 @@
 */
 
 #pragma once
-
+/*
 namespace GUIDriver {
 #ifdef GUI240X240
     #include "Interface/Spi240x240.hpp"
@@ -26,17 +26,20 @@ namespace GUIDriver {
     #include "Interface/DesktopSimulator.hpp"
 #endif
 }
-
+*/
 #include <string>
-#include <functional>
 #include "GUIDrawer.hpp"
 
 namespace OpenCC {
 
-#define COLOR2RAYLIB(color) CLITERAL(GUIDriver::Color){ color.r, color.g, color.b, color.a }
+//#define COLOR2RAYLIB(color) CLITERAL(GUIDriver::Color){ color.r, color.g, color.b, color.a }
+
+void GUIDrawer::SetDrawPageContentsMethod(std::function<void()> drawPage) {
+    this->drawPageContentsCallback_ = Callback(drawPage);
+};
 
 void GUIDrawer::Execute() {
-    GUIDriver::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC Simulator").c_str());
+/*    GUIDriver::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC Simulator").c_str());
 
     GUIDriver::SetTargetFPS(FRAME_RATE);
 
@@ -47,13 +50,15 @@ void GUIDrawer::Execute() {
             GUIDriver::ClearBackground(GUIDriver::WHITE);
 
             if (drawPageContentsMethod_ != nullptr)
-                (*drawPageContentsMethod_)();
+                drawPageContentsMethod_();
         }
         GUIDriver::EndDrawing();
-    }
+    }*/
+
+    drawPageContentsCallback_.Method();
 }
 
-void GUIDrawer::DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::Color color) {
-    GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR2RAYLIB(color));
+void GUIDrawer::DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::GUIColor color) {
+    //GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR2RAYLIB(color));
 }
 }

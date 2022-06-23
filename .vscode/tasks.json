@@ -27,6 +27,30 @@
                 "panel": "shared",
                 "clear": true
             }
+        },
+        {
+            "label": "wsl arm build",
+            "group": "build",
+            "type": "shell",
+            "command": "wsl",
+            "args": [
+                "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
+                "-std=c++11",
+                "--specs=nosys.specs",
+                //"-L", "src/Dependency/raylib",
+                //"-L", "/opt/vc/lib",
+                //"-I", "src/Dependency/raylib",
+                "-g", "src/OpenCC.cpp",
+                "-o", "src/opencc",
+                //"-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host"
+            ],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "showReuseMessage": false,
+                "panel": "shared",
+                "clear": true
+            }
         }
     ]
 }

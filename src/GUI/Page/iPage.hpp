@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <functional>
 #include "../../Model/SettingsData.hpp"
 #include "../GUIDrawer.hpp"
 
@@ -29,13 +28,12 @@ class iPage {
     protected:
         OpenCC::SettingsData *settings_;
         OpenCC::GUIDrawer *drawer_;
-        virtual std::function<void()> DrawPageContents() = 0;
     public:
+        virtual void DrawPageContents() = 0;
         iPage(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) {
             this->drawer_ = drawer;
             this->settings_ = settings;
         }
-        ~iPage() {}
         virtual void Show() = 0;
 };
 }

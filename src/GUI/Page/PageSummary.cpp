@@ -25,22 +25,20 @@
 namespace OpenCC {
 
 class PageSummary : public OpenCC::iPage {
-    protected:
-        std::function<void()> DrawPageContents() override;
     public:
+        void DrawPageContents() override;
         PageSummary(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        ~PageSummary() {}
         void Show() override;
 };
 
-std::function<void()> PageSummary::DrawPageContents() {
+void PageSummary::DrawPageContents() {
     int posX = 190;
     int posY = 200;
     int fontSize = 20;
-    drawer_->DrawText("Test summary!", posX, posY, fontSize, drawer_->COLOR_LIGHT_GRAY);
+    drawer_->DrawText(std::string("Test summary!"), posX, posY, fontSize, drawer_->COLOR_LIGHT_GRAY);
 }
 
 void PageSummary::Show() {
-    drawer_->SetDrawPageContentsMethod(&DrawPageContents());
+    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
 }
 }

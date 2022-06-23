@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <functional>
 #include <list>
 #include "Page/iPage.hpp"
 #include "../HIDHandler.cpp"
@@ -33,8 +32,8 @@ class GUINavigator {
         std::list<iPage*>::iterator pageIndex_;
         void RegisterEvents();
         void UnregisterEvents();
-        std::function<void()> GoToNextPage();
-        std::function<void()> GoToPreviousPage();
+        void GoToNextPage();
+        void GoToPreviousPage();
     public:
         GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*> pages);
         ~GUINavigator();
@@ -53,16 +52,16 @@ GUINavigator::~GUINavigator() {
 }
 
 void GUINavigator::RegisterEvents() {
-    handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, &GoToNextPage());
-    handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, &GoToPreviousPage());
+    handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
+    handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
 }
 
 void GUINavigator::UnregisterEvents() {
-    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, &GoToNextPage());
-    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, &GoToPreviousPage());
+    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
+    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
 }
 
-std::function<void()> GUINavigator::GoToNextPage() {
+void GUINavigator::GoToNextPage() {
     if (this->pageIndex_ == this->pages_.end()) {
         this->pageIndex_ = this->pages_.begin();
     } else {
@@ -72,7 +71,7 @@ std::function<void()> GUINavigator::GoToNextPage() {
     (*pageIndex_)->Show();
 }
 
-std::function<void()> GUINavigator::GoToPreviousPage() {
+void GUINavigator::GoToPreviousPage() {
     if (this->pageIndex_ == this->pages_.begin()) {
         this->pageIndex_ = this->pages_.end();
     } else {

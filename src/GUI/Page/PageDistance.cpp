@@ -24,19 +24,17 @@
 namespace OpenCC {
 
 class PageDistance : public OpenCC::iPage {
-    protected:
-        std::function<void()> DrawPageContents() override;
     public:
+        void DrawPageContents() override;
         PageDistance(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        ~PageDistance();
         void Show() override;
 };
 
-std::function<void()> PageDistance::DrawPageContents() {
+void PageDistance::DrawPageContents() {
 
 }
 
 void PageDistance::Show() {
-    drawer_->SetDrawPageContentsMethod(&DrawPageContents());
+    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
 }
 }
