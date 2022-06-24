@@ -10,6 +10,7 @@
                 "pi@raspberrypi",
                 "\"",
                     "g++",
+                    "-std=c++11",
                     "-L", "/home/pi/OpenCC/src/Dependency/raylib",
                     "-L", "/opt/vc/lib",
                     "-I", "/home/pi/OpenCC/src/Dependency/raylib",
@@ -17,7 +18,7 @@
                     "-o", "/home/pi/OpenCC/src/opencc",
                     "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
                     "&&","chmod","+x","/home/pi/OpenCC/src/opencc",
-                    "&&","/home/pi/OpenCC/src/opencc",
+                    "&&","/home/pi/OpenCC/build/opencc",
                 "\""
             ],
             "problemMatcher": [],
@@ -37,12 +38,12 @@
                 "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
                 "-std=c++11",
                 "--specs=nosys.specs",
-                //"-L", "src/Dependency/raylib",
-                //"-L", "/opt/vc/lib",
-                //"-I", "src/Dependency/raylib",
+                // "-L", "src/Dependency/raylib",
+                // "-L", "/opt/vc/lib",
+                // "-I", "src/Dependency/raylib",
                 "-g", "src/OpenCC.cpp",
-                "-o", "src/opencc",
-                //"-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host"
+                "-o", "build/opencc",
+                // "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host"
             ],
             "problemMatcher": [],
             "presentation": {

@@ -29,23 +29,32 @@ namespace OpenCC {
 class HIDHandler {
     private:
         void ExecuteHandlers(std::list<Callback> handlers);
+        std::list<Callback> OnEnterDown_;
+        std::list<Callback> OnEnterUp_;
         std::list<Callback> OnEnterPressed_;
         std::list<Callback> OnEnterPressed2Seconds_;
         std::list<Callback> OnEnterPressed5Seconds_;
+        std::list<Callback> OnExitDown_;
+        std::list<Callback> OnExitUp_;
         std::list<Callback> OnExitPressed_;
         std::list<Callback> OnExitPressed2Seconds_;
         std::list<Callback> OnExitPressed5Seconds_;
 
         //TODO: Functions below should be callbacks from GPIO
+        void EnterDown() { ExecuteHandlers(this->OnEnterDown_); };
+        void EnterUp() { ExecuteHandlers(this->OnEnterUp_); };
         void EnterPressed() { ExecuteHandlers(this->OnEnterPressed_); };
         void EnterPressed2Seconds() { ExecuteHandlers(this->OnEnterPressed2Seconds_); }
         void EnterPressed5Seconds() { ExecuteHandlers(this->OnEnterPressed5Seconds_); }
+        void ExitDown() { ExecuteHandlers(this->OnExitDown_); }
+        void ExitUp() { ExecuteHandlers(this->OnExitUp_); }
         void ExitPressed() { ExecuteHandlers(this->OnExitPressed_); }
         void ExitPressed2Seconds() { ExecuteHandlers(this->OnExitPressed2Seconds_); }
         void ExitPressed5Seconds() { ExecuteHandlers(this->OnExitPressed5Seconds_); }
     public:
-        void RegisterEventHandler(HIDEventType event, std::function<void()> handler);
-        void UnregisterEventHandler(HIDEventType event, std::function<void()> handler);
+        std::list<OpenCC::Callback>::const_iterator RegisterEventHandler(
+            HIDEventType event, std::function<void()> handler);
+        void UnregisterEventHandler(HIDEventType eventType, std::list<OpenCC::Callback>::const_iterator iterator);
 };
 
 void HIDHandler::ExecuteHandlers(std::list<Callback> handlers) {
@@ -54,54 +63,77 @@ void HIDHandler::ExecuteHandlers(std::list<Callback> handlers) {
     }
 }
 
-void HIDHandler::RegisterEventHandler(HIDEventType eventType, std::function<void()> handler) {
+std::list<OpenCC::Callback>::const_iterator HIDHandler::RegisterEventHandler(
+    HIDEventType eventType, std::function<void()> handler) {
     switch (eventType) {
+        case ENTER_DOWN:
+            OnEnterDown_.push_back(Callback(handler));
+            return OnEnterDown_.end();
+        case ENTER_UP:
+            OnEnterUp_.push_back(Callback(handler));
+            return OnEnterUp_.end();
         case ENTER_PRESSED:
             OnEnterPressed_.push_back(Callback(handler));
-            break;
+            return OnEnterPressed_.end();
         case ENTER_PRESSED_2_SECONDS:
             OnEnterPressed2Seconds_.push_back(Callback(handler));
-            break;
+            return OnEnterPressed2Seconds_.end();
         case ENTER_PRESSED_5_SECONDS:
             OnEnterPressed5Seconds_.push_back(Callback(handler));
-            break;
+            return OnEnterPressed5Seconds_.end();
+        case EXIT_DOWN:
+            OnExitDown_.push_back(Callback(handler));
+            return OnExitDown_.end();
+        case EXIT_UP:
+            OnExitUp_.push_back(Callback(handler));
+            return OnExitUp_.end();
         case EXIT_PRESSED:
             OnExitPressed_.push_back(Callback(handler));
-            break;
+            return OnExitPressed_.end();
         case EXIT_PRESSED_2_SECONDS:
             OnExitPressed2Seconds_.push_back(Callback(handler));
-            break;
+            return OnExitPressed2Seconds_.end();
         case EXIT_PRESSED_5_SECONDS:
             OnExitPressed5Seconds_.push_back(Callback(handler));
+            return OnExitPressed5Seconds_.end();
+    }
+
+    // Probably never gets here, so any iterator is ok.
+    return OnExitPressed_.end();
+}
+
+void HIDHandler::UnregisterEventHandler(HIDEventType eventType, std::list<OpenCC::Callback>::const_iterator iterator) {
+    switch (eventType) {
+        case ENTER_PRESSED:
+            OnEnterPressed_.erase(iterator);
             break;
-        default:
+        case ENTER_DOWN:
+            OnEnterDown_.erase(iterator);
+            break;
+        case ENTER_UP:
+            OnEnterUp_.erase(iterator);
+            break;
+        case ENTER_PRESSED_2_SECONDS:
+            OnEnterPressed2Seconds_.erase(iterator);
+            break;
+        case ENTER_PRESSED_5_SECONDS:
+            OnEnterPressed5Seconds_.erase(iterator);
+            break;
+        case EXIT_DOWN:
+            OnExitDown_.erase(iterator);
+            break;
+        case EXIT_UP:
+            OnExitUp_.erase(iterator);
+            break;
+        case EXIT_PRESSED:
+            OnExitPressed_.erase(iterator);
+            break;
+        case EXIT_PRESSED_2_SECONDS:
+            OnExitPressed2Seconds_.erase(iterator);
+            break;
+        case EXIT_PRESSED_5_SECONDS:
+            OnExitPressed5Seconds_.erase(iterator);
             break;
     }
 }
-
-void HIDHandler::UnregisterEventHandler(HIDEventType eventType, std::function<void()> handler) {
-    // switch (eventType) {
-    //     case ENTER_PRESSED:
-    //         OnEnterPressed_.remove(handler);
-    //         break;
-    //     case ENTER_PRESSED_2_SECONDS:
-    //         OnEnterPressed2Seconds_.remove(handler);
-    //         break;
-    //     case ENTER_PRESSED_5_SECONDS:
-    //         OnEnterPressed5Seconds_.remove(handler);
-    //         break;
-    //     case EXIT_PRESSED:
-    //         OnExitPressed_.remove(handler);
-    //         break;
-    //     case EXIT_PRESSED_2_SECONDS:
-    //         OnExitPressed2Seconds_.remove(handler);
-    //         break;
-    //     case EXIT_PRESSED_5_SECONDS:
-    //         OnExitPressed5Seconds_.remove(handler);
-    //         break;
-    //     default:
-    //         break;
-    // }
-}
-
 }

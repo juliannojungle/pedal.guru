@@ -22,9 +22,13 @@
 namespace OpenCC {
 
     enum HIDEventType {
+        ENTER_DOWN,
+        ENTER_UP,
         ENTER_PRESSED,
         ENTER_PRESSED_2_SECONDS,
         ENTER_PRESSED_5_SECONDS,
+        EXIT_DOWN,
+        EXIT_UP,
         EXIT_PRESSED,
         EXIT_PRESSED_2_SECONDS,
         EXIT_PRESSED_5_SECONDS

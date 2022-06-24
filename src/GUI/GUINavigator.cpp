@@ -34,6 +34,8 @@ class GUINavigator {
         void UnregisterEvents();
         void GoToNextPage();
         void GoToPreviousPage();
+        std::list<OpenCC::Callback>::const_iterator previousPageReference_;
+        std::list<OpenCC::Callback>::const_iterator nextPageReference_;
     public:
         GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*> pages);
         ~GUINavigator();
@@ -52,13 +54,13 @@ GUINavigator::~GUINavigator() {
 }
 
 void GUINavigator::RegisterEvents() {
-    handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
-    handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
+    nextPageReference_ = handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
+    previousPageReference_ = handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
 }
 
 void GUINavigator::UnregisterEvents() {
-    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
-    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
+    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, nextPageReference_);
+    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, previousPageReference_);
 }
 
 void GUINavigator::GoToNextPage() {
