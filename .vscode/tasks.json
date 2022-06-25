@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "ssh pi@raspberrypi build && run",
+            "label": "ssh build: pi@raspberrypi",
             "group": "build",
             "type": "shell",
             "command": "ssh",
@@ -11,14 +11,14 @@
                 "\"",
                     "g++",
                     "-std=c++11",
-                    "-L", "/home/pi/OpenCC/src/Dependency/raylib",
+                    "-L", "/home/pi/OpenCC/src/Dependency/raylib/src",
                     "-L", "/opt/vc/lib",
-                    "-I", "/home/pi/OpenCC/src/Dependency/raylib",
+                    "-I", "/home/pi/OpenCC/src/Dependency/raylib/src",
                     "-g", "/home/pi/OpenCC/src/OpenCC.cpp",
                     "-o", "/home/pi/OpenCC/src/opencc",
                     "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
-                    "&&","chmod","+x","/home/pi/OpenCC/src/opencc",
-                    "&&","/home/pi/OpenCC/build/opencc",
+                    // "&&","pkill opencc",
+                    // "&&","/home/pi/OpenCC/build/opencc",
                 "\""
             ],
             "problemMatcher": [],
@@ -30,7 +30,7 @@
             }
         },
         {
-            "label": "wsl arm build",
+            "label": "wsl build: gcc-arm-none-eabi",
             "group": "build",
             "type": "shell",
             "command": "wsl",
@@ -38,12 +38,12 @@
                 "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
                 "-std=c++11",
                 "--specs=nosys.specs",
-                // "-L", "src/Dependency/raylib",
-                // "-L", "/opt/vc/lib",
-                // "-I", "src/Dependency/raylib",
+                "-L", "src/Dependency/raylib/src",
+                "-L", "/opt/vc/lib",
+                "-I", "src/Dependency/raylib/src",
                 "-g", "src/OpenCC.cpp",
                 "-o", "build/opencc",
-                // "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host"
+                "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host"
             ],
             "problemMatcher": [],
             "presentation": {

@@ -19,6 +19,9 @@
 
 #pragma once
 
+#include <string>
+#include "GUIDrawer.hpp"
+
 namespace GUIDriver {
 #ifdef GUI240X240
     #include "Interface/Spi240x240.hpp"
@@ -26,9 +29,6 @@ namespace GUIDriver {
     #include "Interface/DesktopSimulator.hpp"
 #endif
 }
-
-#include <string>
-#include "GUIDrawer.hpp"
 
 namespace OpenCC {
 
