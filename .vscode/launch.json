@@ -2,23 +2,26 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "run (Windows)",
-            "type": "cppdbg",
+            "name": "Degug over SSH: pi@raspberrypi.local",
+            "type": "gdb",
             "request": "launch",
-            "program": "${workspaceRoot}/makertx.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false, // SET TO TRUE FOR WSL
-            "MIMode": "gdb",
-            "miDebuggerPath": "C:/dev/mingw64/bin/gdb.exe",
+            "target": "/home/pi/OpenCC/build/OpenCC",
+            "cwd": "${workspaceRoot}",
+            "ssh": {
+                "host": "raspberrypi.local",
+                "cwd": "/home/pi/OpenCC/",
+                "user": "pi",
+                "keyfile": "C:/Users/julia/.ssh/id_rsa",
+                "port": 22,
+                "useAgent": false,
+                "forwardX11": true
+            },
             "presentation": {
                 "hidden": false,
                 "group": "",
                 "order": 1
             },
-            "preLaunchTask": "g++ build",
+            "preLaunchTask": "SSH build: pi@raspberrypi",
             "internalConsoleOptions": "openOnSessionStart"
         }
     ]

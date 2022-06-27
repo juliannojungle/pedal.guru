@@ -2,25 +2,27 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "ssh build: pi@raspberrypi",
+            "label": "SSH build: pi@raspberrypi",
             "group": "build",
             "type": "shell",
             "command": "ssh",
             "args": [
-                "pi@raspberrypi",
+                "pi@raspberrypi.local",
                 "\"",
-                    "g++",
+                    "mkdir -p /home/pi/OpenCC/build",
+                    "&&", "g++",
                     "-std=c++11",
                     "-L", "/home/pi/OpenCC/src/Dependency/raylib/src",
                     "-L", "/opt/vc/lib",
                     "-I", "/home/pi/OpenCC/src/Dependency/raylib/src",
                     "-g", "/home/pi/OpenCC/src/OpenCC.cpp",
-                    "-o", "/home/pi/OpenCC/src/opencc",
+                    "-o", "/home/pi/OpenCC/build/OpenCC",
                     "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
-                    // "&&","pkill opencc",
-                    // "&&","/home/pi/OpenCC/build/opencc",
+                    // "&&","pkill OpenCC",
+                    // "&&","/home/pi/OpenCC/build/OpenCC",
                 "\""
             ],
+            "dependsOn": "mkdir build",
             "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
