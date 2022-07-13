@@ -19,14 +19,13 @@
 
 #pragma once
 
-#include <string>
 #include "GUIDrawer.hpp"
 
 namespace GUIDriver {
-#ifdef GUI240X240
-    #include "Interface/Spi240x240.hpp"
-#else
+#ifdef GUISIMULATOR
     #include "Interface/DesktopSimulator.hpp"
+#else
+    #include "Interface/Spi240x240.hpp"
 #endif
 }
 
@@ -35,7 +34,7 @@ namespace OpenCC {
 #define COLOR2RAYLIB(color) CLITERAL(GUIDriver::Color){ color.r, color.g, color.b, color.a }
 
 void GUIDrawer::SetDrawPageContentsMethod(std::function<void()> drawPage) {
-    this->drawPageContentsCallback_ = Callback(drawPage);
+    drawPageContentsCallback_ = std::make_shared<Callback>(drawPage);
 };
 
 void GUIDrawer::Execute() {
@@ -47,7 +46,7 @@ void GUIDrawer::Execute() {
         GUIDriver::BeginDrawing();
         {
             GUIDriver::ClearBackground(GUIDriver::WHITE);
-            drawPageContentsCallback_.Method();
+            drawPageContentsCallback_->Method();
         }
         GUIDriver::EndDrawing();
     }

@@ -26,14 +26,13 @@ namespace OpenCC {
 
 class iPage {
     protected:
-        OpenCC::SettingsData *settings_;
-        OpenCC::GUIDrawer *drawer_;
+        OpenCC::SettingsData& settings_;
+        OpenCC::GUIDrawer& drawer_;
     public:
+        virtual ~iPage() = default; // make it polymorphic
+        iPage(OpenCC::GUIDrawer& drawer, OpenCC::SettingsData& settings)
+            : drawer_(drawer), settings_(settings) {}
         virtual void DrawPageContents() = 0;
-        iPage(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) {
-            this->drawer_ = drawer;
-            this->settings_ = settings;
-        }
-        virtual void Show() = 0;
+        virtual void Setup() = 0;
 };
 }

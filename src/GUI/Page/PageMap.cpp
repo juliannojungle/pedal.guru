@@ -25,16 +25,16 @@ namespace OpenCC {
 
 class PageMap : public OpenCC::iPage {
     public:
+        using iPage::iPage; // nothing to do here, using parent constructor
         void DrawPageContents() override;
-        PageMap(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        void Show() override;
+        void Setup() override;
 };
 
 void PageMap::DrawPageContents() {
 
 }
 
-void PageMap::Show() {
-    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageMap::Setup() {
+    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
 }
 }

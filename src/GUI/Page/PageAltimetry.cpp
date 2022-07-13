@@ -25,16 +25,16 @@ namespace OpenCC {
 
 class PageAltimetry : public OpenCC::iPage {
     public:
+        using iPage::iPage; // nothing to do here, using parent constructor
         void DrawPageContents() override;
-        PageAltimetry(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        void Show() override;
+        void Setup() override;
 };
 
 void PageAltimetry::DrawPageContents() {
 
 }
 
-void PageAltimetry::Show() {
-    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageAltimetry::Setup() {
+    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
 }
 }

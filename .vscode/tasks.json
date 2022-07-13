@@ -11,7 +11,7 @@
                 "\"",
                     "mkdir -p /home/pi/OpenCC/build",
                     "&&", "g++",
-                    "-std=c++11",
+                    "-std=c++14",
                     "-L", "/home/pi/OpenCC/src/Dependency/raylib/src",
                     "-L", "/opt/vc/lib",
                     "-I", "/home/pi/OpenCC/src/Dependency/raylib/src",
@@ -22,7 +22,6 @@
                     // "&&","/home/pi/OpenCC/build/OpenCC",
                 "\""
             ],
-            "dependsOn": "mkdir build",
             "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
@@ -32,13 +31,13 @@
             }
         },
         {
-            "label": "wsl build: gcc-arm-none-eabi",
+            "label": "wsl cross-compile: gcc-arm-none-eabi",
             "group": "build",
             "type": "shell",
             "command": "wsl",
             "args": [
                 "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
-                "-std=c++11",
+                "-std=c++14",
                 "--specs=nosys.specs",
                 "-L", "src/Dependency/raylib/src",
                 "-L", "/opt/vc/lib",

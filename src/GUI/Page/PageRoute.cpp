@@ -25,16 +25,16 @@ namespace OpenCC {
 
 class PageRoute : public OpenCC::iPage {
     public:
+        using iPage::iPage; // nothing to do here, using parent constructor
         void DrawPageContents() override;
-        PageRoute(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        void Show() override;
+        void Setup() override;
 };
 
 void PageRoute::DrawPageContents() {
 
 }
 
-void PageRoute::Show() {
-    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageRoute::Setup() {
+    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
 }
 }

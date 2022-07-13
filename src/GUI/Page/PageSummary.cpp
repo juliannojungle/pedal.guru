@@ -26,19 +26,19 @@ namespace OpenCC {
 
 class PageSummary : public OpenCC::iPage {
     public:
+        using iPage::iPage; // nothing to do here, using parent constructor
         void DrawPageContents() override;
-        PageSummary(OpenCC::GUIDrawer *drawer, OpenCC::SettingsData *settings) : OpenCC::iPage(drawer, settings) {};
-        void Show() override;
+        void Setup() override;
 };
 
 void PageSummary::DrawPageContents() {
-    int posX = 190;
-    int posY = 200;
-    int fontSize = 20;
-    drawer_->DrawText(std::string("Test summary!"), posX, posY, fontSize, drawer_->COLOR_LIGHT_GRAY);
+    int posX = 5;
+    int posY = 100;
+    int fontSize = 40;
+    drawer_.DrawText(std::string("Test summary!"), posX, posY, fontSize, drawer_.COLOR_BLACK);
 }
 
-void PageSummary::Show() {
-    drawer_->SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageSummary::Setup() {
+    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
 }
 }

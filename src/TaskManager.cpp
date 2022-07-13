@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <memory>
 #include <list>
 #include "Device/iDevice.hpp"
 #include "GUI/GUIDrawer.cpp"
@@ -37,12 +38,12 @@ namespace OpenCC {
 
 class TaskManager {
     private:
-        OpenCC::SettingsData *settings_;
-        std::list<OpenCC::iDevice*> devices_;
-        std::list<OpenCC::iPage*> pages_;
+        OpenCC::SettingsData settings_;
+        std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
+        std::list<std::unique_ptr<OpenCC::iPage>> pages_;
         void ReadSettings();
-        void StartDevice(OpenCC::iDevice *device);
-        void CreatePages(OpenCC::GUIDrawer *drawer);
+        void StartDevice(OpenCC::iDevice& device);
+        void CreatePages(OpenCC::GUIDrawer& drawer);
     public:
         void Execute();
 };
@@ -50,68 +51,49 @@ class TaskManager {
 void TaskManager::Execute() {
     ReadSettings();
     OpenCC::GUIDrawer drawer;
-    CreatePages(&drawer);
-    OpenCC::HIDHandler hidHandler;
-    OpenCC::GUINavigator guiNavigator(&hidHandler, this->pages_);
+    CreatePages(drawer);
+    OpenCC::HIDHandler handler;
+    OpenCC::GUINavigator guiNavigator(handler, pages_);
     drawer.Execute();
 }
 
-void TaskManager::CreatePages(OpenCC::GUIDrawer *drawer) {
-    if (settings_->pageAltimetryEnabled) {
-        OpenCC::iPage *page;
-        OpenCC::PageAltimetry pageAltimetry(drawer, this->settings_);
-        page = &pageAltimetry;
-        pages_.push_back(page);
+void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
+    if (settings_.pageAltimetryEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
     }
 
-    if (settings_->pageDistanceEnabled) {
-        OpenCC::iPage *page;
-        OpenCC::PageDistance pageDistance(drawer, this->settings_);
-        page = &pageDistance;
-        pages_.push_back(page);
+    if (settings_.pageDistanceEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
     }
 
-    if (settings_->pageHillsGraphEnabled) {
-        OpenCC::iPage *page;
-        OpenCC::PageHillsGraph pageHillsGraph(drawer, this->settings_);
-        page = &pageHillsGraph;
-        pages_.push_back(page);
+    if (settings_.pageHillsGraphEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
     }
 
-    if (settings_->pageMapEnabled) {
-        OpenCC::iPage *page;
-        OpenCC::PageMap pageMap(drawer, this->settings_);
-        page = &pageMap;
-        pages_.push_back(page);
+    if (settings_.pageMapEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
     }
 
-    if (settings_->pageRouteEnabled) {
-        OpenCC::iPage *page;
-        OpenCC::PageRoute pageRoute(drawer, this->settings_);
-        page = &pageRoute;
-        pages_.push_back(page);
+    if (settings_.pageRouteEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
     }
 
-    if (settings_->pageSummaryEnabled) {
-        OpenCC::iPage *page;
-        OpenCC::PageSummary pageSummary(drawer, this->settings_);
-        page = &pageSummary;
-        pages_.push_back(page);
+    if (settings_.pageSummaryEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
     }
 }
 
 void TaskManager::ReadSettings() {
-    OpenCC::SettingsData settings; // TODO: Here we need saved settings.
-    settings.pageAltimetryEnabled = true;
-    settings.pageDistanceEnabled = true;
-    settings.pageHillsGraphEnabled = true;
-    settings.pageMapEnabled = true;
-    settings.pageRouteEnabled = true;
-    settings.pageSummaryEnabled = true;
-    this->settings_ = &settings;
+    // TODO: Here we need saved settings.
+    this->settings_.pageAltimetryEnabled = true;
+    this->settings_.pageDistanceEnabled = true;
+    this->settings_.pageHillsGraphEnabled = true;
+    this->settings_.pageMapEnabled = true;
+    this->settings_.pageRouteEnabled = true;
+    this->settings_.pageSummaryEnabled = true;
 }
 
-void TaskManager::StartDevice(OpenCC::iDevice *device) {
+void TaskManager::StartDevice(OpenCC::iDevice& device) {
     //TODO
 }
 }

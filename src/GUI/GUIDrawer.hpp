@@ -21,6 +21,7 @@
 
 #include <string>
 #include <functional>
+#include <memory>
 #include "../Model/Callback.hpp"
 
 namespace OpenCC {
@@ -36,7 +37,7 @@ struct GUIColor {
 
 class GUIDrawer {
     private:
-        Callback drawPageContentsCallback_;
+        std::shared_ptr<Callback> drawPageContentsCallback_;
     public:
         GUIDrawer() {}
         void Execute();

@@ -19,6 +19,7 @@
 
 #pragma once
 
+#include <memory>
 #include <list>
 #include "Page/iPage.hpp"
 #include "../HIDHandler.cpp"
@@ -27,59 +28,54 @@ namespace OpenCC {
 
 class GUINavigator {
     private:
-        HIDHandler *handler_;
-        std::list<iPage*> pages_;
-        std::list<iPage*>::iterator pageIndex_;
+        OpenCC::HIDHandler& handler_;
+        std::list<std::unique_ptr<OpenCC::iPage>>& pages_;
+        std::list<std::unique_ptr<OpenCC::iPage>>::iterator pageIndex_;
         void RegisterEvents();
         void UnregisterEvents();
         void GoToNextPage();
         void GoToPreviousPage();
-        std::list<OpenCC::Callback>::const_iterator previousPageReference_;
-        std::list<OpenCC::Callback>::const_iterator nextPageReference_;
+        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator previousPageReference_;
+        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator nextPageReference_;
     public:
-        GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*> pages);
-        ~GUINavigator();
+        GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::iPage>>& pages)
+            : handler_(handler), pages_(pages) {
+            pageIndex_ = pages_.begin();
+            RegisterEvents();
+            (*pageIndex_)->Setup();
+        }
+        ~GUINavigator() {
+            UnregisterEvents();
+        }
 };
 
-GUINavigator::GUINavigator(OpenCC::HIDHandler *handler, std::list<OpenCC::iPage*> pages) {
-    this->handler_ = handler;
-    this->pages_ = pages;
-    this->pageIndex_ = this->pages_.begin();
-    RegisterEvents();
-    (*pageIndex_)->Show();
-}
-
-GUINavigator::~GUINavigator() {
-    UnregisterEvents();
-}
-
 void GUINavigator::RegisterEvents() {
-    nextPageReference_ = handler_->RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
-    previousPageReference_ = handler_->RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
+    nextPageReference_ = handler_.RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
+    previousPageReference_ = handler_.RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
 }
 
 void GUINavigator::UnregisterEvents() {
-    handler_->UnregisterEventHandler(HIDEventType::ENTER_PRESSED, nextPageReference_);
-    handler_->UnregisterEventHandler(HIDEventType::EXIT_PRESSED, previousPageReference_);
+    handler_.UnregisterEventHandler(HIDEventType::ENTER_PRESSED, nextPageReference_);
+    handler_.UnregisterEventHandler(HIDEventType::EXIT_PRESSED, previousPageReference_);
 }
 
 void GUINavigator::GoToNextPage() {
-    if (this->pageIndex_ == this->pages_.end()) {
-        this->pageIndex_ = this->pages_.begin();
+    if (pageIndex_ == pages_.end()) {
+        pageIndex_ = pages_.begin();
     } else {
-        std::advance(this->pageIndex_, 1);
+        std::advance(pageIndex_, 1);
     }
 
-    (*pageIndex_)->Show();
+    (*pageIndex_)->Setup();
 }
 
 void GUINavigator::GoToPreviousPage() {
-    if (this->pageIndex_ == this->pages_.begin()) {
-        this->pageIndex_ = this->pages_.end();
+    if (pageIndex_ == pages_.begin()) {
+        pageIndex_ = pages_.end();
     } else {
-        std::advance(this->pageIndex_, -1);
+        std::advance(pageIndex_, -1);
     }
 
-    (*pageIndex_)->Show();
+    (*pageIndex_)->Setup();
 }
 }
