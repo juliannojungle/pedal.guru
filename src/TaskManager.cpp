@@ -58,24 +58,27 @@ void TaskManager::Execute() {
 }
 
 void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
-    if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
-    }
-
-    if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
-    }
-
-    if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
-    }
-
+    /*
+     * The pages order here is crucial, since it represents the pages cycle order!
+     */
     if (settings_.pageMapEnabled) {
         pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
     }
 
     if (settings_.pageRouteEnabled) {
         pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
+    }
+
+    if (settings_.pageHillsGraphEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
+    }
+
+    if (settings_.pageDistanceEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
+    }
+
+    if (settings_.pageAltimetryEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
     }
 
     if (settings_.pageSummaryEnabled) {

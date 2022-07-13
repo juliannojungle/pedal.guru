@@ -35,9 +35,44 @@ struct GUIColor {
         : r(red), g(green), b(blue), a(alpha) {}
 };
 
+struct GUIImage {
+    void *data;
+    int width;
+    int height;
+    int mipmaps; // Mipmap levels, 1 by default
+    int format;  // Data format (PixelFormat type)
+    GUIImage(void *data, int width, int height, int mipmaps, int format)
+        : data(data), width(width), height(height), mipmaps(mipmaps), format(format) {}
+};
+
+struct GUIRectangle {
+    float x;
+    float y;
+    float width;
+    float height;
+    GUIRectangle(float x, float y, float width, float height)
+        : x(x), y(y), width(width), height(height) {}
+};
+
+struct GUITexture {
+    unsigned int id;        // OpenGL texture id
+    int width;              // Texture base width
+    int height;             // Texture base height
+    int mipmaps;            // Mipmap levels, 1 by default
+    int format;             // Data format (PixelFormat type)
+    GUITexture(unsigned int id, int width, int height, int mipmaps, int format)
+        : id(id), width(width), height(height), mipmaps(mipmaps), format(format) {}
+};
+
+// Texture2D type, same as Texture
+typedef GUITexture GUITexture2D;
+
+// TextureCubemap type, actually, same as Texture
+typedef GUITexture GUITextureCubemap;
+
 class GUIDrawer {
     private:
-        std::shared_ptr<Callback> drawPageContentsCallback_;
+        std::shared_ptr<OpenCC::Callback> drawPageContentsCallback_;
     public:
         GUIDrawer() {}
         void Execute();
@@ -70,5 +105,10 @@ class GUIDrawer {
         const OpenCC::GUIColor COLOR_TRANSPARENT {0, 0, 0, 0};
         const OpenCC::GUIColor COLOR_MAGENTA     {255, 0, 255, 255};
         void DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::GUIColor color);
+        OpenCC::GUIImage LoadImage(std::string path);
+        OpenCC::GUITexture2D LoadTextureFromImage(OpenCC::GUIImage& image);
+        void DrawTexture(OpenCC::GUITexture2D& texture, int posX, int posY, OpenCC::GUIColor color);
+        void ImageCrop(OpenCC::GUIImage& image, OpenCC::GUIRectangle crop);
+        void ImageDrawPixel(OpenCC::GUIImage& image, int posX, int posY, OpenCC::GUIColor color);
 };
 }
