@@ -12,6 +12,7 @@
                     "mkdir -p /home/pi/OpenCC/build",
                     "&&", "g++",
                     "-std=c++14",
+                    "-DUSE_RAYLIB",
                     "-L", "/home/pi/OpenCC/src/Dependency/raylib/src",
                     "-L", "/opt/vc/lib",
                     "-I", "/home/pi/OpenCC/src/Dependency/raylib/src",

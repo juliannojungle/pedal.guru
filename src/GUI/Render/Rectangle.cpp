@@ -19,22 +19,27 @@
 
 #pragma once
 
-#include "../../Model/SettingsData.hpp"
-#include "../GUIDrawer.hpp"
+namespace GUIDriver {
+/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
+#ifdef USE_RAYLIB
+extern "C" {
+    #include "../../Dependency/raylib/src/raylib.h"
+}
+#endif
+}
 
-namespace OpenCC {
+namespace PiRender {
 
-class iPage {
-    protected:
-        OpenCC::SettingsData& settings_;
-        OpenCC::GUIDrawer& drawer_;
-    public:
-        virtual ~iPage() = default; // make it polymorphic
-        iPage(OpenCC::GUIDrawer& drawer, OpenCC::SettingsData& settings)
-            : drawer_(drawer), settings_(settings) {}
-        virtual void PreDrawPageContents() = 0;
-        virtual void DrawPageContents() = 0;
-        virtual void PostDrawPageContents() = 0;
-        virtual void Setup() = 0;
+#define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUIDriver::Rectangle) \
+    { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
+
+struct Rectangle {
+    float x;
+    float y;
+    float width;
+    float height;
+    Rectangle(float x, float y, float width, float height)
+        : x(x), y(y), width(width), height(height) {}
 };
+
 }

@@ -26,15 +26,24 @@ namespace OpenCC {
 class PageHillsGraph : public OpenCC::iPage {
     public:
         using iPage::iPage; // nothing to do here, using parent constructor
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
+        void PostDrawPageContents() override;
         void Setup() override;
 };
 
-void PageHillsGraph::DrawPageContents() {
+void PageHillsGraph::PreDrawPageContents() {
+}
 
+void PageHillsGraph::DrawPageContents() {
+}
+
+void PageHillsGraph::PostDrawPageContents() {
 }
 
 void PageHillsGraph::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
+    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
 }
 }

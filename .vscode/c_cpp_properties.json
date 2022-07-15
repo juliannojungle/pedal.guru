@@ -3,12 +3,13 @@
         {
             "name": "armv6",
             "includePath": [
-                "${workspaceFolder}"
+                "${workspaceFolder}/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "USE_RAYLIB"
             ],
             "compilerPath": "C:\\dev\\gcc-arm\\bin\\arm-none-eabi-g++",
             "cppStandard": "c++14",

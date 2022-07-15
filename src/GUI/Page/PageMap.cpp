@@ -19,40 +19,45 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
 #include "iPage.hpp"
+#include "../GUIDrawer.hpp"
 #include "../../API/OpenStreetMapAPI.cpp"
 
 namespace OpenCC {
 
 class PageMap : public OpenCC::iPage {
     private:
-        std::shared_ptr<OpenCC::GUITexture2D> tileTexture;
-        void LoadImage();
+        PiRender::Texture tileTexture;
     public:
         using iPage::iPage; // nothing to do here, using parent constructor
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
+        void PostDrawPageContents() override;
         void Setup() override;
 };
 
-void PageMap::DrawPageContents() {
-    drawer_.DrawTexture((*tileTexture), 0, 0, drawer_.COLOR_WHITE);
-    drawer_.DrawText(std::string("Map test!"), 50, 125, 20, drawer_.COLOR_BLACK);
-}
-
-void PageMap::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
-    LoadImage();
-}
-
-void PageMap::LoadImage() {
+void PageMap::PreDrawPageContents() {
     OpenStreetMapAPI mapApi;
     auto relativePath = mapApi.GetRelativeTilePath(-22.4208101, -42.9791064, 16);
     auto imagePath = relativePath + ".png";
-    auto tile = drawer_.LoadImage(imagePath);
-    drawer_.ImageCrop(tile, (OpenCC::GUIRectangle){ 0, 0, 240, 240 });
-    auto texture = drawer_.LoadTextureFromImage(tile);
-    tileTexture = std::make_shared<OpenCC::GUITexture>(texture);
+    PiRender::Image mapTile;
+    mapTile.LoadImage(imagePath);
+    tileTexture.LoadTextureFromImage(mapTile);
 }
+
+void PageMap::DrawPageContents() {
+    PiRender::Window window;
+    window.DrawTexture(tileTexture, 0, 0, PiRender::COLOR_WHITE);
+    window.DrawText(std::string("Testando mapas!"), 50, 125, 20, PiRender::COLOR_BLACK);
+}
+
+void PageMap::PostDrawPageContents() {
+}
+
+void PageMap::Setup() {
+    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
+    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
+}
+
 }

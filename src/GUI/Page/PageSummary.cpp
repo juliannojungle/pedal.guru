@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include <string>
 #include "iPage.hpp"
 
 namespace OpenCC {
@@ -27,18 +26,24 @@ namespace OpenCC {
 class PageSummary : public OpenCC::iPage {
     public:
         using iPage::iPage; // nothing to do here, using parent constructor
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
+        void PostDrawPageContents() override;
         void Setup() override;
 };
 
+void PageSummary::PreDrawPageContents() {
+}
+
 void PageSummary::DrawPageContents() {
-    int posX = 5;
-    int posY = 100;
-    int fontSize = 40;
-    drawer_.DrawText(std::string("Test summary!"), posX, posY, fontSize, drawer_.COLOR_BLACK);
+}
+
+void PageSummary::PostDrawPageContents() {
 }
 
 void PageSummary::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
+    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
 }
 }

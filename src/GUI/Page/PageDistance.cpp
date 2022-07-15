@@ -26,15 +26,24 @@ namespace OpenCC {
 class PageDistance : public OpenCC::iPage {
     public:
         using iPage::iPage; // nothing to do here, using parent constructor
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
+        void PostDrawPageContents() override;
         void Setup() override;
 };
 
-void PageDistance::DrawPageContents() {
+void PageDistance::PreDrawPageContents() {
+}
 
+void PageDistance::DrawPageContents() {
+}
+
+void PageDistance::PostDrawPageContents() {
 }
 
 void PageDistance::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
+    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
 }
 }

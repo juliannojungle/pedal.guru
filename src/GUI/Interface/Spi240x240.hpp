@@ -19,10 +19,6 @@
 
 #pragma once
 
-extern "C" {
-    #include "../../Dependency/raylib/src/raylib.h"
-}
-
 namespace OpenCC {
 
 #define SCREEN_HEIGHT 240
