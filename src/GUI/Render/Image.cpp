@@ -48,6 +48,7 @@ class Image {
         Image(void *data, int width, int height, int mipmaps, int format)
             : data(data), width(width), height(height), mipmaps(mipmaps), format(format) {}
         void LoadImage(std::string path);
+        void UnloadImage();
         void ImageCrop(PiRender::Rectangle crop);
         void ImageDrawPixel(int posX, int posY, PiRender::Color color);
 };
@@ -59,6 +60,11 @@ void Image::LoadImage(std::string path) {
     this->height = driverImage.height;
     this->mipmaps = driverImage.mipmaps;
     this->format = driverImage.format;
+}
+
+void Image::UnloadImage() {
+    auto driverImage(IMAGE_TO_RAYLIB((*this)));
+    GUIDriver::UnloadImage(driverImage);
 }
 
 void Image::ImageCrop(PiRender::Rectangle crop) {

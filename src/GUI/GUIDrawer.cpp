@@ -36,12 +36,12 @@ void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
 };
 
 void GUIDrawer::Execute() {
-    window.InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC").c_str());
+    window.Init(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC").c_str());
     window.SetTargetFPS(FRAME_RATE);
     window.HideCursor();
     pageContentsPreDrawCallback_->Method();
 
-    while (!window.WindowShouldClose())
+    while (!window.ShouldClose())
     {
         window.BeginDrawing();
         {
@@ -52,6 +52,7 @@ void GUIDrawer::Execute() {
     }
 
     pageContentsPostDrawCallback_->Method();
+    window.Close();
 }
 
 }

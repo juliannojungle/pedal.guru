@@ -46,6 +46,7 @@ class Texture {
         Texture(unsigned int id, int width, int height, int mipmaps, int format)
             : id(id), width(width), height(height), mipmaps(mipmaps), format(format) {}
         void LoadTextureFromImage(PiRender::Image& image);
+        void UnloadTexture();
 };
 
 // Texture2D type, same as Texture
@@ -62,6 +63,11 @@ void Texture::LoadTextureFromImage(PiRender::Image& image) {
     this->height = driverTexture.height;
     this->mipmaps = driverTexture.mipmaps;
     this->format = driverTexture.format;
+}
+
+void Texture::UnloadTexture() {
+    auto driverTexture(TEXTURE2D_TO_RAYLIB((*this)));
+    GUIDriver::UnloadTexture(driverTexture);
 }
 
 }

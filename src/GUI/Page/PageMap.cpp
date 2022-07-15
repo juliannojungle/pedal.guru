@@ -43,6 +43,7 @@ void PageMap::PreDrawPageContents() {
     PiRender::Image mapTile;
     mapTile.LoadImage(imagePath);
     tileTexture.LoadTextureFromImage(mapTile);
+    mapTile.UnloadImage();
 }
 
 void PageMap::DrawPageContents() {
@@ -52,6 +53,7 @@ void PageMap::DrawPageContents() {
 }
 
 void PageMap::PostDrawPageContents() {
+    tileTexture.UnloadTexture();
 }
 
 void PageMap::Setup() {

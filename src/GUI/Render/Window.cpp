@@ -36,10 +36,11 @@ namespace PiRender {
 
 class Window {
     public:
-        void InitWindow(int width, int height, std::string title);
+        void Init(int width, int height, std::string title);
         void SetTargetFPS(int frameRate);
         void HideCursor();
-        bool WindowShouldClose();
+        bool ShouldClose();
+        void Close();
         void BeginDrawing();
         void ClearBackground(PiRender::Color color);
         void EndDrawing();
@@ -47,7 +48,7 @@ class Window {
         void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color);
 };
 
-void Window::InitWindow(int width, int height, std::string title) {
+void Window::Init(int width, int height, std::string title) {
     GUIDriver::InitWindow(width, height, title.c_str());
 }
 
@@ -59,8 +60,12 @@ void Window::HideCursor() {
     GUIDriver::HideCursor();
 }
 
-bool Window::WindowShouldClose() {
+bool Window::ShouldClose() {
     return GUIDriver::WindowShouldClose();
+}
+
+void Window::Close() {
+    GUIDriver::CloseWindow();
 }
 
 void Window::BeginDrawing() {
