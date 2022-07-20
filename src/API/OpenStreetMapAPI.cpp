@@ -22,6 +22,11 @@
 #include <string>
 #include <cmath>
 
+/* define the constant since it's not standard c++ and some compilers does not include it */
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 namespace OpenCC {
 
 class OpenStreetMapAPI {
@@ -34,12 +39,12 @@ class OpenStreetMapAPI {
 
 int OpenStreetMapAPI::LongitudeToTileX(double longitude, int zoom) {
     return (int)(floor((longitude + 180.0) / 360.0 * pow(2, zoom)));
-   // return (Math.floor((longitude+180)/360*Math.pow(2,zoom)));
 }
 
 int OpenStreetMapAPI::LatitudeToTileY(double latitude, int zoom) {
-    return (int)(floor((1.0 - log(tan(latitude * M_PI/180.0) + 1 / cos(latitude * M_PI/180.0)) / M_PI) / 2.0 * pow(2, zoom)));
-    // return (Math.floor((1-Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI)/2 *Math.pow(2,zoom)));
+    return (int)(floor(
+        (1.0 - log(tan(latitude * M_PI/180.0) + 1 / cos(latitude * M_PI/180.0)) / M_PI) / 2.0 * pow(2, zoom)
+    ));
 }
 
 std::string OpenStreetMapAPI::GetRelativeTilePath(double latitude, double longitude, int zoom) {
