@@ -14,11 +14,13 @@
                 "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
                 "-DUSE_RAYLIB",
                 "-std=c++14",
+                // "--specs=nosys.specs",
                 "-L", "src/Dependency/raylib/src",
-                // "-L", "src/Dependency/opt/vc/lib",
+                "-L", "src/Dependency/opt/vc/lib",
                 "-I", "src/Dependency/raylib/src",
                 "-g", "src/OpenCC.cpp",
                 "-o", "build/opencc",
+                // "-shared-libgcc","-mfloat-abi=hard","-mfpu=vfp","-mtls-dialect=gnu","-marm", "-march=armv6+fp",
                 "-lraylib","-lbrcmEGL","-lbrcmGLESv2","-lpthread","-lbcm_host"
             ],
             "problemMatcher": [],
@@ -32,7 +34,10 @@
         {
             "label": "SSH build (native Raspberry Pi: g++)",
             "detail": "REMOTE source (on Raspberry Pi via SSHFS-Win): intellisense disabled",
-            "group": "build",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "type": "shell",
             "command": "ssh",
             "args": [
@@ -41,8 +46,8 @@
                     "g++",
                     "-std=c++14",
                     "-DUSE_RAYLIB",
-                    "-L", "~/OpenCC/src/Dependency/raylib/src",
                     "-L", "/opt/vc/lib",
+                    "-L", "~/OpenCC/src/Dependency/raylib/src",
                     "-I", "~/OpenCC/src/Dependency/raylib/src",
                     "-g", "~/OpenCC/src/OpenCC.cpp",
                     "-o", "~/OpenCC/build/opencc",
