@@ -2,6 +2,10 @@
     "editor.rulers": [120],
     "editor.tabSize": 4,
     "editor.detectIndentation": false,
+    // "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode/vc.db",
+    "cmake.configureSettings": {
+        "CMAKE_MAKE_PROGRAM": "C:\\dev\\mingw64\\bin\\mingw32-make.exe"
+    },
     "files.associations": {
         "cstdarg": "cpp",
         "array": "cpp",

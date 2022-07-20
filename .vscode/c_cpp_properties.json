@@ -3,7 +3,20 @@
         {
             "name": "armv6",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**", //Including every directory since this doesn't appear to work.
+                "${workspaceFolder}/src/API/**",
+                "${workspaceFolder}/src/Dependency/raylib/src",
+                "${workspaceFolder}/src/Device/**",
+                "${workspaceFolder}/src/GUI/**",
+                "${workspaceFolder}/src/GUI/Interface/**",
+                "${workspaceFolder}/src/GUI/Page/**",
+                "${workspaceFolder}/src/GUI/Render/**",
+                "${workspaceFolder}/src/Model/**",
+                "${workspaceFolder}/src/Sensor/**",
+                "${workspaceFolder}/src/Target/**",
+                "${workspaceFolder}/src/Target/RaspberryPiZeroW/**",
+                "${workspaceFolder}/src/Target/Simulator/**",
+                "${workspaceFolder}/src/Target"
             ],
             "defines": [
                 "_DEBUG",
