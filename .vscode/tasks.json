@@ -11,6 +11,7 @@
             "type": "shell",
             "command": "wsl",
             "args": [
+                // "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
                 "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
                 "-DUSE_RAYLIB",
                 "-std=c++14",
@@ -43,7 +44,8 @@
             "args": [
                 "pi@raspberrypi.local",
                 "\"",
-                    "g++",
+                    "mkdir -p /home/pi/OpenCC/build",
+                    "&&", "g++",
                     "-std=c++14",
                     "-DUSE_RAYLIB",
                     "-L", "/opt/vc/lib",
@@ -52,6 +54,8 @@
                     "-g", "~/OpenCC/src/OpenCC.cpp",
                     "-o", "~/OpenCC/build/opencc",
                     "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
+                    //             // "&&","pkill OpenCC",
+                    //             // "&&","/home/pi/OpenCC/build/opencc",
                 "\""
             ],
             "problemMatcher": [],
