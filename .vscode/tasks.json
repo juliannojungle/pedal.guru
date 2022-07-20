@@ -2,25 +2,26 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "SSH build: pi@raspberrypi",
-            "group": "build",
+            "label": "WSL build (cross-compile: g++-arm-linux-gnueabihf)",
+            "detail": "LOCAL source (on Windows PC built with WSL): intellisense enabled",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
             "type": "shell",
-            "command": "ssh",
+            "command": "wsl",
             "args": [
-                "pi@raspberrypi.local",
-                "\"",
-                    "mkdir -p /home/pi/OpenCC/build",
-                    "&&", "g++",
-                    "-std=c++14",
-                    "-L", "/home/pi/OpenCC/src/Dependency/raylib/src",
-                    "-L", "/opt/vc/lib",
-                    "-I", "/home/pi/OpenCC/src/Dependency/raylib/src",
-                    "-g", "/home/pi/OpenCC/src/OpenCC.cpp",
-                    "-o", "/home/pi/OpenCC/build/OpenCC",
-                    "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
-                    // "&&","pkill OpenCC",
-                    // "&&","/home/pi/OpenCC/build/OpenCC",
-                "\""
+                "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
+                "-DUSE_RAYLIB",
+                "-std=c++14",
+                // "--specs=nosys.specs",
+                "-L", "src/Dependency/raylib/src",
+                "-L", "src/Dependency/opt/vc/lib",
+                "-I", "src/Dependency/raylib/src",
+                "-g", "src/OpenCC.cpp",
+                "-o", "build/opencc",
+                // "-shared-libgcc","-mfloat-abi=hard","-mfpu=vfp","-mtls-dialect=gnu","-marm", "-march=armv6+fp",
+                "-lraylib","-lbrcmEGL","-lbrcmGLESv2","-lpthread","-lbcm_host"
             ],
             "problemMatcher": [],
             "presentation": {
@@ -31,20 +32,27 @@
             }
         },
         {
-            "label": "wsl cross-compile: gcc-arm-none-eabi",
-            "group": "build",
+            "label": "SSH build (native Raspberry Pi: g++)",
+            "detail": "REMOTE source (on Raspberry Pi via SSHFS-Win): intellisense disabled",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
             "type": "shell",
-            "command": "wsl",
+            "command": "ssh",
             "args": [
-                "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
-                "-std=c++14",
-                "--specs=nosys.specs",
-                "-L", "src/Dependency/raylib/src",
-                "-L", "/opt/vc/lib",
-                "-I", "src/Dependency/raylib/src",
-                "-g", "src/OpenCC.cpp",
-                "-o", "build/opencc",
-                "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host"
+                "pi@raspberrypi.local",
+                "\"",
+                    "g++",
+                    "-std=c++14",
+                    "-DUSE_RAYLIB",
+                    "-L", "/opt/vc/lib",
+                    "-L", "~/OpenCC/src/Dependency/raylib/src",
+                    "-I", "~/OpenCC/src/Dependency/raylib/src",
+                    "-g", "~/OpenCC/src/OpenCC.cpp",
+                    "-o", "~/OpenCC/build/opencc",
+                    "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
+                "\""
             ],
             "problemMatcher": [],
             "presentation": {
