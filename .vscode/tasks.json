@@ -6,14 +6,14 @@
             "detail": "LOCAL source (on Windows PC built with WSL): intellisense enabled",
             "group": {
                 "kind": "build",
-                "isDefault": true
+                "isDefault": false
             },
             "type": "shell",
             "command": "wsl",
             "args": [
                 // "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
                 "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
-                "-DUSE_RAYLIB",
+                "-DTARGET_RASPBERRY_PI_ZERO_W",
                 "-std=c++14",
                 // "--specs=nosys.specs",
                 "-L", "src/Dependency/raylib/src",
@@ -37,7 +37,7 @@
             "detail": "REMOTE source (on Raspberry Pi via SSHFS-Win): intellisense disabled",
             "group": {
                 "kind": "build",
-                "isDefault": false
+                "isDefault": true
             },
             "type": "shell",
             "command": "ssh",
@@ -47,7 +47,7 @@
                     "mkdir -p /home/pi/OpenCC/build",
                     "&&", "g++",
                     "-std=c++14",
-                    "-DUSE_RAYLIB",
+                    "-DTARGET_RASPBERRY_PI_ZERO_W",
                     "-L", "/opt/vc/lib",
                     "-L", "~/OpenCC/src/Dependency/raylib/src",
                     "-I", "~/OpenCC/src/Dependency/raylib/src",

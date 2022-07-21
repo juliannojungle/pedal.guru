@@ -27,7 +27,7 @@ namespace OpenCC {
 
 class PageMap : public OpenCC::iPage {
     private:
-        PiRender::Texture tileTexture;
+        PiRender::Texture mapTexture;
     public:
         using iPage::iPage; // nothing to do here, using parent constructor
         void PreDrawPageContents() override;
@@ -38,22 +38,22 @@ class PageMap : public OpenCC::iPage {
 
 void PageMap::PreDrawPageContents() {
     OpenStreetMapAPI mapApi;
-    auto relativePath = mapApi.GetRelativeTilePath(-22.4208101, -42.9791064, 16);
+    auto relativePath = mapApi.LatLongZoomToHashPath(-22.4208101, -42.9791064, 16);
     auto imagePath = relativePath + ".png";
     PiRender::Image mapTile;
     mapTile.LoadImage(imagePath);
-    tileTexture.LoadTextureFromImage(mapTile);
+    mapTexture.LoadTextureFromImage(mapTile);
     mapTile.UnloadImage();
 }
 
 void PageMap::DrawPageContents() {
     PiRender::Window window;
-    window.DrawTexture(tileTexture, 0, 0, PiRender::COLOR_WHITE);
+    window.DrawTexture(mapTexture, -16, -16, PiRender::COLOR_WHITE);
     window.DrawText(std::string("Testando mapas!"), 50, 125, 20, PiRender::COLOR_BLACK);
 }
 
 void PageMap::PostDrawPageContents() {
-    tileTexture.UnloadTexture();
+    mapTexture.UnloadTexture();
 }
 
 void PageMap::Setup() {

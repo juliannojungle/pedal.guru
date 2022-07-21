@@ -22,7 +22,7 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "USE_RAYLIB"
+                "TARGET_RASPBERRY_PI_ZERO_W"
             ],
             "compilerPath": "C:\\dev\\gcc-arm\\bin\\arm-none-eabi-g++",
             "cppStandard": "c++14",

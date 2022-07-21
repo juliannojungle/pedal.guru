@@ -19,10 +19,11 @@
 
 #pragma once
 
-extern "C" {
-    #include "../../Dependency/pigpio/pigpio.h"
-}
+#ifdef RASPBERRY_PI_ZERO_W
+    #define USE_RAYLIB
 
-namespace OpenCC {
+// extern "C" {
+//     #include "../../Dependency/pigpio/pigpio.h"
+// }
 
-}
+#endif
