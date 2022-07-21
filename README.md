@@ -1,13 +1,14 @@
 # OpenCC
 Open Cycle Computer is an open-source DIY project with the intention to bring useful resources that are appreciated by cyclists to easy-to-work platforms like Raspberry Pi, in a more organized manner than usual apps offer us. The intention is to include integration with some popular services.
 
-<br>
+### Note:
+> This project is under active develpment. The documentation is growing along the project as it's a work-in-progress. If interested, please check the [development board](https://github.com/users/juliannojungle/projects/1) and the [reference diagram](DIAGRAM.md).
 
 # Hardware
 
 This very first interaction of the project is based on the following devices:
 
-- **[1.28inch LCD Module](https://www.waveshare.com/wiki/1.28inch_LCD_Module)**, from WaveShare
+- **[1.28inch LCD Module](https://www.waveshare.com/wiki/1.28inch_LCD_Module)**, from WaveShare (using the [GC9A01 overlay](https://github.com/juliannojungle/gc9a01-overlay))
 
 ![1.28inch LCD Module](Documentation/Image/waveshare_1.28inch_round_lcd.jpg)
 
@@ -25,11 +26,9 @@ At this moment, we choose to use [TinyCoreLinux](http://tinycorelinux.net), due 
 - Straightforward: boots right to the prompt with the default user logged in with enought resources to load the interface, have internet access, use GPIO etc.;
 - Startup time gets quite low, with just a few seconds.
 
-<br>
+To use the GC9A01 based display on TinyCoreLinux, we need to follow [this procedure](https://github.com/juliannojungle/gc9a01-tinycorelinux-tcz).
 
-In the future when the project gets mature enougth, we plan to support [RP2040](https://www.raspberrypi.com/products/rp2040) and on that, the additional OS won't be needed (since it can run C++ code natively).
+In the future when the project gets mature enougth, we plan to support [RP2040](https://www.raspberrypi.com/products/rp2040) and/or ESP32 and on those, the additional OS won't be needed (since it can run C++ code natively).
 
-<br>
-
-# Notes
-This is a work-in-progress project and the documentation will be growing along the development.
+---
+<sup>[@juliannojungle](https://github.com/juliannojungle), 2022</sup>
