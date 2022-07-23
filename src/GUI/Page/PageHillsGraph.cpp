@@ -19,17 +19,17 @@
 
 #pragma once
 
-#include "iPage.hpp"
+#include "BasePage.cpp"
 
 namespace OpenCC {
 
-class PageHillsGraph : public OpenCC::iPage {
+class PageHillsGraph : public OpenCC::BasePage {
     public:
-        using iPage::iPage; // nothing to do here, using parent constructor
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        ~PageHillsGraph() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;
-        void Setup() override;
 };
 
 void PageHillsGraph::PreDrawPageContents() {
@@ -41,9 +41,4 @@ void PageHillsGraph::DrawPageContents() {
 void PageHillsGraph::PostDrawPageContents() {
 }
 
-void PageHillsGraph::Setup() {
-    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
-    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
-    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
-}
 }

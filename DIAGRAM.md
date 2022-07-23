@@ -33,19 +33,19 @@ link SettingsData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc
 class TaskManager {
     -SettingsData *settings_
     -List~*iDevice~ devices_
-    -List~*iPage~ pages_
+    -List~*BasePage~ pages_
     -ReadSettings() SettingsData
-    -DisplayPage(iPage *page)
+    -DisplayPage(BasePage *page)
     -StartDevice(iDevice *device)
     +Run()
 }
 
 link TaskManager "https://github.com/juliannojungle/OpenCC/blob/main/src/task_manager.cpp"
-TaskManager ..|> iPage
+TaskManager ..|> BasePage
 TaskManager ..|> iDevice
 TaskManager ..> SettingsData : Reads
 
-class iPage {
+class BasePage {
     <<interface>>
     -SensorData *data_
     -SettingsData *settings_
@@ -56,7 +56,7 @@ class iPage {
     +NextPage()
 }
 
-link iPage "https://github.com/juliannojungle/OpenCC/blob/main/src/gui/pages/iPage.hpp"
+link BasePage "https://github.com/juliannojungle/OpenCC/blob/main/src/gui/pages/BasePage.cpp"
 
 class iSensor {
     <<interface>>
@@ -86,7 +86,7 @@ link SensorData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.h
 iDevice "1" --* "1..*" iSensor : Contains
 SensorData <.. iDevice : Writes
 
-iPage "1" ..> "1..*" SensorData : Reads
-SettingsData <.. iPage : Reads/Writes
+BasePage "1" ..> "1..*" SensorData : Reads
+SettingsData <.. BasePage : Reads/Writes
 iDevice ..> SettingsData : Reads
 ```

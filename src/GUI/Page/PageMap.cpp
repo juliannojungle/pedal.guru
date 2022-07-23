@@ -19,21 +19,20 @@
 
 #pragma once
 
-#include "iPage.hpp"
-#include "../GUIDrawer.hpp"
+#include "BasePage.cpp"
 #include "../../API/OpenStreetMapAPI.cpp"
 
 namespace OpenCC {
 
-class PageMap : public OpenCC::iPage {
+class PageMap : public OpenCC::BasePage {
     private:
-        PiRender::Texture mapTexture;
+        PiRender::Texture mapTexture_;
     public:
-        using iPage::iPage; // nothing to do here, using parent constructor
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        ~PageMap() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;
-        void Setup() override;
 };
 
 void PageMap::PreDrawPageContents() {
@@ -42,24 +41,17 @@ void PageMap::PreDrawPageContents() {
     auto imagePath = relativePath + ".png";
     PiRender::Image mapTile;
     mapTile.LoadImage(imagePath);
-    mapTexture.LoadTextureFromImage(mapTile);
+    mapTexture_.LoadTextureFromImage(mapTile);
     mapTile.UnloadImage();
 }
 
 void PageMap::DrawPageContents() {
-    PiRender::Window window;
-    window.DrawTexture(mapTexture, -16, -16, PiRender::COLOR_WHITE);
-    window.DrawText(std::string("Testando mapas!"), 50, 125, 20, PiRender::COLOR_BLACK);
+    window_.DrawTexture(mapTexture_, -16, -16, PiRender::COLOR_WHITE);
+    window_.DrawText(std::string("Testando mapas!"), 50, 125, 20, PiRender::COLOR_BLACK);
 }
 
 void PageMap::PostDrawPageContents() {
-    mapTexture.UnloadTexture();
-}
-
-void PageMap::Setup() {
-    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
-    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
-    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
+    mapTexture_.UnloadTexture();
 }
 
 }

@@ -21,7 +21,7 @@
 
 #include <memory>
 #include <list>
-#include "Page/iPage.hpp"
+#include "Page/BasePage.cpp"
 #include "../HIDHandler.cpp"
 
 namespace OpenCC {
@@ -29,8 +29,8 @@ namespace OpenCC {
 class GUINavigator {
     private:
         OpenCC::HIDHandler& handler_;
-        std::list<std::unique_ptr<OpenCC::iPage>>& pages_;
-        std::list<std::unique_ptr<OpenCC::iPage>>::iterator pageIndex_;
+        std::list<std::unique_ptr<OpenCC::BasePage>>& pages_;
+        std::list<std::unique_ptr<OpenCC::BasePage>>::iterator pageIndex_;
         void RegisterEvents();
         void UnregisterEvents();
         void GoToNextPage();
@@ -38,7 +38,7 @@ class GUINavigator {
         std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator previousPageReference_;
         std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator nextPageReference_;
     public:
-        GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::iPage>>& pages)
+        GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::BasePage>>& pages)
             : handler_(handler), pages_(pages) {
             pageIndex_ = pages_.begin();
             RegisterEvents();

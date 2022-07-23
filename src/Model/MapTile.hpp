@@ -19,17 +19,13 @@
 
 #pragma once
 
-#include <string>
-
 namespace OpenCC {
 
-struct SettingsData {
-    bool pageAltimetryEnabled;
-    bool pageDistanceEnabled;
-    bool pageHillsGraphEnabled;
-    bool pageMapEnabled;
-    bool pageRouteEnabled;
-    bool pageSummaryEnabled;
-    std::string mapSyncingBaseUrl;
+class MapTile {
+    public:
+        int x;
+        int y;
+        int zoom;
+        MapTile(int x, int y, int zoom) : x(x), y(y), zoom(zoom) {}
 };
 }

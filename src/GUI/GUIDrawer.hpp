@@ -45,6 +45,7 @@ class GUIDrawer {
         std::shared_ptr<OpenCC::Callback> pageContentsPostDrawCallback_;
     public:
         GUIDrawer() {}
+        ~GUIDrawer() {}
         void Execute();
 
         void SetPageContentsPreDrawMethod(std::function<void()> method);

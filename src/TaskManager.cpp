@@ -24,11 +24,12 @@
 #include "Device/iDevice.hpp"
 #include "GUI/GUIDrawer.cpp"
 #include "GUI/GUINavigator.cpp"
-#include "GUI/Page/iPage.hpp"
+#include "GUI/Page/BasePage.cpp"
 #include "GUI/Page/PageAltimetry.cpp"
 #include "GUI/Page/PageDistance.cpp"
 #include "GUI/Page/PageHillsGraph.cpp"
 #include "GUI/Page/PageMap.cpp"
+#include "GUI/Page/PageMapSync.cpp"
 #include "GUI/Page/PageRoute.cpp"
 #include "GUI/Page/PageSummary.cpp"
 #include "HIDHandler.cpp"
@@ -40,11 +41,12 @@ class TaskManager {
     private:
         OpenCC::SettingsData settings_;
         std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
-        std::list<std::unique_ptr<OpenCC::iPage>> pages_;
+        std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
         void ReadSettings();
         void StartDevice(OpenCC::iDevice& device);
         void CreatePages(OpenCC::GUIDrawer& drawer);
     public:
+        ~TaskManager() {}
         void Execute();
 };
 
@@ -84,6 +86,9 @@ void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
     if (settings_.pageSummaryEnabled) {
         pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
     }
+
+    // Settings pages aren't optional.
+    pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
 }
 
 void TaskManager::ReadSettings() {
@@ -94,6 +99,7 @@ void TaskManager::ReadSettings() {
     this->settings_.pageMapEnabled = true;
     this->settings_.pageRouteEnabled = true;
     this->settings_.pageSummaryEnabled = true;
+    this->settings_.mapSyncingBaseUrl = "https://tile.openstreetmap.org";
 }
 
 void TaskManager::StartDevice(OpenCC::iDevice& device) {

@@ -19,22 +19,32 @@
 
 #pragma once
 
-#include "../../Model/SettingsData.hpp"
-#include "../GUIDrawer.hpp"
+#include <sys/stat.h>
+#include <cstring>
 
 namespace OpenCC {
 
-class iPage {
-    protected:
-        OpenCC::SettingsData& settings_;
-        OpenCC::GUIDrawer& drawer_;
+class FileHelper {
     public:
-        virtual ~iPage() = default; // make it polymorphic
-        iPage(OpenCC::GUIDrawer& drawer, OpenCC::SettingsData& settings)
-            : drawer_(drawer), settings_(settings) {}
-        virtual void PreDrawPageContents() = 0;
-        virtual void DrawPageContents() = 0;
-        virtual void PostDrawPageContents() = 0;
-        virtual void Setup() = 0;
+        void CreatePathDirectories(const char *path);
 };
+
+void FileHelper::CreatePathDirectories(const char *path) {
+    char tmp[256];
+    char *p = NULL;
+    size_t len;
+
+    snprintf(tmp, sizeof(tmp),"%s",path);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/')
+        tmp[len - 1] = 0;
+    for (p = tmp + 1; *p; p++) {
+        if (*p == '/') {
+            *p = 0;
+            mkdir(tmp, S_IRWXU);
+            *p = '/';
+        }
+    }
+}
+
 }
