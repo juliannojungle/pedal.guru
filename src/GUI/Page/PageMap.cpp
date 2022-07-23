@@ -29,7 +29,6 @@ class PageMap : public OpenCC::BasePage {
         PiRender::Texture mapTexture_;
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
-        ~PageMap() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;

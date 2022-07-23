@@ -26,7 +26,6 @@ namespace OpenCC {
 class PageSummary : public OpenCC::BasePage {
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
-        ~PageSummary() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;
