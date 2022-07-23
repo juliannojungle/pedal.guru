@@ -130,7 +130,7 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
-     * Delay between requests, as OSM API requires low brandwidth usage.
+     * Only two requests per second, as OSM API requires low brandwidth usage.
      */
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
