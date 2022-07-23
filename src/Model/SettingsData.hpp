@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace OpenCC {
 
 struct SettingsData {
@@ -28,5 +30,6 @@ struct SettingsData {
     bool pageMapEnabled;
     bool pageRouteEnabled;
     bool pageSummaryEnabled;
+    std::string mapSyncingBaseUrl;
 };
 }

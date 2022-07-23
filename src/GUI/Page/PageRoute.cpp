@@ -19,22 +19,26 @@
 
 #pragma once
 
-#include "iPage.hpp"
+#include "BasePage.cpp"
 
 namespace OpenCC {
 
-class PageRoute : public OpenCC::iPage {
+class PageRoute : public OpenCC::BasePage {
     public:
-        using iPage::iPage; // nothing to do here, using parent constructor
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        ~PageRoute() {}
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
-        void Setup() override;
+        void PostDrawPageContents() override;
 };
 
+void PageRoute::PreDrawPageContents() {
+}
+
 void PageRoute::DrawPageContents() {
-
 }
 
-void PageRoute::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageRoute::PostDrawPageContents() {
 }
+
 }

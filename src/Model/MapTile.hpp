@@ -19,11 +19,13 @@
 
 #pragma once
 
-#ifdef RASPBERRY_PI_ZERO_W
-    #define USE_RAYLIB
+namespace OpenCC {
 
-// extern "C" {
-//     #include "../../Dependency/pigpio/pigpio.h"
-// }
-
-#endif
+class MapTile {
+    public:
+        int x;
+        int y;
+        int zoom;
+        MapTile(int x, int y, int zoom) : x(x), y(y), zoom(zoom) {}
+};
+}

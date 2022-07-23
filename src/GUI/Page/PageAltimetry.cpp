@@ -19,22 +19,26 @@
 
 #pragma once
 
-#include "iPage.hpp"
+#include "BasePage.cpp"
 
 namespace OpenCC {
 
-class PageAltimetry : public OpenCC::iPage {
+class PageAltimetry : public OpenCC::BasePage {
     public:
-        using iPage::iPage; // nothing to do here, using parent constructor
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        ~PageAltimetry() {}
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
-        void Setup() override;
+        void PostDrawPageContents() override;
 };
 
+void PageAltimetry::PreDrawPageContents() {
+}
+
 void PageAltimetry::DrawPageContents() {
-
 }
 
-void PageAltimetry::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageAltimetry::PostDrawPageContents() {
 }
+
 }

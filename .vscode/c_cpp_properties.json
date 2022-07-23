@@ -21,7 +21,8 @@
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "TARGET_RASPBERRY_PI_ZERO_W"
             ],
             "compilerPath": "C:\\dev\\gcc-arm\\bin\\arm-none-eabi-g++",
             "cppStandard": "c++14",

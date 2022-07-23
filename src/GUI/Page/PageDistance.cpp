@@ -19,22 +19,26 @@
 
 #pragma once
 
-#include "iPage.hpp"
+#include "BasePage.cpp"
 
 namespace OpenCC {
 
-class PageDistance : public OpenCC::iPage {
+class PageDistance : public OpenCC::BasePage {
     public:
-        using iPage::iPage; // nothing to do here, using parent constructor
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        ~PageDistance() {}
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
-        void Setup() override;
+        void PostDrawPageContents() override;
 };
 
+void PageDistance::PreDrawPageContents() {
+}
+
 void PageDistance::DrawPageContents() {
-
 }
 
-void PageDistance::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageDistance::PostDrawPageContents() {
 }
+
 }

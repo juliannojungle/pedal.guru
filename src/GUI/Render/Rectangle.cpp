@@ -19,11 +19,27 @@
 
 #pragma once
 
-#ifdef RASPBERRY_PI_ZERO_W
-    #define USE_RAYLIB
-
-// extern "C" {
-//     #include "../../Dependency/pigpio/pigpio.h"
-// }
-
+namespace GUIDriver {
+/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
+#ifdef USE_RAYLIB
+extern "C" {
+    #include "../../Dependency/raylib/src/raylib.h"
+}
 #endif
+}
+
+namespace PiRender {
+
+#define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUIDriver::Rectangle) \
+    { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
+
+struct Rectangle {
+    float x;
+    float y;
+    float width;
+    float height;
+    Rectangle(float x, float y, float width, float height)
+        : x(x), y(y), width(width), height(height) {}
+};
+
+}

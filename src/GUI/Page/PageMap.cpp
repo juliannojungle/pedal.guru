@@ -19,22 +19,39 @@
 
 #pragma once
 
-#include "iPage.hpp"
+#include "BasePage.cpp"
+#include "../../API/OpenStreetMapAPI.cpp"
 
 namespace OpenCC {
 
-class PageMap : public OpenCC::iPage {
+class PageMap : public OpenCC::BasePage {
+    private:
+        PiRender::Texture mapTexture_;
     public:
-        using iPage::iPage; // nothing to do here, using parent constructor
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        ~PageMap() {}
+        void PreDrawPageContents() override;
         void DrawPageContents() override;
-        void Setup() override;
+        void PostDrawPageContents() override;
 };
 
+void PageMap::PreDrawPageContents() {
+    OpenStreetMapAPI mapApi;
+    auto relativePath = mapApi.LatLongZoomToHashPath(-22.4208101, -42.9791064, 16);
+    auto imagePath = relativePath + ".png";
+    PiRender::Image mapTile;
+    mapTile.LoadImage(imagePath);
+    mapTexture_.LoadTextureFromImage(mapTile);
+    mapTile.UnloadImage();
+}
+
 void PageMap::DrawPageContents() {
-
+    window_.DrawTexture(mapTexture_, -16, -16, PiRender::COLOR_WHITE);
+    window_.DrawText(std::string("Testando mapas!"), 50, 125, 20, PiRender::COLOR_BLACK);
 }
 
-void PageMap::Setup() {
-    drawer_.SetDrawPageContentsMethod([this](){this->DrawPageContents();});
+void PageMap::PostDrawPageContents() {
+    mapTexture_.UnloadTexture();
 }
+
 }

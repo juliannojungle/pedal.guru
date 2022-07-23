@@ -21,38 +21,38 @@
 
 #include "GUIDrawer.hpp"
 
-namespace GUIDriver {
-#ifdef GUISIMULATOR
-    #include "Interface/DesktopSimulator.hpp"
-#else
-    #include "Interface/Spi240x240.hpp"
-#endif
-}
-
 namespace OpenCC {
 
-#define COLOR2RAYLIB(color) CLITERAL(GUIDriver::Color){ color.r, color.g, color.b, color.a }
+void GUIDrawer::SetPageContentsPreDrawMethod(std::function<void()> method) {
+    pageContentsPreDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+};
 
-void GUIDrawer::SetDrawPageContentsMethod(std::function<void()> drawPage) {
-    drawPageContentsCallback_ = std::make_shared<Callback>(drawPage);
+void GUIDrawer::SetPageContentsDrawMethod(std::function<void()> method) {
+    pageContentsDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+};
+
+void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
+    pageContentsPostDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
 };
 
 void GUIDrawer::Execute() {
-    GUIDriver::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC Simulator").c_str());
-    GUIDriver::SetTargetFPS(FRAME_RATE);
+    window.Init(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC").c_str());
+    window.SetTargetFPS(FRAME_RATE);
+    window.HideCursor();
+    pageContentsPreDrawCallback_->Method();
 
-    while (!GUIDriver::WindowShouldClose())
+    while (!window.ShouldClose())
     {
-        GUIDriver::BeginDrawing();
+        window.BeginDrawing();
         {
-            GUIDriver::ClearBackground(GUIDriver::WHITE);
-            drawPageContentsCallback_->Method();
+            window.ClearBackground(PiRender::COLOR_WHITE);
+            pageContentsDrawCallback_->Method();
         }
-        GUIDriver::EndDrawing();
+        window.EndDrawing();
     }
+
+    pageContentsPostDrawCallback_->Method();
+    window.Close();
 }
 
-void GUIDrawer::DrawText(std::string text, int posX, int posY, int fontSize, OpenCC::GUIColor color) {
-    GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR2RAYLIB(color));
-}
 }

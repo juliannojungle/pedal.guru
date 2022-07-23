@@ -19,11 +19,30 @@
 
 #pragma once
 
-#ifdef RASPBERRY_PI_ZERO_W
-    #define USE_RAYLIB
+#include "../../Model/SettingsData.hpp"
+#include "../GUIDrawer.hpp"
 
-// extern "C" {
-//     #include "../../Dependency/pigpio/pigpio.h"
-// }
+namespace OpenCC {
 
-#endif
+class BasePage {
+    protected:
+        OpenCC::SettingsData& settings_;
+        OpenCC::GUIDrawer& drawer_;
+        PiRender::Window window_;
+    public:
+        virtual ~BasePage() = default; // make it polymorphic
+        BasePage(OpenCC::GUIDrawer& drawer, OpenCC::SettingsData& settings)
+            : drawer_(drawer), settings_(settings) {}
+        virtual void PreDrawPageContents() = 0;
+        virtual void DrawPageContents() = 0;
+        virtual void PostDrawPageContents() = 0;
+        virtual void Setup();
+};
+
+void BasePage::Setup() {
+    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
+    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
+    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
+}
+
+}
