@@ -21,12 +21,22 @@
 
 #include "BasePage.cpp"
 #include "../../API/OpenStreetMapAPI.cpp"
+#include "../../Model/MapGrid.hpp"
+
+/*MOCK*/
+#include <jsoncpp/json/json.h>
+#include <fstream>
+/*MOCK*/
 
 namespace OpenCC {
 
 class PageMap : public OpenCC::BasePage {
     private:
+        OpenCC::OpenStreetMapAPI mapApi_;
         PiRender::Texture mapTexture_;
+        OpenCC::MapGrid mapGrid_;
+        double previousLatitude, previousLongitude;
+        void LoadGridImage();
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
         void PreDrawPageContents() override;
@@ -35,18 +45,63 @@ class PageMap : public OpenCC::BasePage {
 };
 
 void PageMap::PreDrawPageContents() {
-    OpenStreetMapAPI mapApi;
-    auto relativePath = mapApi.LatLongZoomToHashPath(-22.4208101, -42.9791064, 16);
-    auto imagePath = relativePath + ".png";
-    PiRender::Image mapTile;
-    mapTile.LoadImage(imagePath);
-    mapTexture_.LoadTextureFromImage(mapTile);
-    mapTile.UnloadImage();
+}
+
+/*MOCK*/
+void MockGpsLocation(double &latitude, double &longitude) {
+    std::ifstream file("gps.json", std::ifstream::binary);
+
+    if (!file) return;
+
+    Json::Reader reader;
+    Json::Value gpsData;
+
+    if (reader.parse(file, gpsData)) {
+        latitude = std::stod(gpsData["latitude"].asString());
+        longitude = std::stod(gpsData["longitude"].asString());
+    }
+
+    file.close();
+}
+/*MOCK*/
+
+void PageMap::LoadGridImage() {
+    PiRender::Image gridImage(512, 512, PiRender::COLOR_BLUE);
+    int x, y;
+    PiRender::Rectangle tileRectangle(0, 0, 256, 256);
+    PiRender::Rectangle gridRectangle(0, 0, 256, 256);
+    for (int x = 0; x < 2; x++)
+    {
+        for (int y = 0; y < 2; y++)
+        {
+            auto imagePath = mapApi_.XyZoomToHashPath(
+                mapGrid_.tiles[x][y].x, mapGrid_.tiles[x][y].y, mapGrid_.tiles[x][y].zoom) + ".png";
+            PiRender::Image tileImage(imagePath);
+            gridRectangle.x = x * 256 + x;
+            gridRectangle.y = y * 256 + y;
+            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, PiRender::COLOR_WHITE);
+            tileImage.UnloadImage();
+        }
+    }
+
+    mapTexture_.UnloadTexture();
+    mapTexture_.LoadTextureFromImage(gridImage);
+    gridImage.UnloadImage();
 }
 
 void PageMap::DrawPageContents() {
-    window_.DrawTexture(mapTexture_, -16, -16, PiRender::COLOR_WHITE);
-    window_.DrawText(std::string("Testando mapas!"), 50, 125, 20, PiRender::COLOR_BLACK);
+    double latitude, longitude;
+    MockGpsLocation(latitude, longitude);
+
+    if ((previousLatitude != latitude) || (previousLongitude != longitude)) {
+        previousLatitude = latitude;
+        previousLongitude = longitude;
+        mapApi_.MapGridForCoordinate(mapGrid_, latitude, longitude, 16);
+        LoadGridImage();
+    }
+
+    window_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, PiRender::COLOR_WHITE);
+    window_.DrawCircle(120, 120, 4, PiRender::COLOR_ORANGE);
 }
 
 void PageMap::PostDrawPageContents() {

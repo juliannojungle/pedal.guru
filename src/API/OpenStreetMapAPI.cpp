@@ -25,6 +25,7 @@
 #include <thread>
 #include "../Model/MapTile.hpp"
 #include "../Helper/HTTPHelper.cpp"
+#include "../Model/MapGrid.hpp"
 
 /* define the constant since it's not standard c++ and some compilers does not include it */
 #ifndef M_PI
@@ -42,10 +43,13 @@ class OpenStreetMapAPI {
         std::string LatLongZoomToXyzPath(double latitude, double longitude, int zoom);
         int LongitudeToTileX(double longitude, int zoom);
         int LatitudeToTileY(double latitude, int zoom);
+        double TilexToLongitude(int x, int zoom);
+        double TileyToLatitude(int y, int zoom);
         std::string XyZoomToHashPath(int x, int y, int zoom);
         std::string DownloadTile(OpenCC::MapTile mapTile, std::string baseUrl);
         void ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
             double latitudeMin, double latitudeMax, double longitudeMin, double longitudeMax, int zoom);
+        void MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom);
 };
 
 std::string OpenStreetMapAPI::LatLongZoomToHashPath(double latitude, double longitude, int zoom) {
@@ -68,6 +72,15 @@ int OpenStreetMapAPI::LatitudeToTileY(double latitude, int zoom) {
     return (int)(floor(
         (1.0 - log(tan(latitude * M_PI/180.0) + 1 / cos(latitude * M_PI/180.0)) / M_PI) / 2.0 * pow(2, zoom)
     ));
+}
+
+double OpenStreetMapAPI::TilexToLongitude(int x, int zoom) {
+    return x / (double)(1 << zoom) * 360.0 - 180;
+}
+
+double OpenStreetMapAPI::TileyToLatitude(int y, int zoom) {
+    double n = M_PI - 2.0 * M_PI * y / (double)(1 << zoom);
+    return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
 /*
@@ -135,6 +148,45 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     return fileHashPath;
+}
+
+int ApplyOperator(int tilePos, int value, int gridPos) {
+    return (gridPos == 0) ? tilePos + value : tilePos - value;
+}
+
+void OpenStreetMapAPI::MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom) {
+    int tileX = LongitudeToTileX(longitude, zoom);
+    int tileY = LatitudeToTileY(latitude, zoom);
+
+    double tileLeftLongitude = TilexToLongitude(tileX, zoom) + 180;
+    double tileTopLatitude = TileyToLatitude(tileY, zoom) + 90;
+    double tileRightLongitude = TilexToLongitude(tileX + 1, zoom) + 180;
+    double tileBottomLatitude = TileyToLatitude(tileY + 1, zoom) + 90;
+
+    double tileCenterLongitude = (tileLeftLongitude + tileRightLongitude) / 2;
+    double tileCenterLatitude = (tileTopLatitude + tileBottomLatitude) / 2;
+
+    int gridLatitude = ((latitude + 90) > tileCenterLatitude);
+    int gridLongitude = ((longitude + 180) < tileCenterLongitude);
+
+    mapGrid.tiles[gridLatitude][gridLongitude].x = tileX;
+    mapGrid.tiles[gridLatitude][gridLongitude].y = tileY;
+    mapGrid.tiles[gridLatitude][gridLongitude].zoom = zoom;
+
+    mapGrid.tiles[gridLatitude][(int)(!gridLongitude)].x = ApplyOperator(tileX, 1, gridLongitude);
+    mapGrid.tiles[gridLatitude][(int)(!gridLongitude)].y = tileY;
+    mapGrid.tiles[gridLatitude][(int)(!gridLongitude)].zoom = zoom;
+
+    mapGrid.tiles[(int)(!gridLatitude)][gridLongitude].x = tileX;
+    mapGrid.tiles[(int)(!gridLatitude)][gridLongitude].y = ApplyOperator(tileY, 1, gridLatitude);
+    mapGrid.tiles[(int)(!gridLatitude)][gridLongitude].zoom = zoom;
+
+    mapGrid.tiles[(int)(!gridLatitude)][(int)(!gridLongitude)].x = ApplyOperator(tileX, 1, gridLongitude);
+    mapGrid.tiles[(int)(!gridLatitude)][(int)(!gridLongitude)].y = ApplyOperator(tileY, 1, gridLatitude);
+    mapGrid.tiles[(int)(!gridLatitude)][(int)(!gridLongitude)].zoom = zoom;
+
+    mapGrid.offsetX = 0;
+    mapGrid.offsetY = 0;
 }
 
 }

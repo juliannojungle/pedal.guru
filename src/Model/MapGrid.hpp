@@ -19,14 +19,14 @@
 
 #pragma once
 
+#include "MapTile.hpp"
+
 namespace OpenCC {
 
-class MapTile {
+class MapGrid {
     public:
-        int x;
-        int y;
-        int zoom;
-        MapTile() = default;
-        MapTile(int x, int y, int zoom) : x(x), y(y), zoom(zoom) {}
+        int offsetX;
+        int offsetY;
+        OpenCC::MapTile tiles[2][2];
 };
 }
