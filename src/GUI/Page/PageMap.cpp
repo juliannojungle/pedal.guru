@@ -67,18 +67,20 @@ void MockGpsLocation(double &latitude, double &longitude) {
 
 void PageMap::LoadGridImage() {
     PiRender::Image gridImage(512, 512, PiRender::COLOR_BLUE);
-    int x, y;
+    int latitude, longitude;
     PiRender::Rectangle tileRectangle(0, 0, 256, 256);
     PiRender::Rectangle gridRectangle(0, 0, 256, 256);
-    for (int x = 0; x < 2; x++)
+    for (int latitude = 0; latitude < 2; latitude++)
     {
-        for (int y = 0; y < 2; y++)
+        for (int longitude = 0; longitude < 2; longitude++)
         {
             auto imagePath = mapApi_.XyZoomToHashPath(
-                mapGrid_.tiles[x][y].x, mapGrid_.tiles[x][y].y, mapGrid_.tiles[x][y].zoom) + ".png";
+                mapGrid_.tiles[latitude][longitude].x,
+                mapGrid_.tiles[latitude][longitude].y,
+                mapGrid_.tiles[latitude][longitude].zoom) + ".png";
             PiRender::Image tileImage(imagePath);
-            gridRectangle.x = x * 256 + x;
-            gridRectangle.y = y * 256 + y;
+            gridRectangle.x = longitude * 256;
+            gridRectangle.y = latitude * 256;
             gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, PiRender::COLOR_WHITE);
             tileImage.UnloadImage();
         }
