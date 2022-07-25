@@ -46,7 +46,6 @@ class TaskManager {
         void StartDevice(OpenCC::iDevice& device);
         void CreatePages(OpenCC::GUIDrawer& drawer);
     public:
-        ~TaskManager() {}
         void Execute();
 };
 

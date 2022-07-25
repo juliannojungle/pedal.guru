@@ -26,6 +26,7 @@ class MapTile {
         int x;
         int y;
         int zoom;
+        MapTile() = default;
         MapTile(int x, int y, int zoom) : x(x), y(y), zoom(zoom) {}
 };
 }

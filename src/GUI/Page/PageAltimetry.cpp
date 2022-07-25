@@ -26,7 +26,6 @@ namespace OpenCC {
 class PageAltimetry : public OpenCC::BasePage {
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
-        ~PageAltimetry() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;

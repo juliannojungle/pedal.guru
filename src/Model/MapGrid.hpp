@@ -19,25 +19,14 @@
 
 #pragma once
 
-#include "BasePage.cpp"
+#include "MapTile.hpp"
 
 namespace OpenCC {
 
-class PageSummary : public OpenCC::BasePage {
+class MapGrid {
     public:
-        using BasePage::BasePage; // nothing to do here, using parent constructor
-        void PreDrawPageContents() override;
-        void DrawPageContents() override;
-        void PostDrawPageContents() override;
+        int offsetX;
+        int offsetY;
+        OpenCC::MapTile tiles[2][2];
 };
-
-void PageSummary::PreDrawPageContents() {
-}
-
-void PageSummary::DrawPageContents() {
-}
-
-void PageSummary::PostDrawPageContents() {
-}
-
 }

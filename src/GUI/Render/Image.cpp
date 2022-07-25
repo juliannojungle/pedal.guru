@@ -38,6 +38,8 @@ namespace PiRender {
     { image.data, image.width, image.height, image.mipmaps, image.format }
 
 class Image {
+    private:
+        void Copy(GUIDriver::Image &image);
     public:
         void *data;
         int width;
@@ -45,21 +47,37 @@ class Image {
         int mipmaps; // Mipmap levels, 1 by default
         int format;  // Data format (PixelFormat type)
         Image() {}
+        Image(int width, int height, PiRender::Color color);
         Image(void *data, int width, int height, int mipmaps, int format)
             : data(data), width(width), height(height), mipmaps(mipmaps), format(format) {}
+        Image(std::string path);
         void LoadImage(std::string path);
         void UnloadImage();
         void ImageCrop(PiRender::Rectangle crop);
+        void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint);
         void ImageDrawPixel(int posX, int posY, PiRender::Color color);
 };
 
+void Image::Copy(GUIDriver::Image &image) {
+    this->data = image.data;
+    this->width = image.width;
+    this->height = image.height;
+    this->mipmaps = image.mipmaps;
+    this->format = image.format;
+}
+
+Image::Image(int width, int height, PiRender::Color color) {
+    auto driverImage = GUIDriver::GenImageColor(width, height, COLOR_TO_RAYLIB(color));
+    Copy(driverImage);
+}
+
+Image::Image(std::string path) {
+    LoadImage(path);
+}
+
 void Image::LoadImage(std::string path) {
     auto driverImage = GUIDriver::LoadImage(path.c_str());
-    this->data = driverImage.data;
-    this->width = driverImage.width;
-    this->height = driverImage.height;
-    this->mipmaps = driverImage.mipmaps;
-    this->format = driverImage.format;
+    Copy(driverImage);
 }
 
 void Image::UnloadImage() {
@@ -70,21 +88,25 @@ void Image::UnloadImage() {
 void Image::ImageCrop(PiRender::Rectangle crop) {
     auto driverImage(IMAGE_TO_RAYLIB((*this)));
     GUIDriver::ImageCrop(&driverImage, RECTANGLE_TO_RAYLIB(crop));
-    this->data = driverImage.data;
-    this->width = driverImage.width;
-    this->height = driverImage.height;
-    this->mipmaps = driverImage.mipmaps;
-    this->format = driverImage.format;
+    Copy(driverImage);
+}
+
+void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) {
+    auto driverImageDestination(IMAGE_TO_RAYLIB((*this)));
+    auto driverImageOrigin(IMAGE_TO_RAYLIB(image));
+    GUIDriver::ImageDraw(
+        &driverImageDestination,
+        driverImageOrigin,
+        RECTANGLE_TO_RAYLIB(origin),
+        RECTANGLE_TO_RAYLIB(destination),
+        COLOR_TO_RAYLIB(tint));
+    Copy(driverImageDestination);
 }
 
 void Image::ImageDrawPixel(int posX, int posY, PiRender::Color color) {
     auto driverImage(IMAGE_TO_RAYLIB((*this)));
     GUIDriver::ImageDrawPixel(&driverImage, posX, posY, COLOR_TO_RAYLIB(color));
-    this->data = driverImage.data;
-    this->width = driverImage.width;
-    this->height = driverImage.height;
-    this->mipmaps = driverImage.mipmaps;
-    this->format = driverImage.format;
+    Copy(driverImage);
 }
 
 }

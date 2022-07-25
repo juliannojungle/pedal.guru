@@ -35,7 +35,6 @@ class PageMapSync : public OpenCC::BasePage {
         void ShowTile(std::string filePath);
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
-        ~PageMapSync() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;

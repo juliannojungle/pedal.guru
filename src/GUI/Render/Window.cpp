@@ -44,6 +44,7 @@ class Window {
         void BeginDrawing();
         void ClearBackground(PiRender::Color color);
         void EndDrawing();
+        void DrawCircle(int centerX, int centerY, float radius, PiRender::Color color);
         void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color);
         void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color);
 };
@@ -78,6 +79,10 @@ void Window::ClearBackground(PiRender::Color color) {
 
 void Window::EndDrawing() {
     GUIDriver::EndDrawing();
+}
+
+void Window::DrawCircle(int centerX, int centerY, float radius, PiRender::Color color) {
+    GUIDriver::DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
 }
 
 void Window::DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color) {

@@ -26,7 +26,6 @@ namespace OpenCC {
 class PageRoute : public OpenCC::BasePage {
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
-        ~PageRoute() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;

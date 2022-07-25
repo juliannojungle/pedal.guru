@@ -26,7 +26,6 @@ namespace OpenCC {
 class PageDistance : public OpenCC::BasePage {
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
-        ~PageDistance() {}
         void PreDrawPageContents() override;
         void DrawPageContents() override;
         void PostDrawPageContents() override;

@@ -25,11 +25,16 @@
 #include <thread>
 #include "../Model/MapTile.hpp"
 #include "../Helper/HTTPHelper.cpp"
+#include "../Model/MapGrid.hpp"
 
 /* define the constant since it's not standard c++ and some compilers does not include it */
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
 #endif
+
+#define TILE_WIDTH 256
+#define TILE_HEIGHT 256
+#define ZERO_CENTER_SCREEN (SCREEN_HEIGHT / 2)
 
 namespace OpenCC {
 
@@ -42,10 +47,13 @@ class OpenStreetMapAPI {
         std::string LatLongZoomToXyzPath(double latitude, double longitude, int zoom);
         int LongitudeToTileX(double longitude, int zoom);
         int LatitudeToTileY(double latitude, int zoom);
+        double TilexToLongitude(int x, int zoom);
+        double TileyToLatitude(int y, int zoom);
         std::string XyZoomToHashPath(int x, int y, int zoom);
         std::string DownloadTile(OpenCC::MapTile mapTile, std::string baseUrl);
         void ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
             double latitudeMin, double latitudeMax, double longitudeMin, double longitudeMax, int zoom);
+        void MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom);
 };
 
 std::string OpenStreetMapAPI::LatLongZoomToHashPath(double latitude, double longitude, int zoom) {
@@ -68,6 +76,15 @@ int OpenStreetMapAPI::LatitudeToTileY(double latitude, int zoom) {
     return (int)(floor(
         (1.0 - log(tan(latitude * M_PI/180.0) + 1 / cos(latitude * M_PI/180.0)) / M_PI) / 2.0 * pow(2, zoom)
     ));
+}
+
+double OpenStreetMapAPI::TilexToLongitude(int x, int zoom) {
+    return x / pow(2, zoom) * 360.0 - 180;
+}
+
+double OpenStreetMapAPI::TileyToLatitude(int y, int zoom) {
+    double n = M_PI - 2.0 * M_PI * y / pow(2, zoom);
+    return 180.0 / M_PI * atan(0.5 * (exp(n) - exp(-n)));
 }
 
 /*
@@ -135,6 +152,59 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
     return fileHashPath;
+}
+
+int ApplyOperator(int tilePos, int value, int gridPos) {
+    return (gridPos == 0) ? tilePos + value : tilePos - value;
+}
+
+void OpenStreetMapAPI::MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom) {
+    int tileX = LongitudeToTileX(longitude, zoom);
+    int tileY = LatitudeToTileY(latitude, zoom);
+
+    // Normalize, so we only deal with positive values.
+    double absLatitude = latitude + 90;
+    double absLongitude = longitude + 180;
+    double tileLeftLongitude = TilexToLongitude(tileX, zoom) + 180;
+    double tileTopLatitude = TileyToLatitude(tileY, zoom) + 90;
+    double tileRightLongitude = TilexToLongitude(tileX + 1, zoom) + 180;
+    double tileBottomLatitude = TileyToLatitude(tileY + 1, zoom) + 90;
+    double tileCenterLongitude = (tileLeftLongitude + tileRightLongitude) / 2;
+    double tileCenterLatitude = (tileTopLatitude + tileBottomLatitude) / 2;
+
+    int indexLatitude = (absLatitude > tileCenterLatitude);
+    int indexLongitude = (absLongitude < tileCenterLongitude);
+
+    mapGrid.tiles[indexLatitude][indexLongitude].x = tileX;
+    mapGrid.tiles[indexLatitude][indexLongitude].y = tileY;
+    mapGrid.tiles[indexLatitude][indexLongitude].zoom = zoom;
+
+    mapGrid.tiles[indexLatitude][(int)(!indexLongitude)].x = ApplyOperator(tileX, 1, indexLongitude);
+    mapGrid.tiles[indexLatitude][(int)(!indexLongitude)].y = tileY;
+    mapGrid.tiles[indexLatitude][(int)(!indexLongitude)].zoom = zoom;
+
+    mapGrid.tiles[(int)(!indexLatitude)][indexLongitude].x = tileX;
+    mapGrid.tiles[(int)(!indexLatitude)][indexLongitude].y = ApplyOperator(tileY, 1, indexLatitude);
+    mapGrid.tiles[(int)(!indexLatitude)][indexLongitude].zoom = zoom;
+
+    mapGrid.tiles[(int)(!indexLatitude)][(int)(!indexLongitude)].x = ApplyOperator(tileX, 1, indexLongitude);
+    mapGrid.tiles[(int)(!indexLatitude)][(int)(!indexLongitude)].y = ApplyOperator(tileY, 1, indexLatitude);
+    mapGrid.tiles[(int)(!indexLatitude)][(int)(!indexLongitude)].zoom = zoom;
+
+    // Find pointX of the pixel in the tile for the given longitude.
+    auto maxLongitude = tileRightLongitude - tileLeftLongitude;
+    auto pointLongitude = absLongitude - tileLeftLongitude;
+    auto percentualX = (pointLongitude * 100) / maxLongitude;
+    auto pointX = (percentualX * TILE_WIDTH) / 100;
+
+    // Find pointY of the pixel in the tile for the given latitude.
+    auto maxLatitude = tileTopLatitude - tileBottomLatitude;
+    auto pointLatitude = absLatitude - tileBottomLatitude;
+    auto percentualY = 100 - ((pointLatitude * 100) / maxLatitude); // inverted: latitude grows up, pixel grows down
+    auto pointY = (percentualY * TILE_HEIGHT) / 100;
+
+    mapGrid.offsetX = ZERO_CENTER_SCREEN - (indexLongitude * TILE_WIDTH) - pointX;
+    mapGrid.offsetY = ZERO_CENTER_SCREEN - (indexLatitude * TILE_HEIGHT) - pointY;
 }
 
 }
