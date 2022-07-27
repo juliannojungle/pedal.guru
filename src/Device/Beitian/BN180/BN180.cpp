@@ -21,21 +21,38 @@
 
 #include <list>
 #include <memory>
-#include "../Sensor/iSensor.hpp"
+#include "../../../Sensor/GPS.cpp"
+#include "../../iDevice.hpp"
 
 namespace OpenCC {
 
-class iDevice {
-    protected:
-        bool connected_;
-        std::list<std::unique_ptr<iSensor>> sensors_;
-
+class BN180 : public iDevice {
     public:
-        virtual ~iDevice() = default; // make it polymorphic
-        virtual void Connect() = 0;
-        virtual void Disconnect() = 0;
-        virtual bool Connected() {
-            return this->connected_;
-        }
+        BN180();
+        void Connect() override;
+        void Disconnect() override;
 };
+
+BN180::BN180() {
+    this->sensors_.push_back(std::make_unique<OpenCC::GPS>());
+}
+
+void BN180::Connect() {
+    for(const auto &sensor : sensors_) {
+        if (!sensor.get()->Enabled())
+            sensor.get()->Enable();
+    }
+
+    this->connected_ = true;
+}
+
+void BN180::Disconnect() {
+    for(const auto &sensor : sensors_) {
+        if (sensor.get()->Enabled())
+            sensor.get()->Disable();
+    }
+
+    this->connected_ = false;
+}
+
 }

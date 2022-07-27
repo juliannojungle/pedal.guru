@@ -40,7 +40,7 @@ class HIDHandler {
         std::list<std::shared_ptr<Callback>> OnExitPressed2Seconds_;
         std::list<std::shared_ptr<Callback>> OnExitPressed5Seconds_;
 
-        //TODO: Functions below should be callbacks from GPIO
+        //TODO: Functions below should be interruption callbacks from GPIO
         void EnterDown() { ExecuteHandlers(OnEnterDown_); };
         void EnterUp() { ExecuteHandlers(OnEnterUp_); };
         void EnterPressed() { ExecuteHandlers(OnEnterPressed_); };
@@ -68,34 +68,34 @@ std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator HIDHandler::Registe
     HIDEventType eventType, std::function<void()> handler) {
     switch (eventType) {
         case ENTER_DOWN:
-            OnEnterDown_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnEnterDown_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnEnterDown_.end();
         case ENTER_UP:
-            OnEnterUp_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnEnterUp_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnEnterUp_.end();
         case ENTER_PRESSED:
-            OnEnterPressed_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnEnterPressed_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnEnterPressed_.end();
         case ENTER_PRESSED_2_SECONDS:
-            OnEnterPressed2Seconds_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnEnterPressed2Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnEnterPressed2Seconds_.end();
         case ENTER_PRESSED_5_SECONDS:
-            OnEnterPressed5Seconds_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnEnterPressed5Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnEnterPressed5Seconds_.end();
         case EXIT_DOWN:
-            OnExitDown_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnExitDown_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnExitDown_.end();
         case EXIT_UP:
-            OnExitUp_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnExitUp_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnExitUp_.end();
         case EXIT_PRESSED:
-            OnExitPressed_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnExitPressed_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnExitPressed_.end();
         case EXIT_PRESSED_2_SECONDS:
-            OnExitPressed2Seconds_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnExitPressed2Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnExitPressed2Seconds_.end();
         case EXIT_PRESSED_5_SECONDS:
-            OnExitPressed5Seconds_.push_back(std::make_unique<OpenCC::Callback>(handler));
+            OnExitPressed5Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
             return OnExitPressed5Seconds_.end();
     }
 

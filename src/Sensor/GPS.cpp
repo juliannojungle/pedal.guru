@@ -19,23 +19,37 @@
 
 #pragma once
 
-#include <list>
-#include <memory>
-#include "../Sensor/iSensor.hpp"
+#include "iSensor.hpp"
+#include <future>
+#include <chrono>
+#include <thread>
+#include <iostream>
 
 namespace OpenCC {
 
-class iDevice {
-    protected:
-        bool connected_;
-        std::list<std::unique_ptr<iSensor>> sensors_;
-
+class GPS : public iSensor {
+    private:
+        void GetData();
     public:
-        virtual ~iDevice() = default; // make it polymorphic
-        virtual void Connect() = 0;
-        virtual void Disconnect() = 0;
-        virtual bool Connected() {
-            return this->connected_;
-        }
+        void Enable() override;
+        void Disable() override;
 };
+
+void GPS::Enable() {
+    std::thread task([this](){ this->GetData(); });
+    task.detach();
+    this->enabled_ = true;
+}
+
+void GPS::Disable() {
+    this->enabled_ = false;
+}
+
+void GPS::GetData() {
+    while (this->enabled_) {
+        //Read actual GPS data from GPIO.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        std::cout << "GPS data aquired inside thread!\n";
+    }
+}
 }

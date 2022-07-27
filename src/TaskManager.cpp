@@ -21,7 +21,7 @@
 
 #include <memory>
 #include <list>
-#include "Device/iDevice.hpp"
+#include <thread>
 #include "GUI/GUIDrawer.cpp"
 #include "GUI/GUINavigator.cpp"
 #include "GUI/Page/BasePage.cpp"
@@ -34,6 +34,8 @@
 #include "GUI/Page/PageSummary.cpp"
 #include "HIDHandler.cpp"
 #include "Model/SettingsData.hpp"
+#include "Device/iDevice.hpp"
+#include "Device/Beitian/BN180/BN180.cpp"
 
 namespace OpenCC {
 
@@ -43,14 +45,18 @@ class TaskManager {
         std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
         std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
         void ReadSettings();
-        void StartDevice(OpenCC::iDevice& device);
+        void CreateDevices();
+        void StartDevices();
         void CreatePages(OpenCC::GUIDrawer& drawer);
     public:
+        ~TaskManager();
         void Execute();
 };
 
 void TaskManager::Execute() {
     ReadSettings();
+    CreateDevices();
+    StartDevices();
     OpenCC::GUIDrawer drawer;
     CreatePages(drawer);
     OpenCC::HIDHandler handler;
@@ -101,7 +107,23 @@ void TaskManager::ReadSettings() {
     this->settings_.mapSyncingBaseUrl = "https://tile.openstreetmap.org";
 }
 
-void TaskManager::StartDevice(OpenCC::iDevice& device) {
-    //TODO
+void TaskManager::CreateDevices() {
+    //TODO: condition to settings
+    devices_.push_back(std::make_unique<OpenCC::BN180>());
 }
+
+void TaskManager::StartDevices() {
+    for(const auto &device : devices_) {
+        if (!device.get()->Connected())
+            device.get()->Connect();
+    }
+}
+
+TaskManager::~TaskManager() {
+    for(const auto &device : devices_) {
+        if (device.get()->Connected())
+            device.get()->Disconnect();
+    }
+}
+
 }
