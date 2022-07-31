@@ -22,11 +22,11 @@
 #include "BasePage.cpp"
 #include "../../API/OpenStreetMapAPI.cpp"
 #include "../../Model/MapGrid.hpp"
-
-/*MOCK*/
 #include <jsoncpp/json/json.h>
+#include <iomanip> // setprecision
 #include <fstream>
-/*MOCK*/
+#include <chrono>
+#include <thread>
 
 namespace OpenCC {
 
@@ -36,6 +36,7 @@ class PageMap : public OpenCC::BasePage {
         PiRender::Texture mapTexture_;
         OpenCC::MapGrid mapGrid_;
         double previousLatitude, previousLongitude;
+        void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
         void LoadGridImage();
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
@@ -47,29 +48,29 @@ class PageMap : public OpenCC::BasePage {
 void PageMap::PreDrawPageContents() {
 }
 
-/*MOCK*/
-void MockGpsLocation(double &latitude, double &longitude) {
-    std::ifstream file("gps.json", std::ifstream::binary);
+void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
+    std::ifstream gpsFile("gps.json", std::ifstream::binary);
 
-    if (!file) return;
+    if (!gpsFile) return;
 
     Json::Reader reader;
     Json::Value gpsData;
 
-    if (reader.parse(file, gpsData)) {
-        latitude = std::stod(gpsData["latitude"].asString());
-        longitude = std::stod(gpsData["longitude"].asString());
+    if (reader.parse(gpsFile, gpsData)) {
+        latitude = gpsData["latitude"].asDouble();
+        longitude = gpsData["longitude"].asDouble();
+        fixed = gpsData["fixed"].asBool();
     }
 
-    file.close();
+    gpsFile.close();
 }
-/*MOCK*/
 
 void PageMap::LoadGridImage() {
     PiRender::Image gridImage(512, 512, PiRender::COLOR_BLUE);
     int latitude, longitude;
     PiRender::Rectangle tileRectangle(0, 0, 256, 256);
     PiRender::Rectangle gridRectangle(0, 0, 256, 256);
+
     for (int latitude = 0; latitude < 2; latitude++)
     {
         for (int longitude = 0; longitude < 2; longitude++)
@@ -93,7 +94,8 @@ void PageMap::LoadGridImage() {
 
 void PageMap::DrawPageContents() {
     double latitude, longitude;
-    MockGpsLocation(latitude, longitude);
+    bool fixed;
+    InputGpsLocation(latitude, longitude, fixed);
 
     if ((previousLatitude != latitude) || (previousLongitude != longitude)) {
         previousLatitude = latitude;
@@ -103,7 +105,10 @@ void PageMap::DrawPageContents() {
     }
 
     window_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, PiRender::COLOR_WHITE);
-    window_.DrawCircle(120, 120, 4, PiRender::COLOR_ORANGE);
+    window_.DrawCircle(120, 120, 4, (fixed ? PiRender::COLOR_GREEN : PiRender::COLOR_ORANGE));
+
+    // We only get gps readings once per second.
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 }
 
 void PageMap::PostDrawPageContents() {

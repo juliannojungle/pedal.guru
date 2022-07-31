@@ -26,7 +26,7 @@ namespace OpenCC {
 
 class FileHelper {
     public:
-        void CreatePathDirectories(const char *path);
+        static void CreatePathDirectories(const char *path);
 };
 
 void FileHelper::CreatePathDirectories(const char *path) {

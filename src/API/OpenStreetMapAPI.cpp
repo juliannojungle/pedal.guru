@@ -40,7 +40,6 @@ namespace OpenCC {
 
 class OpenStreetMapAPI {
     private:
-        HTTPHelper httpHelper_;
         void Swap(int &a, int &b);
     public:
         std::string LatLongZoomToHashPath(double latitude, double longitude, int zoom);
@@ -143,7 +142,7 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
 
-    httpHelper_.DownloadFile(std::string(tileUrl), fileHashPath);
+    HTTPHelper::DownloadFile(std::string(tileUrl), fileHashPath);
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
