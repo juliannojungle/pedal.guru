@@ -26,18 +26,18 @@
 
 namespace OpenCC {
 
-class BN180 : public iDevice {
+class LocationModule : public iDevice {
     public:
-        BN180();
+        LocationModule();
         void Connect() override;
         void Disconnect() override;
 };
 
-BN180::BN180() {
+LocationModule::LocationModule() {
     this->sensors_.push_back(std::make_unique<OpenCC::GPS>());
 }
 
-void BN180::Connect() {
+void LocationModule::Connect() {
     for(const auto &sensor : sensors_) {
         if (!sensor.get()->Enabled())
             sensor.get()->Enable();
@@ -46,7 +46,7 @@ void BN180::Connect() {
     this->connected_ = true;
 }
 
-void BN180::Disconnect() {
+void LocationModule::Disconnect() {
     for(const auto &sensor : sensors_) {
         if (sensor.get()->Enabled())
             sensor.get()->Disable();

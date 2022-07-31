@@ -35,7 +35,7 @@
 #include "HIDHandler.cpp"
 #include "Model/SettingsData.hpp"
 #include "Device/iDevice.hpp"
-#include "Device/Beitian/BN180/BN180.cpp"
+#include "Device/Generic/LocationModule/LocationModule.cpp"
 
 namespace OpenCC {
 
@@ -109,7 +109,7 @@ void TaskManager::ReadSettings() {
 
 void TaskManager::CreateDevices() {
     //TODO: condition to settings
-    devices_.push_back(std::make_unique<OpenCC::BN180>());
+    devices_.push_back(std::make_unique<OpenCC::LocationModule>());
 }
 
 void TaskManager::StartDevices() {
