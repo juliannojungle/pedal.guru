@@ -31,7 +31,8 @@ namespace OpenCC {
 
 class GPS : public iSensor {
     private:
-        const std::string GPS_FIX = "$GNGGA";
+        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA,
+        int startingPos = 3;
         OpenCC::TextHelper textHelper_;
         void LastGpsLocation(double &latitude, double &longitude);
         void OutputGpsLocation(double &latitude, double &longitude, bool fixed);
@@ -100,7 +101,7 @@ void GPS::GetData() {
     while (this->enabled_ && uart.is_open()) {
         std::getline(uart, serial_rx);
 
-        if (serial_rx.rfind(GPS_FIX, 0) == 0) {
+        if (serial_rx.rfind(GPS_FIX, startingPos) == startingPos) {
             gpsFixData.set(serial_rx);
 
             if (gpsFixData.fixQuality > 0) {
