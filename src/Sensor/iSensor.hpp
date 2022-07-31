@@ -26,7 +26,7 @@ class iSensor {
         bool enabled_;
 
     public:
-        virtual ~iSensor() {}
+        virtual ~iSensor() = default; // make it polymorphic
 
         bool Enabled() const {
             return this->enabled_;

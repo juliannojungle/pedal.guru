@@ -40,12 +40,16 @@ class GUINavigator {
     public:
         GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::BasePage>>& pages)
             : handler_(handler), pages_(pages) {
-            pageIndex_ = pages_.begin();
             RegisterEvents();
+
+            if (pages_.size() == 0) return;
+
+            pageIndex_ = pages_.begin();
             (*pageIndex_)->Setup();
         }
         ~GUINavigator() {
-            UnregisterEvents();
+            //TODO: This is throwing an invalid pointer exception. Check the iterators reference.
+            // UnregisterEvents();
         }
 };
 
@@ -60,6 +64,8 @@ void GUINavigator::UnregisterEvents() {
 }
 
 void GUINavigator::GoToNextPage() {
+    if (pages_.size() == 0) return;
+
     if (pageIndex_ == pages_.end()) {
         pageIndex_ = pages_.begin();
     } else {
@@ -70,6 +76,8 @@ void GUINavigator::GoToNextPage() {
 }
 
 void GUINavigator::GoToPreviousPage() {
+    if (pages_.size() == 0) return;
+
     if (pageIndex_ == pages_.begin()) {
         pageIndex_ = pages_.end();
     } else {
@@ -78,4 +86,5 @@ void GUINavigator::GoToPreviousPage() {
 
     (*pageIndex_)->Setup();
 }
+
 }

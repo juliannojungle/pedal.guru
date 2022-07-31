@@ -30,10 +30,8 @@ extern "C" {
 namespace OpenCC {
 
 class HTTPHelper {
-    private:
-        FileHelper fileHelper_;
     public:
-        void DownloadFile(std::string url, std::string filePath);
+        static void DownloadFile(std::string url, std::string filePath);
 };
 
 size_t WriteData(void *elements, size_t size, size_t count, FILE *file) {
@@ -42,7 +40,7 @@ size_t WriteData(void *elements, size_t size, size_t count, FILE *file) {
 }
 
 void HTTPHelper::DownloadFile(std::string url, std::string filePath) {
-    fileHelper_.CreatePathDirectories(filePath.c_str());
+    FileHelper::CreatePathDirectories(filePath.c_str());
 
     CURL *curl = curl_easy_init();
     FILE *file;

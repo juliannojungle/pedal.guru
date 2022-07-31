@@ -39,19 +39,24 @@ void GUIDrawer::Execute() {
     window.Init(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC").c_str());
     window.SetTargetFPS(FRAME_RATE);
     window.HideCursor();
-    pageContentsPreDrawCallback_->Method();
+
+    if (pageContentsPreDrawCallback_ != nullptr)
+        pageContentsPreDrawCallback_->Method();
 
     while (!window.ShouldClose())
     {
         window.BeginDrawing();
         {
             window.ClearBackground(PiRender::COLOR_WHITE);
-            pageContentsDrawCallback_->Method();
+
+            if (pageContentsDrawCallback_ != nullptr)
+                pageContentsDrawCallback_->Method();
         }
         window.EndDrawing();
     }
 
-    pageContentsPostDrawCallback_->Method();
+    if (pageContentsPostDrawCallback_ != nullptr)
+        pageContentsPostDrawCallback_->Method();
     window.Close();
 }
 
