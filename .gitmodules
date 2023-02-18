@@ -1,11 +1,5 @@
-# [submodule "raylib"]
-#     path = src/Dependency/raylib
-#     url = https://github.com/raysan5/raylib.git
-#     shallow = true
-#     branch = master
-
-# [submodule "pigpio"]
-#     path = src/Dependency/pigpio
-#     url = https://github.com/joan2937/pigpio.git
-#     shallow = true
-#     branch = master
+[submodule "pico-sdk"]
+    path = src/Dependency/pico-sdk
+    url = https://github.com/raspberrypi/pico-sdk.git
+    shallow = true
+    branch = master
