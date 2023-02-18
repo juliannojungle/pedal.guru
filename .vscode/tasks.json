@@ -13,7 +13,7 @@
             "args": [
                 // "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
                 "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
-                "-DTARGET_RASPBERRY_PI_ZERO_W",
+                "-DTARGET_RASPBERRY_PI_PICO",
                 "-std=c++14",
                 // "--specs=nosys.specs",
                 "-L", "src/Dependency/raylib/src",
@@ -23,40 +23,6 @@
                 "-o", "build/opencc",
                 // "-shared-libgcc","-mfloat-abi=hard","-mfpu=vfp","-mtls-dialect=gnu","-marm", "-march=armv6+fp",
                 "-lcurl", "-ljsoncpp", "-lraylib","-lbrcmEGL","-lbrcmGLESv2","-lpthread","-lbcm_host"
-            ],
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "showReuseMessage": false,
-                "panel": "shared",
-                "clear": true
-            }
-        },
-        {
-            "label": "SSH build (native Raspberry Pi: g++)",
-            "detail": "REMOTE source (on Raspberry Pi via SSHFS-Win): intellisense disabled",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "type": "shell",
-            "command": "ssh",
-            "args": [
-                "pi@raspberrypi.local",
-                "\"",
-                    "mkdir -p /home/pi/OpenCC/build",
-                    "&&", "g++",
-                    "-std=c++14",
-                    "-DTARGET_RASPBERRY_PI_ZERO_W",
-                    "-L", "/opt/vc/lib",
-                    "-L", "~/OpenCC/src/Dependency/raylib/src",
-                    "-I", "~/OpenCC/src/Dependency/raylib/src",
-                    "-g", "~/OpenCC/src/OpenCC.cpp",
-                    "-o", "~/OpenCC/build/opencc",
-                    "-lcurl", "-ljsoncpp", "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
-                    //             // "&&","pkill OpenCC",
-                    //             // "&&","/home/pi/OpenCC/build/opencc",
-                "\""
             ],
             "problemMatcher": [],
             "presentation": {

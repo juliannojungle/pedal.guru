@@ -1,28 +1,28 @@
 {
     "version": "0.2.0",
     "configurations": [
-        {
-            "name": "Degug over SSH: pi@raspberrypi.local",
-            "type": "gdb",
-            "request": "launch",
-            "target": "/home/pi/OpenCC/build/OpenCC",
-            "cwd": "${workspaceRoot}",
-            "ssh": {
-                "host": "raspberrypi.local",
-                "cwd": "/home/pi/OpenCC/",
-                "user": "pi",
-                "keyfile": "C:/Users/julia/.ssh/id_rsa",
-                "port": 22,
-                "useAgent": false,
-                "forwardX11": true
-            },
-            "presentation": {
-                "hidden": false,
-                "group": "",
-                "order": 1
-            },
-            "preLaunchTask": "SSH build: pi@raspberrypi",
-            "internalConsoleOptions": "openOnSessionStart"
-        }
+        // {
+        //     "name": "Degug over SSH: pi@raspberrypi.local",
+        //     "type": "gdb",
+        //     "request": "launch",
+        //     "target": "/home/pi/OpenCC/build/OpenCC",
+        //     "cwd": "${workspaceRoot}",
+        //     "ssh": {
+        //         "host": "raspberrypi.local",
+        //         "cwd": "/home/pi/OpenCC/",
+        //         "user": "pi",
+        //         "keyfile": "C:/Users/julia/.ssh/id_rsa",
+        //         "port": 22,
+        //         "useAgent": false,
+        //         "forwardX11": true
+        //     },
+        //     "presentation": {
+        //         "hidden": false,
+        //         "group": "",
+        //         "order": 1
+        //     },
+        //     "preLaunchTask": "SSH build: pi@raspberrypi",
+        //     "internalConsoleOptions": "openOnSessionStart"
+        // }
     ]
 }

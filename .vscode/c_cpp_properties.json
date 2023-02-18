@@ -5,7 +5,7 @@
             "includePath": [
                 "${workspaceFolder}/**", //Including every directory since this doesn't appear to work.
                 "${workspaceFolder}/src/API/**",
-                "${workspaceFolder}/src/Dependency/raylib/src",
+                "${workspaceFolder}/src/Dependency/pico-sdk/src",
                 "${workspaceFolder}/src/Device/**",
                 "${workspaceFolder}/src/GUI/**",
                 "${workspaceFolder}/src/GUI/Interface/**",
@@ -14,7 +14,7 @@
                 "${workspaceFolder}/src/Model/**",
                 "${workspaceFolder}/src/Sensor/**",
                 "${workspaceFolder}/src/Target/**",
-                "${workspaceFolder}/src/Target/RaspberryPiZeroW/**",
+                "${workspaceFolder}/src/Target/RaspberryPiPico/**",
                 "${workspaceFolder}/src/Target/Simulator/**",
                 "${workspaceFolder}/src/Target"
             ],
@@ -22,7 +22,7 @@
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE",
-                "TARGET_RASPBERRY_PI_ZERO_W"
+                "TARGET_RASPBERRY_PI_PICO"
             ],
             "compilerPath": "C:\\dev\\gcc-arm\\bin\\arm-none-eabi-g++",
             "cppStandard": "c++14",

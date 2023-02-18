@@ -19,9 +19,9 @@
 
 #pragma once
 
-#if TARGET_RASPBERRY_PI_ZERO_W
-    #define RASPBERRY_PI_ZERO_W
-    #include "Target/RaspberryPiZeroW/HalRaspberryPiZeroW.hpp"
+#if TARGET_RASPBERRY_PI_PICO
+    #define RASPBERRY_PI_PICO
+    #include "Target/RaspberryPiPico/HalRaspberryPiPico.hpp"
 #else
     #error Target must be informed!
 #endif
