@@ -18,11 +18,20 @@
 */
 
 #include "OpenCC.hpp"
-#include "TaskManager.cpp"
+// #include "TaskManager.cpp"
+
+#include <stdio.h>
+#include "pico/stdlib.h"
 
 int main(void) {
-    OpenCC::TaskManager taskManager;
-    taskManager.Execute();
+    // OpenCC::TaskManager taskManager;
+    // taskManager.Execute();
+
+    stdio_init_all();
+    while (true) {
+        printf("Hello, world!\n");
+        sleep_ms(1000);
+    }
 
     return 0;
 }

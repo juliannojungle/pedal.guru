@@ -19,8 +19,8 @@
 
 #pragma once
 
-#ifdef RASPBERRY_PI_ZERO_W
-    #define USE_RAYLIB
+#ifdef RP2040
+    // #define USE_RAYLIB
 
 // extern "C" {
 //     #include "../../Dependency/pigpio/pigpio.h"

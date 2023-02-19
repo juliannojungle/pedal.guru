@@ -1,36 +1,29 @@
 {
     "version": "2.0.0",
     "tasks": [
-        {
-            "label": "WSL build (cross-compile: g++-arm-linux-gnueabihf)",
-            "detail": "LOCAL source (on Windows PC built with WSL): intellisense enabled",
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "type": "shell",
-            "command": "wsl",
-            "args": [
-                // "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
-                "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
-                "-DTARGET_RASPBERRY_PI_PICO",
-                "-std=c++14",
-                // "--specs=nosys.specs",
-                "-L", "src/Dependency/raylib/src",
-                "-L", "src/Dependency/opt/vc/lib",
-                "-I", "src/Dependency/raylib/src",
-                "-g", "src/OpenCC.cpp",
-                "-o", "build/opencc",
-                // "-shared-libgcc","-mfloat-abi=hard","-mfpu=vfp","-mtls-dialect=gnu","-marm", "-march=armv6+fp",
-                "-lcurl", "-ljsoncpp", "-lraylib","-lbrcmEGL","-lbrcmGLESv2","-lpthread","-lbcm_host"
-            ],
-            "problemMatcher": [],
-            "presentation": {
-                "reveal": "always",
-                "showReuseMessage": false,
-                "panel": "shared",
-                "clear": true
-            }
-        }
+        // {
+        //     "label": "WSL2 build (cross-compile: arm-none-eabi-g++)",
+        //     "detail": "Sources inside WSL2 (on Windows PC using 'WSL' VsCode Extension): intellisense enabled",
+        //     "group": {
+        //         "kind": "build",
+        //         "isDefault": false
+        //     },
+        //     "type": "shell",
+        //     "command": "arm-none-eabi-g++",
+        //     "args": [
+        //         "-DTARGET_RASPBERRY_PI_PICO",
+        //         "-std=c++14",
+        //         "-g", "src/OpenCC.cpp",
+        //         "-o", "build/opencc",
+        //         "-lcurl", "-ljsoncpp", "-lpthread","-lbcm_host"
+        //     ],
+        //     "problemMatcher": [],
+        //     "presentation": {
+        //         "reveal": "always",
+        //         "showReuseMessage": false,
+        //         "panel": "shared",
+        //         "clear": true
+        //     }
+        // }
     ]
 }
