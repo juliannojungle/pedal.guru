@@ -19,7 +19,7 @@
 
 #pragma once
 
-#if TARGET_RP2040
+#ifdef TARGET_RP2040
     #define RP2040
     #include "Target/RP2040/HalRP2040.hpp"
 #else

@@ -3,4 +3,4 @@
     url = https://github.com/raspberrypi/pico-sdk.git
     shallow = true
     branch = master
-    fetchRecurseSubmodules = true
+    ignore = all

@@ -3,7 +3,7 @@
         {
             "name": "rp2040",
             "includePath": [
-                "${workspaceFolder}/**", //Including every directory since this doesn't appear to work.
+                "${workspaceFolder}/**",
                 "${workspaceFolder}/src/API/**",
                 "${workspaceFolder}/src/Dependency/pico-sdk/src",
                 "${workspaceFolder}/src/Device/**",
@@ -27,8 +27,8 @@
             "compilerPath": "/usr/bin/arm-none-eabi-g++",
             "cppStandard": "c++14",
             "intelliSenseMode": "linux-gcc-arm",
-            "cStandard": "c11",
-            "configurationProvider": "ms-vscode.cmake-tools"
+            "cStandard": "c11"
+            // "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4
