@@ -22,7 +22,9 @@
 #include "BasePage.cpp"
 #include "../../API/OpenStreetMapAPI.cpp"
 #include "../../Model/MapGrid.hpp"
-#include <jsoncpp/json/json.h>
+#include "../../DataManager.cpp"
+#include "../../Model/GPSFixData.hpp"
+
 #include <iomanip> // setprecision
 #include <fstream>
 #include <chrono>
@@ -48,21 +50,29 @@ class PageMap : public OpenCC::BasePage {
 void PageMap::PreDrawPageContents() {
 }
 
+// void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
+//     std::ifstream gpsFile("gps.json", std::ifstream::binary);
+
+//     if (!gpsFile) return;
+
+//     Json::Reader reader;
+//     Json::Value gpsData;
+
+//     if (reader.parse(gpsFile, gpsData)) {
+//         latitude = gpsData["latitude"].asDouble();
+//         longitude = gpsData["longitude"].asDouble();
+//         fixed = gpsData["fixed"].asBool();
+//     }
+
+//     gpsFile.close();
+// }
+
 void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
-    std::ifstream gpsFile("gps.json", std::ifstream::binary);
-
-    if (!gpsFile) return;
-
-    Json::Reader reader;
-    Json::Value gpsData;
-
-    if (reader.parse(gpsFile, gpsData)) {
-        latitude = gpsData["latitude"].asDouble();
-        longitude = gpsData["longitude"].asDouble();
-        fixed = gpsData["fixed"].asBool();
-    }
-
-    gpsFile.close();
+    OpenCC::GPSFixData gpsFixData;
+    OpenCC::DataManager::GetInstance()->Pop(gpsFixData);
+    latitude = gpsFixData.latitude;
+    longitude = gpsFixData.longitude;
+    fixed = gpsFixData.fixQuality > 0;
 }
 
 void PageMap::LoadGridImage() {

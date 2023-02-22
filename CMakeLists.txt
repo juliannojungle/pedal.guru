@@ -4,11 +4,10 @@ project(opencc)
 
 pico_sdk_init()
 
-add_executable(opencc
-    src/OpenCC.cpp
-)
+add_executable(opencc src/OpenCC.cpp)
 
 set(TARGET_RP2040)
+add_definitions(-DTARGET_RP2040)
 
 # Add pico_stdlib library which aggregates commonly used features
 target_link_libraries(opencc pico_stdlib)

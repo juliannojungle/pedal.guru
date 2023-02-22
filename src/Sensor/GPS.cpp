@@ -21,11 +21,11 @@
 
 #include "iSensor.hpp"
 #include "../Model/GPSFixData.hpp"
+#include "../DataManager.cpp"
 #include <thread> // multithread
 #include <iostream> // cout
 #include <iomanip> // setprecision
 #include <fstream> // file stream
-#include <jsoncpp/json/json.h>
 
 namespace OpenCC {
 
@@ -34,8 +34,8 @@ class GPS : public iSensor {
         const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA,
         int startingPos = 3;
         OpenCC::TextHelper textHelper_;
-        void LastGpsLocation(double &latitude, double &longitude);
-        void OutputGpsLocation(double &latitude, double &longitude, bool fixed);
+        void GetGpsFixData(OpenCC::GPSFixData &gpsFixData);
+        void SetGpsFixData(OpenCC::GPSFixData &gpsFixData);
         void GetData();
     public:
         void Enable() override;
@@ -52,32 +52,20 @@ void GPS::Disable() {
     this->enabled_ = false;
 }
 
-void GPS::LastGpsLocation(double &latitude, double &longitude) {
-    std::ifstream file("gps.json", std::ifstream::binary);
-
-    if (!file) return;
-
-    Json::Reader reader;
-    Json::Value gpsData;
-
-    if (reader.parse(file, gpsData)) {
-        latitude = std::stod(gpsData["latitude"].asString());
-        longitude = std::stod(gpsData["longitude"].asString());
-    }
-
-    file.close();
+void GPS::GetGpsFixData(OpenCC::GPSFixData &gpsFixData) {
+    OpenCC::DataManager::GetInstance()->Pop(gpsFixData);
 }
 
-void GPS::OutputGpsLocation(double &latitude, double &longitude, bool fixed) {
-    std::ofstream file("gps.json", std::ofstream::trunc | std::ofstream::binary);
+void GPS::SetGpsFixData(OpenCC::GPSFixData &gpsFixData) {
+    OpenCC::DataManager::GetInstance()->Push(gpsFixData);
 
-    if (!file) return;
-
-    file << "{\"latitude\":" << std::fixed << std::setprecision(6) << latitude
-        << ",\"longitude\":" << std::fixed << std::setprecision(6) << longitude
-        << ",\"fixed\":" << (fixed ? "true" : "false")
-        << "}\n";
-    file.close();
+#ifdef _DEBUG
+    std::cout << "FIXED: " << gpsFixData.fixQuality
+        << "SATTELITES COUNT: " << gpsFixData.satellitesCount
+        << " LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
+        << " LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
+        << "\n";
+#endif
 }
 
 void GPS::GetData() {
@@ -95,8 +83,9 @@ void GPS::GetData() {
 
     std::string serial_rx;
     OpenCC::GPSFixData gpsFixData;
-    double lastLatitude, lastLongitude;
-    LastGpsLocation(lastLatitude, lastLongitude);
+    GetGpsFixData(gpsFixData);
+    double lastLatitude = gpsFixData.latitude;
+    double lastLongitude = gpsFixData.longitude;
 
     while (this->enabled_ && uart.is_open()) {
         std::getline(uart, serial_rx);
@@ -104,25 +93,15 @@ void GPS::GetData() {
         if (serial_rx.rfind(GPS_FIX, startingPos) == startingPos) {
             gpsFixData.set(serial_rx);
 
-            if (gpsFixData.fixQuality > 0) {
-                // normalize coordinates
-                gpsFixData.latitude /= 100;
-                gpsFixData.longitude /= 100;
-                if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
-                if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
+            // normalize coordinates
+            gpsFixData.latitude /= 100;
+            gpsFixData.longitude /= 100;
+            if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
+            if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
 
-                std::cout << "FIXED: " << gpsFixData.satellitesCount
-                    << " LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
-                    << " LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
-                    << "\n";
-
-                lastLatitude = gpsFixData.latitude;
-                lastLongitude = gpsFixData.longitude;
-                OutputGpsLocation(gpsFixData.latitude, gpsFixData.longitude, true);
-            } else {
-                std::cout << "NOT FIXED: " << serial_rx << "\n";
-                OutputGpsLocation(lastLatitude, lastLongitude, false);
-            }
+            lastLatitude = gpsFixData.latitude;
+            lastLongitude = gpsFixData.longitude;
+            SetGpsFixData(gpsFixData);
         }
     }
 
