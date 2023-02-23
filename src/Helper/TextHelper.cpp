@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
 
 namespace OpenCC {
 
@@ -32,9 +33,9 @@ class TextHelper {
 };
 
 bool TextHelper::contains(char* string, char* substring) {
-    if (strlen(string) < strlen(substring)) return false;
+    if (std::strlen(string) < std::strlen(substring)) return false;
 
-    for (int i = 0; i < strlen(substring); i++)
+    for (int i = 0; i < std::strlen(substring); i++)
         if (string[i] != substring[i]) return false;
 
     return true;
