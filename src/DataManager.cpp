@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include <mutex>
+#include <pico/mutex.h>
 #include <list>
 #include "Model/GPSFixData.hpp"
 
@@ -36,8 +36,8 @@ class DataManager {
      * operator.
      */
 private:
-    static DataManager * pinstance_;
-    static std::mutex mutex_;
+    static DataManager * instance_;
+    static mutex_t lock_;
     DataManager() {}
     ~DataManager() {}
     std::list<OpenCC::GPSFixData> gpsFixData_;
@@ -49,6 +49,7 @@ public:
     /** Singletons should not be assignable. */
     void operator=(const DataManager &) = delete;
 
+    void LastOrDefault(OpenCC::GPSFixData &gpsFixData);
     void Push(OpenCC::GPSFixData &gpsFixData);
     void Pop(OpenCC::GPSFixData &gpsFixData);
 
@@ -61,31 +62,47 @@ public:
     static DataManager *GetInstance();
 };
 
+void DataManager::LastOrDefault(OpenCC::GPSFixData &gpsFixData) {
+    if (this->gpsFixData_.empty()) return;
+
+    mutex_enter_blocking(&lock_);
+    gpsFixData = *(this->gpsFixData_.cend());
+    mutex_exit(&lock_);
+}
+
 void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
+    mutex_enter_blocking(&lock_);
     this->gpsFixData_.push_back(gpsFixData);
+    mutex_exit(&lock_);
 }
 
 void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
     if (this->gpsFixData_.empty()) return;
 
+    mutex_enter_blocking(&lock_);
     gpsFixData = *(this->gpsFixData_.cbegin());
     this->gpsFixData_.pop_front();
+    mutex_exit(&lock_);
 }
 
 /** Initializing static members. */
-DataManager* DataManager::pinstance_{nullptr};
-std::mutex DataManager::mutex_;
+DataManager* DataManager::instance_{nullptr};
+mutex_t DataManager::lock_;
 
-/**
- * Static methods should be defined outside the class.
- */
+/** Static methods should be defined outside the class. */
 DataManager *DataManager::GetInstance() {
-    std::lock_guard<std::mutex> lock(mutex_);
-    if (pinstance_ == nullptr)
-    {
-        pinstance_ = new DataManager();
+    if (!mutex_is_initialized(&lock_)) {
+        mutex_init(&lock_);
     }
-    return pinstance_;
+
+    mutex_enter_blocking(&lock_);
+    if (instance_ == nullptr)
+    {
+        instance_ = new DataManager();
+    }
+    mutex_exit(&lock_);
+
+    return instance_;
 }
 
 }

@@ -26,6 +26,7 @@ class iSensor {
         bool enabled_;
 
     public:
+        iSensor() : enabled_(false) {};
         virtual ~iSensor() = default; // make it polymorphic
 
         bool Enabled() const {
@@ -34,10 +35,12 @@ class iSensor {
 
         virtual void Enable() {
             this->enabled_ = true;
-        };
+        }
 
         virtual void Disable() {
             this->enabled_ = false;
         }
+
+        virtual void GetData() = 0;
 };
 }

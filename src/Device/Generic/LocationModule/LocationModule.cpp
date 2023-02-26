@@ -30,15 +30,21 @@ class LocationModule : public iDevice {
     public:
         LocationModule();
         void Connect() override;
+        bool Connected() override;
         void Disconnect() override;
+        void GetData() override;
 };
 
 LocationModule::LocationModule() {
     this->sensors_.push_back(std::make_unique<OpenCC::GPS>());
 }
 
+bool LocationModule::Connected() {
+    return this->connected_;
+}
+
 void LocationModule::Connect() {
-    for(const auto &sensor : sensors_) {
+    for(const auto &sensor : this->sensors_) {
         if (!sensor.get()->Enabled())
             sensor.get()->Enable();
     }
@@ -47,12 +53,21 @@ void LocationModule::Connect() {
 }
 
 void LocationModule::Disconnect() {
-    for(const auto &sensor : sensors_) {
+    for(const auto &sensor : this->sensors_) {
         if (sensor.get()->Enabled())
             sensor.get()->Disable();
     }
 
     this->connected_ = false;
+}
+
+void LocationModule::GetData() {
+    if (!this->connected_) return;
+
+    for(const auto &sensor : this->sensors_) {
+        if (sensor.get()->Enabled())
+            sensor.get()->GetData();
+    }
 }
 
 }

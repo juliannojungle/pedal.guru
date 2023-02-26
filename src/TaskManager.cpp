@@ -22,79 +22,100 @@
 #include <memory>
 #include <list>
 #include <thread>
-#include "GUI/GUIDrawer.cpp"
-#include "GUI/GUINavigator.cpp"
-#include "GUI/Page/BasePage.cpp"
-#include "GUI/Page/PageAltimetry.cpp"
-#include "GUI/Page/PageDistance.cpp"
-#include "GUI/Page/PageHillsGraph.cpp"
-#include "GUI/Page/PageMap.cpp"
-#include "GUI/Page/PageMapSync.cpp"
-#include "GUI/Page/PageRoute.cpp"
-#include "GUI/Page/PageSummary.cpp"
+// #include "GUI/GUIDrawer.cpp"
+// #include "GUI/GUINavigator.cpp"
+// #include "GUI/Page/BasePage.cpp"
+// #include "GUI/Page/PageAltimetry.cpp"
+// #include "GUI/Page/PageDistance.cpp"
+// #include "GUI/Page/PageHillsGraph.cpp"
+// #include "GUI/Page/PageMap.cpp"
+// #include "GUI/Page/PageMapSync.cpp"
+// #include "GUI/Page/PageRoute.cpp"
+// #include "GUI/Page/PageSummary.cpp"
 #include "HIDHandler.cpp"
 #include "Model/SettingsData.hpp"
 #include "Device/iDevice.hpp"
 #include "Device/Generic/LocationModule/LocationModule.cpp"
+#include "pico/multicore.h"
 
 namespace OpenCC {
 
 class TaskManager {
     private:
         OpenCC::SettingsData settings_;
-        std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
-        std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
+        static std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
+        // std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
+        static bool running_;
         void ReadSettings();
         void CreateDevices();
-        void StartDevices();
-        void CreatePages(OpenCC::GUIDrawer& drawer);
+        void ConnectToDevices();
+        static void GetDevicesData();
+        // void CreatePages(OpenCC::GUIDrawer& drawer);
     public:
         ~TaskManager();
         void Execute();
 };
 
-void TaskManager::Execute() {
+std::list<std::unique_ptr<OpenCC::iDevice>> TaskManager::devices_;
+bool TaskManager::running_;
+
+void TaskManager::Execute() {sleep_ms(10000);
     ReadSettings();
     CreateDevices();
-    StartDevices();
-    OpenCC::GUIDrawer drawer;
-    CreatePages(drawer);
-    OpenCC::HIDHandler handler;
-    OpenCC::GUINavigator guiNavigator(handler, pages_);
-    drawer.Execute();
+    ConnectToDevices();
+    multicore_launch_core1(GetDevicesData);
+
+    while (true)
+    {
+        OpenCC::GPSFixData gpsFixData;
+        OpenCC::DataManager::GetInstance()->Pop(gpsFixData);
+        std::cout << "FIXED: " << gpsFixData.fixQuality
+            << "SATTELITES COUNT: " << gpsFixData.satellitesCount
+            << " LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
+            << " LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
+            << "\n";
+        // std::cout << "main loop from core 0\n";
+        sleep_ms(1000);
+    }
+
+    // OpenCC::GUIDrawer drawer;
+    // CreatePages(drawer);
+    // OpenCC::HIDHandler handler;
+    // OpenCC::GUINavigator guiNavigator(handler, pages_);
+    // drawer.Execute();
 }
 
-void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
-    /*
-     * The pages order here is crucial, since it represents the pages cycle order!
-     */
-    if (settings_.pageMapEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
-    }
+// void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
+//     /*
+//      * The pages order here is crucial, since it represents the pages cycle order!
+//      */
+//     if (settings_.pageMapEnabled) {
+//         pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
+//     }
 
-    if (settings_.pageRouteEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
-    }
+//     if (settings_.pageRouteEnabled) {
+//         pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
+//     }
 
-    if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
-    }
+//     if (settings_.pageHillsGraphEnabled) {
+//         pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
+//     }
 
-    if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
-    }
+//     if (settings_.pageDistanceEnabled) {
+//         pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
+//     }
 
-    if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
-    }
+//     if (settings_.pageAltimetryEnabled) {
+//         pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
+//     }
 
-    if (settings_.pageSummaryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
-    }
+//     if (settings_.pageSummaryEnabled) {
+//         pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
+//     }
 
-    // Settings pages aren't optional.
-    pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
-}
+//     // Settings pages aren't optional.
+//     pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
+// }
 
 void TaskManager::ReadSettings() {
     // TODO: Here we need saved settings.
@@ -112,14 +133,32 @@ void TaskManager::CreateDevices() {
     devices_.push_back(std::make_unique<OpenCC::LocationModule>());
 }
 
-void TaskManager::StartDevices() {
+void TaskManager::ConnectToDevices() {
+    running_ = true;
+
     for(const auto &device : devices_) {
-        if (!device.get()->Connected())
-            device.get()->Connect();
+        if (!device->Connected())
+            device->Connect();
+    }
+}
+
+void TaskManager::GetDevicesData() {
+    auto device = devices_.begin();
+
+    while (running_)
+    {
+        if (device->get()->Connected())
+            device->get()->GetData();
+
+        device = (device == devices_.end()) ? devices_.begin() : device++;
+
+        sleep_ms(1000);//TODO something better.
     }
 }
 
 TaskManager::~TaskManager() {
+    running_ = false;
+
     for(const auto &device : devices_) {
         if (device.get()->Connected())
             device.get()->Disconnect();

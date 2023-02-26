@@ -31,11 +31,11 @@ class iDevice {
         std::list<std::unique_ptr<iSensor>> sensors_;
 
     public:
+        iDevice() : connected_(false), sensors_() {};
         virtual ~iDevice() = default; // make it polymorphic
         virtual void Connect() = 0;
         virtual void Disconnect() = 0;
-        virtual bool Connected() {
-            return this->connected_;
-        }
+        virtual bool Connected() = 0;
+        virtual void GetData() = 0;
 };
 }

@@ -24,7 +24,7 @@
 #include <chrono>
 #include <thread>
 #include "../Model/MapTile.hpp"
-#include "../Helper/HTTPHelper.cpp"
+// #include "../Helper/HTTPHelper.cpp"
 #include "../Model/MapGrid.hpp"
 
 /* define the constant since it's not standard c++ and some compilers does not include it */
@@ -142,7 +142,7 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
 
-    HTTPHelper::DownloadFile(std::string(tileUrl), fileHashPath);
+    // HTTPHelper::DownloadFile(std::string(tileUrl), fileHashPath);
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/

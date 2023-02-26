@@ -20,18 +20,21 @@
 #include "OpenCC.hpp"
 #include "TaskManager.cpp"
 
-#include <stdio.h>
-#include "pico/stdlib.h"
-
 int main(void) {
+#ifdef RP2040
     stdio_init_all();
+#endif
+
+#ifdef _DEBUG
+    std::cout << "Welcome to OpenCC!\n";
+#endif
+
     OpenCC::TaskManager taskManager;
     taskManager.Execute();
 
-    // while (true) {
-    //     printf("Hello, world!\n");
-    //     sleep_ms(1000);
-    // }
+#ifdef _DEBUG
+    std::cout << "See you later!\n";
+#endif
 
     return 0;
 }

@@ -21,7 +21,7 @@
 
 #ifdef RP2040
     // #define USE_RAYLIB
-
+    #include "pico/stdlib.h"
 // extern "C" {
 //     #include "../../Dependency/pigpio/pigpio.h"
 // }
