@@ -41,6 +41,22 @@ class GPSFixData {
         double differentialGPSLastUpdate;
         char *differentialGPSStationId;
         char *checksum;
+        GPSFixData() :
+            UTCTime(0),
+            latitude(0),
+            latitudeCardinal('\0'),
+            longitude(0),
+            longitudeCardinal('\0'),
+            fixQuality(0),
+            satellitesCount(0),
+            horizontalAccuracy(0),
+            altitude(0),
+            altitudeUnit('\0'),
+            geoidalSeparation(nullptr),
+            geoidalSeparationUnit('\0'),
+            differentialGPSLastUpdate(0),
+            differentialGPSStationId(nullptr),
+            checksum(nullptr) {}
         void set(std::string serial_rx);
 };
 

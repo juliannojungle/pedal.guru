@@ -37,6 +37,7 @@
 #include "Device/iDevice.hpp"
 #include "Device/Generic/LocationModule/LocationModule.cpp"
 #include "pico/multicore.h"
+#include <iomanip> // setprecision
 
 namespace OpenCC {
 
@@ -59,7 +60,7 @@ class TaskManager {
 std::list<std::unique_ptr<OpenCC::iDevice>> TaskManager::devices_;
 bool TaskManager::running_;
 
-void TaskManager::Execute() {sleep_ms(10000);
+void TaskManager::Execute() {
     ReadSettings();
     CreateDevices();
     ConnectToDevices();
@@ -69,11 +70,18 @@ void TaskManager::Execute() {sleep_ms(10000);
     {
         OpenCC::GPSFixData gpsFixData;
         OpenCC::DataManager::GetInstance()->Pop(gpsFixData);
-        std::cout << "FIXED: " << gpsFixData.fixQuality
-            << "SATTELITES COUNT: " << gpsFixData.satellitesCount
-            << " LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
-            << " LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
-            << "\n";
+
+#ifdef _DEBUG
+        if (gpsFixData.fixQuality > 0) {
+            std::cout << "DEBUG - FIXED: " << gpsFixData.fixQuality
+                << " | UTCTIME: " << gpsFixData.UTCTime
+                << " | SATTELITES COUNT: " << gpsFixData.satellitesCount
+                << "  | LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
+                << "  | LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
+                << "\n";
+        }
+#endif
+
         // std::cout << "main loop from core 0\n";
         sleep_ms(1000);
     }

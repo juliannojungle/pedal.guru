@@ -8,6 +8,7 @@ add_executable(opencc src/OpenCC.cpp)
 
 add_compile_definitions(
     TARGET_RP2040
+    L96GPS
     _DEBUG
 )
 

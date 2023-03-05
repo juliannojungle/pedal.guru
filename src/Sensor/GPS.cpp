@@ -19,22 +19,26 @@
 
 #pragma once
 
+#include <string>
 #include "iSensor.hpp"
 #include "../Model/GPSFixData.hpp"
 #include "../DataManager.cpp"
-#include <iostream> // cout
-#include <iomanip> // setprecision
-#include <fstream> // file stream
+// #include <fstream> // file stream
+#include "hardware/gpio.h"
+
+#ifdef _DEBUG
+    #include <iostream> // cout
+#endif
 
 namespace OpenCC {
 
 class GPS : public iSensor {
     private:
-        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA,
-        int startingPos = 3;
-        OpenCC::TextHelper textHelper_;
-        void GetGpsFixData(OpenCC::GPSFixData &gpsFixData);
-        void SetGpsFixData(OpenCC::GPSFixData &gpsFixData);
+        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA.
+        const int startingPos = 3;
+        bool IsGpsFixInfo(std::string &info);
+        void UartGetLine(std::string &line);
+        void LogGpsData(OpenCC::GPSFixData &gpsFixData);
     public:
         void Enable() override;
         void Disable() override;
@@ -42,24 +46,6 @@ class GPS : public iSensor {
 };
 
 void GPS::Enable() {
-    this->enabled_ = true;
-}
-
-void GPS::Disable() {
-    this->enabled_ = false;
-}
-
-void GPS::GetGpsFixData(OpenCC::GPSFixData &gpsFixData) {
-    OpenCC::DataManager::GetInstance()->LastOrDefault(gpsFixData);
-}
-
-void GPS::SetGpsFixData(OpenCC::GPSFixData &gpsFixData) {
-    OpenCC::DataManager::GetInstance()->Push(gpsFixData);
-}
-
-void GPS::GetData() {
-    if (!enabled_) return;
-
     // std::ifstream uart;
     // std::ios_base::iostate exceptionMask = uart.exceptions() | std::ios::failbit;
     // uart.exceptions(exceptionMask);
@@ -69,35 +55,78 @@ void GPS::GetData() {
     // } catch (std::ios_base::failure &error) {
     //     std::cout << error.what();
     //     this->enabled_ = false;
-    //     return;
     // }
 
-    std::string serial_rx;
-    OpenCC::GPSFixData gpsFixData;
-    GetGpsFixData(gpsFixData);
-    double lastLatitude = gpsFixData.latitude;
-    double lastLongitude = gpsFixData.longitude;
+    uart_init(uart0, 9600);
+    gpio_set_function(0, GPIO_FUNC_UART); // GPIO pin 0 is UART0 TX
+    gpio_set_function(1, GPIO_FUNC_UART); // GPIO pin 1 is UART0 RX
 
-    // while (this->enabled_ && uart.is_open()) {
-    //     std::getline(uart, serial_rx);
-    serial_rx = "$GPGGA,164353.000,2225.2115,S,04258.7947,W,2,4,2.95,971.3,M,-5.7,M,,*49"; //DEBUG TEST
+#ifdef L96GPS
+    uart_puts(uart0, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
+    uart_puts(uart0, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
+    uart_puts(uart0, "$PMTK886,1*29\0"); // enable fitness mode.
+    //uart_puts(uart0, "$PMTK886,0*28\0"); // enable normal mode.
+#endif
 
-    if (serial_rx.rfind(GPS_FIX, startingPos) == startingPos) {
-        gpsFixData.set(serial_rx);
+    this->enabled_ = true;
+}
 
-        // normalize coordinates
-        gpsFixData.latitude /= 100;
-        gpsFixData.longitude /= 100;
-        if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
-        if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
-
-        lastLatitude = gpsFixData.latitude;
-        lastLongitude = gpsFixData.longitude;
-        SetGpsFixData(gpsFixData);
-    }
-    // }
-
+void GPS::Disable() {
     // uart.close();
+    uart_deinit(uart0);
+    this->enabled_ = false;
+}
+
+void GPS::LogGpsData(OpenCC::GPSFixData &gpsFixData) {
+    OpenCC::DataManager::GetInstance()->Push(gpsFixData);
+}
+
+bool GPS::IsGpsFixInfo(std::string &info) {
+    return info.rfind(GPS_FIX, startingPos) == startingPos;
+}
+
+void GPS::UartGetLine(std::string &line) {
+    // return std::getline(uart, line);
+    char singleChar = '\0';
+    line = "";
+
+    while (true) {
+        singleChar = uart_getc(uart0);
+
+        if (singleChar == 0 || singleChar == '\0' || singleChar == '\n') break;
+
+        line += singleChar;
+    }
+}
+
+void GPS::GetData() {
+    // && uart.is_open()
+    if (!enabled_ || !uart_is_enabled(uart0)) return;
+
+    std::string serial_rx = "";
+    int attempts = 0;
+
+    while (!IsGpsFixInfo(serial_rx) && (attempts < 50)) {
+        attempts++;
+        UartGetLine(serial_rx);
+#ifdef _DEBUG
+    std::cout << std::to_string(attempts) << " - GPS: " << serial_rx << std::endl;
+#endif
+    }
+
+    if (!IsGpsFixInfo(serial_rx)) return;
+
+    OpenCC::GPSFixData gpsFixData;
+    gpsFixData.set(serial_rx);
+
+    // normalize coordinates
+    gpsFixData.latitude /= 100;
+    gpsFixData.longitude /= 100;
+
+    if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
+    if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
+
+    LogGpsData(gpsFixData);
 }
 
 }

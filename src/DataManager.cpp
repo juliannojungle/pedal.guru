@@ -49,26 +49,17 @@ public:
     /** Singletons should not be assignable. */
     void operator=(const DataManager &) = delete;
 
-    void LastOrDefault(OpenCC::GPSFixData &gpsFixData);
     void Push(OpenCC::GPSFixData &gpsFixData);
     void Pop(OpenCC::GPSFixData &gpsFixData);
 
     /**
      * This is the static method that controls the access to the singleton
      * instance. On the first run, it creates a singleton object and places it
-     * into the static field. On subsequent runs, it returns the client existing
-     * object stored in the static field.
+     * into the static field. On subsequent runs, it returns existing object
+     * stored in the static field.
      */
     static DataManager *GetInstance();
 };
-
-void DataManager::LastOrDefault(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_enter_blocking(&lock_);
-    gpsFixData = *(this->gpsFixData_.cend());
-    mutex_exit(&lock_);
-}
 
 void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
     mutex_enter_blocking(&lock_);
