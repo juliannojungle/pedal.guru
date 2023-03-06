@@ -25,10 +25,9 @@
 #include "../../DataManager.cpp"
 #include "../../Model/GPSFixData.hpp"
 
-#include <iomanip> // setprecision
-#include <fstream>
-#include <chrono>
-#include <thread>
+// #include <chrono>
+// #include <thread>
+#include "pico/time.h"
 
 namespace OpenCC {
 
@@ -49,23 +48,6 @@ class PageMap : public OpenCC::BasePage {
 
 void PageMap::PreDrawPageContents() {
 }
-
-// void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
-//     std::ifstream gpsFile("gps.json", std::ifstream::binary);
-
-//     if (!gpsFile) return;
-
-//     Json::Reader reader;
-//     Json::Value gpsData;
-
-//     if (reader.parse(gpsFile, gpsData)) {
-//         latitude = gpsData["latitude"].asDouble();
-//         longitude = gpsData["longitude"].asDouble();
-//         fixed = gpsData["fixed"].asBool();
-//     }
-
-//     gpsFile.close();
-// }
 
 void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
     OpenCC::GPSFixData gpsFixData;
@@ -118,7 +100,8 @@ void PageMap::DrawPageContents() {
     window_.DrawCircle(120, 120, 4, (fixed ? PiRender::COLOR_GREEN : PiRender::COLOR_ORANGE));
 
     // We only get gps readings once per second.
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    sleep_ms(1000);
 }
 
 void PageMap::PostDrawPageContents() {

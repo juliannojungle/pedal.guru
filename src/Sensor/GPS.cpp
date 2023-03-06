@@ -25,6 +25,7 @@
 #include "../DataManager.cpp"
 // #include <fstream> // file stream
 #include "hardware/gpio.h"
+#include "hardware/uart.h"
 
 #ifdef _DEBUG
     #include <iostream> // cout

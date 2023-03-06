@@ -21,8 +21,11 @@
 
 #include <string>
 #include <cmath>
-#include <chrono>
-#include <thread>
+
+// #include <chrono>
+// #include <thread>
+#include "pico/time.h"
+
 #include "../Model/MapTile.hpp"
 // #include "../Helper/HTTPHelper.cpp"
 #include "../Model/MapGrid.hpp"
@@ -148,7 +151,8 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
      * Only two requests per second, as OSM API requires low brandwidth usage.
      */
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    sleep_ms(500);
 
     return fileHashPath;
 }
