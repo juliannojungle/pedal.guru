@@ -4,3 +4,10 @@
     shallow = true
     branch = master
     ignore = all
+
+[submodule "pico-code"]
+    path = src/Dependency/Pico-code
+    url = https://github.com/waveshare/Pico_code.git
+    shallow = true
+    branch = master
+    ignore = all

@@ -53,7 +53,6 @@ class Image {
         Image(std::string path);
         void LoadImage(std::string path);
         void UnloadImage();
-        void ImageCrop(PiRender::Rectangle crop);
         void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint);
         void ImageDrawPixel(int posX, int posY, PiRender::Color color);
 };
@@ -83,12 +82,6 @@ void Image::LoadImage(std::string path) {
 void Image::UnloadImage() {
     auto driverImage(IMAGE_TO_RAYLIB((*this)));
     GUIDriver::UnloadImage(driverImage);
-}
-
-void Image::ImageCrop(PiRender::Rectangle crop) {
-    auto driverImage(IMAGE_TO_RAYLIB((*this)));
-    GUIDriver::ImageCrop(&driverImage, RECTANGLE_TO_RAYLIB(crop));
-    Copy(driverImage);
 }
 
 void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) {
