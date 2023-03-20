@@ -19,7 +19,18 @@
 
 #pragma once
 
+namespace GUIDriver {
+
+extern "C" {
+    #include "GUI_Paint.h"
+}
+
+}
+
 namespace PiRender {
+
+#define COLOR_TO_RAYLIB(color) CLITERAL(GUIDriver::Color) \
+    { color.red, color.green, color.blue, color.alpha }
 
 class Color {
     public:

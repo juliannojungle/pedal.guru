@@ -19,7 +19,19 @@
 
 #pragma once
 
+namespace GUIDriver {
+
+/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
+extern "C" {
+    #include "../../Dependency/raylib/src/raylib.h"
+}
+
+}
+
 namespace PiRender {
+
+#define COLOR_TO_RAYLIB(color) CLITERAL(GUIDriver::Color) \
+    { color.red, color.green, color.blue, color.alpha }
 
 class Color {
     public:

@@ -1,4 +1,4 @@
-#[[
+/*
     Open Cycle Computer (aka OpenCC) is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
@@ -15,32 +15,31 @@
 
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
-]]
+*/
 
-# version requirements
-cmake_minimum_required(VERSION 3.13)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 14)
+#pragma once
 
-# target definitions
-set(TARGETS RP2040 SIMULATOR)
-set(BUILD_TARGET "RP2040" CACHE STRING "Build target, one of: ${TARGETS}")
-set_property(CACHE BUILD_TARGET PROPERTY STRINGS ${TARGETS})
+namespace GUIDriver {
 
-# initialization
-if(BUILD_TARGET STREQUAL RP2040)
-    include(src/Target/RP2040/initialize_target.cmake)
-endif()
+/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
+extern "C" {
+    #include "../../Dependency/raylib/src/raylib.h"
+}
 
-# project definition
-project(opencc)
-add_executable(opencc src/OpenCC.cpp)
+}
 
-# target configuration
-if(BUILD_TARGET STREQUAL RP2040)
-    include(src/Target/RP2040/configure_target.cmake)
-endif()
+namespace PiRender {
 
-if(BUILD_TARGET STREQUAL SIMULATOR)
-    include(src/Target/Simulator/configure_target.cmake)
-endif()
+#define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUIDriver::Rectangle) \
+    { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
+
+struct Rectangle {
+    float x;
+    float y;
+    float width;
+    float height;
+    Rectangle(float x, float y, float width, float height)
+        : x(x), y(y), width(width), height(height) {}
+};
+
+}

@@ -21,7 +21,19 @@
 
 #include "Image.cpp"
 
+namespace GUIDriver {
+
+/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
+extern "C" {
+    #include "../../Dependency/raylib/src/raylib.h"
+}
+
+}
+
 namespace PiRender {
+
+#define TEXTURE2D_TO_RAYLIB(texture) CLITERAL(GUIDriver::Texture2D) \
+    { texture.id, texture.width, texture.height, texture.mipmaps, texture.format }
 
 class Texture {
     public:
@@ -44,9 +56,18 @@ typedef Texture Texture2D;
 typedef Texture TextureCubemap;
 
 void Texture::LoadTextureFromImage(PiRender::Image& image) {
+    auto driverImage(IMAGE_TO_RAYLIB(image));
+    auto driverTexture = GUIDriver::LoadTextureFromImage(driverImage);
+    this->id = driverTexture.id;
+    this->width = driverTexture.width;
+    this->height = driverTexture.height;
+    this->mipmaps = driverTexture.mipmaps;
+    this->format = driverTexture.format;
 }
 
 void Texture::UnloadTexture() {
+    auto driverTexture(TEXTURE2D_TO_RAYLIB((*this)));
+    GUIDriver::UnloadTexture(driverTexture);
 }
 
 }
