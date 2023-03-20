@@ -23,11 +23,11 @@
 #include <functional>
 #include <memory>
 #include "../Model/Callback.hpp"
-#include "Render/Color.cpp"
-#include "Render/Rectangle.cpp"
-#include "Render/Image.cpp"
-#include "Render/Texture.cpp"
-#include "Render/Window.cpp"
+#include "Color.cpp"
+#include "Rectangle.cpp"
+#include "Image.cpp"
+#include "Texture.cpp"
+#include "Window.cpp"
 
 #ifdef DESKTOP_SIMULATOR
 #include "Interface/DesktopSimulator.hpp"

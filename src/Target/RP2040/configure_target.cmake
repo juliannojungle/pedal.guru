@@ -31,12 +31,16 @@ pico_enable_stdio_usb(${PROJECT_NAME} 1) # enable usb output
 pico_enable_stdio_uart(${PROJECT_NAME} 0) # disable uart output
 pico_add_extra_outputs(${PROJECT_NAME}) # create map/bin/hex/uf2 files in addition to elf
 
+# Waveshare Pico_code/c/lib/GUI for graphics
 set(PICO_CODE_LIB ${CMAKE_SOURCE_DIR}/src/Dependency/Pico-code/c/lib)
 add_subdirectory(${PICO_CODE_LIB}/Config)
 add_subdirectory(${PICO_CODE_LIB}/GUI)
 include_directories(${PICO_CODE_LIB}/Config)
 include_directories(${PICO_CODE_LIB}/GUI)
 target_link_libraries(${PROJECT_NAME} PUBLIC GUI Config)
+
+# Include custom rendering classes
+include_directories(${CMAKE_SOURCE_DIR}/src/Target/RP2040/GUI/Render)
 
 add_compile_definitions(
     TARGET_RP2040

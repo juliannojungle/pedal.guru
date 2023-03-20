@@ -25,9 +25,8 @@
 
 namespace GUIDriver {
 
-/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
 extern "C" {
-    #include "../../Dependency/raylib/src/raylib.h"
+    #include "GUI_Paint.h"
 }
 
 }
@@ -50,48 +49,49 @@ class Window {
 };
 
 void Window::Init(int width, int height, std::string title) {
-    GUIDriver::InitWindow(width, height, title.c_str());
+    // GUIDriver::InitWindow(width, height, title.c_str());
 }
 
 void Window::SetTargetFPS(int frameRate) {
-    GUIDriver::SetTargetFPS(frameRate);
+    // GUIDriver::SetTargetFPS(frameRate);
 }
 
 void Window::HideCursor() {
-    GUIDriver::HideCursor();
+    // GUIDriver::HideCursor();
 }
 
 bool Window::ShouldClose() {
-    return GUIDriver::WindowShouldClose();
+    // return GUIDriver::WindowShouldClose();
+    return false;
 }
 
 void Window::Close() {
-    GUIDriver::CloseWindow();
+    // GUIDriver::CloseWindow();
 }
 
 void Window::BeginDrawing() {
-    GUIDriver::BeginDrawing();
+    // GUIDriver::BeginDrawing();
 }
 
 void Window::ClearBackground(PiRender::Color color) {
-    GUIDriver::ClearBackground(COLOR_TO_RAYLIB(color));
+    // GUIDriver::ClearBackground(COLOR_TO_RAYLIB(color));
 }
 
 void Window::EndDrawing() {
-    GUIDriver::EndDrawing();
+    // GUIDriver::EndDrawing();
 }
 
 void Window::DrawCircle(int centerX, int centerY, float radius, PiRender::Color color) {
-    GUIDriver::DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
+    // GUIDriver::DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
 }
 
 void Window::DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color) {
-    GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR_TO_RAYLIB(color));
+    // GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR_TO_RAYLIB(color));
 }
 
 void Window::DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color) {
-    auto driverTexture(TEXTURE2D_TO_RAYLIB(texture));
-    GUIDriver::DrawTexture(driverTexture, posX, posY, COLOR_TO_RAYLIB(color));
+    // auto driverTexture(TEXTURE2D_TO_RAYLIB(texture));
+    // GUIDriver::DrawTexture(driverTexture, posX, posY, COLOR_TO_RAYLIB(color));
 }
 
 }

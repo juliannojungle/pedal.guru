@@ -33,20 +33,8 @@ class Texture {
         Texture() {}
         Texture(unsigned int id, int width, int height, int mipmaps, int format)
             : id(id), width(width), height(height), mipmaps(mipmaps), format(format) {}
-        void LoadTextureFromImage(PiRender::Image& image);
-        void UnloadTexture();
+        virtual void LoadTextureFromImage(PiRender::Image& image) = 0
+        virtual void UnloadTexture() = 0
 };
-
-// Texture2D type, same as Texture
-typedef Texture Texture2D;
-
-// TextureCubemap type, actually, same as Texture
-typedef Texture TextureCubemap;
-
-void Texture::LoadTextureFromImage(PiRender::Image& image) {
-}
-
-void Texture::UnloadTexture() {
-}
 
 }

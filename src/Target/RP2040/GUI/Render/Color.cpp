@@ -29,8 +29,8 @@ extern "C" {
 
 namespace PiRender {
 
-#define COLOR_TO_RAYLIB(color) CLITERAL(GUIDriver::Color) \
-    { color.red, color.green, color.blue, color.alpha }
+// #define COLOR_TO_RAYLIB(color) CLITERAL(GUIDriver::Color) \
+//     { color.red, color.green, color.blue, color.alpha }
 
 class Color {
     public:

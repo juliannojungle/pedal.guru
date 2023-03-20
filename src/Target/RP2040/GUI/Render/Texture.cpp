@@ -23,17 +23,16 @@
 
 namespace GUIDriver {
 
-/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
 extern "C" {
-    #include "../../Dependency/raylib/src/raylib.h"
+    #include "GUI_Paint.h"
 }
 
 }
 
 namespace PiRender {
 
-#define TEXTURE2D_TO_RAYLIB(texture) CLITERAL(GUIDriver::Texture2D) \
-    { texture.id, texture.width, texture.height, texture.mipmaps, texture.format }
+// #define TEXTURE2D_TO_RAYLIB(texture) CLITERAL(GUIDriver::Texture2D) \
+//     { texture.id, texture.width, texture.height, texture.mipmaps, texture.format }
 
 class Texture {
     public:
@@ -50,24 +49,24 @@ class Texture {
 };
 
 // Texture2D type, same as Texture
-typedef Texture Texture2D;
+// typedef Texture Texture2D;
 
 // TextureCubemap type, actually, same as Texture
-typedef Texture TextureCubemap;
+// typedef Texture TextureCubemap;
 
 void Texture::LoadTextureFromImage(PiRender::Image& image) {
-    auto driverImage(IMAGE_TO_RAYLIB(image));
-    auto driverTexture = GUIDriver::LoadTextureFromImage(driverImage);
-    this->id = driverTexture.id;
-    this->width = driverTexture.width;
-    this->height = driverTexture.height;
-    this->mipmaps = driverTexture.mipmaps;
-    this->format = driverTexture.format;
+    // auto driverImage(IMAGE_TO_RAYLIB(image));
+    // auto driverTexture = GUIDriver::LoadTextureFromImage(driverImage);
+    // this->id = driverTexture.id;
+    // this->width = driverTexture.width;
+    // this->height = driverTexture.height;
+    // this->mipmaps = driverTexture.mipmaps;
+    // this->format = driverTexture.format;
 }
 
 void Texture::UnloadTexture() {
-    auto driverTexture(TEXTURE2D_TO_RAYLIB((*this)));
-    GUIDriver::UnloadTexture(driverTexture);
+    // auto driverTexture(TEXTURE2D_TO_RAYLIB((*this)));
+    // GUIDriver::UnloadTexture(driverTexture);
 }
 
 }

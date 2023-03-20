@@ -21,17 +21,16 @@
 
 namespace GUIDriver {
 
-/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
 extern "C" {
-    #include "../../Dependency/raylib/src/raylib.h"
+    #include "GUI_Paint.h"
 }
 
 }
 
 namespace PiRender {
 
-#define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUIDriver::Rectangle) \
-    { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
+// #define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUIDriver::Rectangle) \
+//     { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
 
 struct Rectangle {
     float x;

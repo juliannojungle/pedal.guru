@@ -22,7 +22,7 @@
 #include <memory>
 #include <list>
 #include <thread>
-// #include "GUI/GUIDrawer.cpp"
+#include "GUI/GUIDrawer.cpp"
 // #include "GUI/GUINavigator.cpp"
 // #include "GUI/Page/BasePage.cpp"
 // #include "GUI/Page/PageAltimetry.cpp"

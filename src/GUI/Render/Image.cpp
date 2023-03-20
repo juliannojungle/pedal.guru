@@ -33,33 +33,14 @@ class Image {
         int mipmaps; // Mipmap levels, 1 by default
         int format;  // Data format (PixelFormat type)
         Image() {}
-        Image(int width, int height, PiRender::Color color);
-        Image(void *data, int width, int height, int mipmaps, int format)
+        virtual Image(int width, int height, PiRender::Color color) = 0
+        virtual Image(void *data, int width, int height, int mipmaps, int format)
             : data(data), width(width), height(height), mipmaps(mipmaps), format(format) {}
-        Image(std::string path);
-        void LoadImage(std::string path);
-        void UnloadImage();
-        void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint);
-        void ImageDrawPixel(int posX, int posY, PiRender::Color color);
+        virtual Image(std::string path) = 0
+        virtual void LoadImage(std::string path) = 0
+        virtual void UnloadImage() = 0
+        virtual void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) = 0
+        virtual void ImageDrawPixel(int posX, int posY, PiRender::Color color) = 0
 };
-
-Image::Image(int width, int height, PiRender::Color color) {
-}
-
-Image::Image(std::string path) {
-    LoadImage(path);
-}
-
-void Image::LoadImage(std::string path) {
-}
-
-void Image::UnloadImage() {
-}
-
-void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) {
-}
-
-void Image::ImageDrawPixel(int posX, int posY, PiRender::Color color) {
-}
 
 }

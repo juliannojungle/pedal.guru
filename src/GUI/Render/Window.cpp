@@ -27,50 +27,17 @@ namespace PiRender {
 
 class Window {
     public:
-        void Init(int width, int height, std::string title);
-        void SetTargetFPS(int frameRate);
-        void HideCursor();
-        bool ShouldClose();
-        void Close();
-        void BeginDrawing();
-        void ClearBackground(PiRender::Color color);
-        void EndDrawing();
-        void DrawCircle(int centerX, int centerY, float radius, PiRender::Color color);
-        void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color);
-        void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color);
+        virtual void Init(int width, int height, std::string title) = 0
+        virtual void SetTargetFPS(int frameRate) = 0
+        virtual void HideCursor() = 0
+        virtual bool ShouldClose() = 0
+        virtual void Close() = 0
+        virtual void BeginDrawing() = 0
+        virtual void ClearBackground(PiRender::Color color) = 0
+        virtual void EndDrawing() = 0
+        virtual void DrawCircle(int centerX, int centerY, float radius, PiRender::Color color) = 0
+        virtual void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color) = 0
+        virtual void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color) = 0
 };
-
-void Window::Init(int width, int height, std::string title) {
-}
-
-void Window::SetTargetFPS(int frameRate) {
-}
-
-void Window::HideCursor() {
-}
-
-bool Window::ShouldClose() {
-}
-
-void Window::Close() {
-}
-
-void Window::BeginDrawing() {
-}
-
-void Window::ClearBackground(PiRender::Color color) {
-}
-
-void Window::EndDrawing() {
-}
-
-void Window::DrawCircle(int centerX, int centerY, float radius, PiRender::Color color) {
-}
-
-void Window::DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color) {
-}
-
-void Window::DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color) {
-}
 
 }
