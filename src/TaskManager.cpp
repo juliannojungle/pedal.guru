@@ -23,15 +23,15 @@
 #include <list>
 #include <thread>
 #include "GUI/GUIDrawer.cpp"
-// #include "GUI/GUINavigator.cpp"
-// #include "GUI/Page/BasePage.cpp"
-// #include "GUI/Page/PageAltimetry.cpp"
-// #include "GUI/Page/PageDistance.cpp"
-// #include "GUI/Page/PageHillsGraph.cpp"
-// #include "GUI/Page/PageMap.cpp"
-// #include "GUI/Page/PageMapSync.cpp"
-// #include "GUI/Page/PageRoute.cpp"
-// #include "GUI/Page/PageSummary.cpp"
+#include "GUI/GUINavigator.cpp"
+#include "GUI/Page/BasePage.cpp"
+#include "GUI/Page/PageAltimetry.cpp"
+#include "GUI/Page/PageDistance.cpp"
+#include "GUI/Page/PageHillsGraph.cpp"
+#include "GUI/Page/PageMap.cpp"
+#include "GUI/Page/PageMapSync.cpp"
+#include "GUI/Page/PageRoute.cpp"
+#include "GUI/Page/PageSummary.cpp"
 #include "HIDHandler.cpp"
 #include "Model/SettingsData.hpp"
 #include "Device/iDevice.hpp"
@@ -45,13 +45,13 @@ class TaskManager {
     private:
         OpenCC::SettingsData settings_;
         static std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
-        // std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
+        std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
         static bool running_;
         void ReadSettings();
         void CreateDevices();
         void ConnectToDevices();
         static void GetDevicesData();
-        // void CreatePages(OpenCC::GUIDrawer& drawer);
+        void CreatePages(OpenCC::GUIDrawer& drawer);
     public:
         ~TaskManager();
         void Execute();
@@ -64,66 +64,51 @@ void TaskManager::Execute() {
     ReadSettings();
     CreateDevices();
     ConnectToDevices();
+
+    /*
+     * Start a parallel task to keep reading devices data,
+     * while the main core keeps handling HID and GUI.
+     */
     multicore_launch_core1(GetDevicesData);
 
-    while (true)
-    {
-        OpenCC::GPSFixData gpsFixData;
-        OpenCC::DataManager::GetInstance()->Pop(gpsFixData);
-
-#ifdef _DEBUG
-        if (gpsFixData.fixQuality > 0) {
-            std::cout << "DEBUG - FIXED: " << gpsFixData.fixQuality
-                << " | UTCTIME: " << gpsFixData.UTCTime
-                << " | SATTELITES COUNT: " << gpsFixData.satellitesCount
-                << "  | LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
-                << "  | LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
-                << "\n";
-        }
-#endif
-
-        // std::cout << "main loop from core 0\n";
-        sleep_ms(1000);
-    }
-
-    // OpenCC::GUIDrawer drawer;
-    // CreatePages(drawer);
-    // OpenCC::HIDHandler handler;
-    // OpenCC::GUINavigator guiNavigator(handler, pages_);
-    // drawer.Execute();
+    OpenCC::GUIDrawer drawer;
+    CreatePages(drawer);
+    OpenCC::HIDHandler handler;
+    OpenCC::GUINavigator guiNavigator(handler, pages_);
+    drawer.Execute();
 }
 
-// void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
-//     /*
-//      * The pages order here is crucial, since it represents the pages cycle order!
-//      */
-//     if (settings_.pageMapEnabled) {
-//         pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
-//     }
+void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
+    /*
+     * The pages order here is crucial, since it represents the pages cycle order!
+     */
+    if (settings_.pageMapEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
+    }
 
-//     if (settings_.pageRouteEnabled) {
-//         pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
-//     }
+    if (settings_.pageRouteEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
+    }
 
-//     if (settings_.pageHillsGraphEnabled) {
-//         pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
-//     }
+    if (settings_.pageHillsGraphEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
+    }
 
-//     if (settings_.pageDistanceEnabled) {
-//         pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
-//     }
+    if (settings_.pageDistanceEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
+    }
 
-//     if (settings_.pageAltimetryEnabled) {
-//         pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
-//     }
+    if (settings_.pageAltimetryEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
+    }
 
-//     if (settings_.pageSummaryEnabled) {
-//         pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
-//     }
+    if (settings_.pageSummaryEnabled) {
+        pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
+    }
 
-//     // Settings pages aren't optional.
-//     pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
-// }
+    // Settings pages aren't optional.
+    pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
+}
 
 void TaskManager::ReadSettings() {
     // TODO: Here we need saved settings.
