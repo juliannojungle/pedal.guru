@@ -24,6 +24,7 @@
 namespace GUIDriver {
 
 extern "C" {
+    #include "DEV_Config.h"
     #include "GUI_Paint.h"
 }
 
@@ -31,42 +32,41 @@ extern "C" {
 
 namespace PiRender {
 
-// #define TEXTURE2D_TO_RAYLIB(texture) CLITERAL(GUIDriver::Texture2D) \
-//     { texture.id, texture.width, texture.height, texture.mipmaps, texture.format }
-
 class Texture {
+    private:
+        UWORD *data;
+        void AllocateTexture();
     public:
-        unsigned int id;        // OpenGL texture id
-        int width;              // Texture base width
-        int height;             // Texture base height
-        int mipmaps;            // Mipmap levels, 1 by default
-        int format;             // Data format (PixelFormat type)
+        int width;
+        int height;
         Texture() {}
-        Texture(unsigned int id, int width, int height, int mipmaps, int format)
-            : id(id), width(width), height(height), mipmaps(mipmaps), format(format) {}
+        Texture(int width, int height): width(width), height(height) {}
         void LoadTextureFromImage(PiRender::Image& image);
         void UnloadTexture();
 };
 
-// Texture2D type, same as Texture
-// typedef Texture Texture2D;
+void Texture::AllocateTexture() {
+    UDOUBLE textureSize = this->height * this->width * 2;
 
-// TextureCubemap type, actually, same as Texture
-// typedef Texture TextureCubemap;
+    if ((this->data = (UWORD *)malloc(textureSize)) == NULL) {
+        printf("Failed to allocate memory...\r\n");
+        exit(0);
+    }
+
+    GUIDriver::Paint_NewImage((UBYTE *)this->data, this->width, this->height, ROTATE_0, WHITE);
+    GUIDriver::Paint_SetScale(65); // no scale
+}
 
 void Texture::LoadTextureFromImage(PiRender::Image& image) {
-    // auto driverImage(IMAGE_TO_RAYLIB(image));
-    // auto driverTexture = GUIDriver::LoadTextureFromImage(driverImage);
-    // this->id = driverTexture.id;
-    // this->width = driverTexture.width;
-    // this->height = driverTexture.height;
-    // this->mipmaps = driverTexture.mipmaps;
-    // this->format = driverTexture.format;
+    this->height = image.height;
+    this->width = image.width;
+    AllocateTexture();
+    this->data = image.data;
 }
 
 void Texture::UnloadTexture() {
-    // auto driverTexture(TEXTURE2D_TO_RAYLIB((*this)));
-    // GUIDriver::UnloadTexture(driverTexture);
+    free(this->data);
+    this->data = NULL;
 }
 
 }

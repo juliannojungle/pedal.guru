@@ -7,7 +7,7 @@
 
 [submodule "pico-code"]
     path = src/Dependency/Pico-code
-    url = https://github.com/waveshare/Pico_code.git
+    url = https://github.com/juliannojungle/Pico_code.git
     shallow = true
-    branch = master
+    branch = juliannojungle/RP2040-LCD-1.28
     ignore = all

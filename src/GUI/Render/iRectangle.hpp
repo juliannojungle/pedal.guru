@@ -21,12 +21,12 @@
 
 namespace PiRender {
 
-struct Rectangle {
+struct iRectangle {
     float x;
     float y;
     float width;
     float height;
-    Rectangle(float x, float y, float width, float height)
+    iRectangle(float x, float y, float width, float height)
         : x(x), y(y), width(width), height(height) {}
 };
 

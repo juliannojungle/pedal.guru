@@ -19,22 +19,25 @@
 
 #pragma once
 
-#include "Image.cpp"
+#include <string>
+#include "Color.cpp"
+#include "Texture.cpp"
 
 namespace PiRender {
 
-class Texture {
+class iWindow {
     public:
-        unsigned int id;        // OpenGL texture id
-        int width;              // Texture base width
-        int height;             // Texture base height
-        int mipmaps;            // Mipmap levels, 1 by default
-        int format;             // Data format (PixelFormat type)
-        Texture() {}
-        Texture(unsigned int id, int width, int height, int mipmaps, int format)
-            : id(id), width(width), height(height), mipmaps(mipmaps), format(format) {}
-        virtual void LoadTextureFromImage(PiRender::Image& image) = 0
-        virtual void UnloadTexture() = 0
+        virtual void Init(int width, int height, std::string title) = 0;
+        virtual void SetTargetFPS(int frameRate) = 0;
+        virtual void HideCursor() = 0;
+        virtual bool ShouldClose() = 0;
+        virtual void Close() = 0;
+        virtual void BeginDrawing() = 0;
+        virtual void ClearBackground(PiRender::iColor color) = 0;
+        virtual void EndDrawing() = 0;
+        virtual void DrawCircle(int centerX, int centerY, float radius, PiRender::iColor color) = 0;
+        virtual void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::iColor color) = 0;
+        virtual void DrawTexture(PiRender::iTexture& texture, int posX, int posY, PiRender::iColor color) = 0;
 };
 
 }

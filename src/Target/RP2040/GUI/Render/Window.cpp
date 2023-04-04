@@ -49,7 +49,7 @@ class Window {
 };
 
 void Window::Init(int width, int height, std::string title) {
-    // GUIDriver::InitWindow(width, height, title.c_str());
+    GUIDriver::Paint_Clear(WHITE);
 }
 
 void Window::SetTargetFPS(int frameRate) {
@@ -74,7 +74,7 @@ void Window::BeginDrawing() {
 }
 
 void Window::ClearBackground(PiRender::Color color) {
-    // GUIDriver::ClearBackground(COLOR_TO_RAYLIB(color));
+    GUIDriver::Paint_Clear(COLOR_TO_PICOCODE(color));
 }
 
 void Window::EndDrawing() {

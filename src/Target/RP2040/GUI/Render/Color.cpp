@@ -29,8 +29,9 @@ extern "C" {
 
 namespace PiRender {
 
-// #define COLOR_TO_RAYLIB(color) CLITERAL(GUIDriver::Color) \
-//     { color.red, color.green, color.blue, color.alpha }
+// https://stackoverflow.com/a/9069480
+#define COLOR_TO_PICOCODE(color) \
+    (short)(((color.red << 8) & 0xF800) | ((color.green << 3) & 0x07E0) | ((color.blue >> 3) & 0x001F))
 
 class Color {
     public:
@@ -38,6 +39,7 @@ class Color {
         unsigned char green;
         unsigned char blue;
         unsigned char alpha;
+        Color() {};
         Color(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
             : red(red), green(green), blue(blue), alpha(alpha) {}
 };

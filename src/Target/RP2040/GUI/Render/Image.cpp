@@ -22,6 +22,7 @@
 #include <string>
 #include "Color.cpp"
 #include "Rectangle.cpp"
+#include <stdlib.h>
 
 namespace GUIDriver {
 
@@ -33,22 +34,17 @@ extern "C" {
 
 namespace PiRender {
 
-// #define IMAGE_TO_RAYLIB(image) CLITERAL(GUIDriver::Image) \
-//     { image.data, image.width, image.height, image.mipmaps, image.format }
-
 class Image {
     private:
-        // void Copy(GUIDriver::Image &image);
+        void AllocateImage();
     public:
-        void *data;
+        uint16_t *data;
         int width;
         int height;
-        int mipmaps; // Mipmap levels, 1 by default
-        int format;  // Data format (PixelFormat type)
+        PiRender::Color color;
         Image() {}
         Image(int width, int height, PiRender::Color color);
-        Image(void *data, int width, int height, int mipmaps, int format)
-            : data(data), width(width), height(height), mipmaps(mipmaps), format(format) {}
+        Image(int width, int height): width(width), height(height) {}
         Image(std::string path);
         void LoadImage(std::string path);
         void UnloadImage();
@@ -56,17 +52,23 @@ class Image {
         void ImageDrawPixel(int posX, int posY, PiRender::Color color);
 };
 
-// void Image::Copy(GUIDriver::Image &image) {
-//     this->data = image.data;
-//     this->width = image.width;
-//     this->height = image.height;
-//     this->mipmaps = image.mipmaps;
-//     this->format = image.format;
-// }
+void Image::AllocateImage() {
+    uint32_t imageSize = this->height * this->width * 2;
+
+    if ((this->data = (uint16_t *)malloc(imageSize)) == NULL) {
+        printf("Failed to allocate memory...\r\n");
+        exit(0);
+    }
+
+    uint16_t color(COLOR_TO_PICOCODE(this->color));
+    GUIDriver::Paint_NewImage((uint8_t *)this->data, this->width, this->height, ROTATE_0, color);
+    GUIDriver::Paint_SetScale(65); // no scale
+}
 
 Image::Image(int width, int height, PiRender::Color color) {
-    // auto driverImage = GUIDriver::GenImageColor(width, height, COLOR_TO_RAYLIB(color));
-    // Copy(driverImage);
+    this->width = width;
+    this->height = height;
+    this->color = color;
 }
 
 Image::Image(std::string path) {
@@ -74,31 +76,32 @@ Image::Image(std::string path) {
 }
 
 void Image::LoadImage(std::string path) {
-    // auto driverImage = GUIDriver::LoadImage(path.c_str());
-    // Copy(driverImage);
+    AllocateImage();
 }
 
 void Image::UnloadImage() {
-    // auto driverImage(IMAGE_TO_RAYLIB((*this)));
-    // GUIDriver::UnloadImage(driverImage);
+    free(this->data);
+    this->data = NULL;
 }
 
 void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) {
-    // auto driverImageDestination(IMAGE_TO_RAYLIB((*this)));
-    // auto driverImageOrigin(IMAGE_TO_RAYLIB(image));
-    // GUIDriver::ImageDraw(
-    //     &driverImageDestination,
-    //     driverImageOrigin,
-    //     RECTANGLE_TO_RAYLIB(origin),
-    //     RECTANGLE_TO_RAYLIB(destination),
-    //     COLOR_TO_RAYLIB(tint));
-    // Copy(driverImageDestination);
+    // const unsigned char imageData = image.data;
+    // GUIDriver::Paint_DrawImage(&imageData, destination.x, destination.y, origin.width, origin.height);
+
+    // int i, j;
+    // for (j = 0; j < origin.height; j++) {
+    //     for (i = 0; i < origin.width; i++) {
+    //         if (destination.x + i < GUIDriver::Paint.WidthMemory && destination.y + j < GUIDriver::Paint.HeightMemory) //Exceeded part does not display
+    //             Paint_SetPixel(
+    //                 destination.x + i,
+    //                 destination.y + j,
+    //                 (*((const unsigned char *)image.data + j * origin.width * 2 + i * 2 + 1)) << 8 | (*(image.data + j * origin.width * 2 + i * 2)));
+    //     }
+    // }
 }
 
 void Image::ImageDrawPixel(int posX, int posY, PiRender::Color color) {
-    // auto driverImage(IMAGE_TO_RAYLIB((*this)));
-    // GUIDriver::ImageDrawPixel(&driverImage, posX, posY, COLOR_TO_RAYLIB(color));
-    // Copy(driverImage);
+    GUIDriver::Paint_SetPixel(posX, posY, COLOR_TO_PICOCODE(color));
 }
 
 }

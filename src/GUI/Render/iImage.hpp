@@ -25,22 +25,22 @@
 
 namespace PiRender {
 
-class Image {
+class iImage {
     public:
         void *data;
         int width;
         int height;
         int mipmaps; // Mipmap levels, 1 by default
         int format;  // Data format (PixelFormat type)
-        Image() {}
-        virtual Image(int width, int height, PiRender::Color color) = 0
-        virtual Image(void *data, int width, int height, int mipmaps, int format)
+        iImage() {}
+        iImage(int width, int height, PiRender::iColor color) {}
+        iImage(void *data, int width, int height, int mipmaps, int format)
             : data(data), width(width), height(height), mipmaps(mipmaps), format(format) {}
-        virtual Image(std::string path) = 0
-        virtual void LoadImage(std::string path) = 0
-        virtual void UnloadImage() = 0
-        virtual void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) = 0
-        virtual void ImageDrawPixel(int posX, int posY, PiRender::Color color) = 0
+        iImage(std::string path) {}
+        virtual void LoadImage(std::string path) = 0;
+        virtual void UnloadImage() = 0;
+        virtual void ImageDraw(PiRender::iImage image, PiRender::iRectangle origin, PiRender::iRectangle destination, PiRender::iColor tint) = 0;
+        virtual void ImageDrawPixel(int posX, int posY, PiRender::iColor color) = 0;
 };
 
 }

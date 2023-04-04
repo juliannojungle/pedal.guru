@@ -36,6 +36,8 @@ set(PICO_CODE_LIB ${CMAKE_SOURCE_DIR}/src/Dependency/Pico-code/c/lib)
 add_subdirectory(${PICO_CODE_LIB}/Config)
 add_subdirectory(${PICO_CODE_LIB}/GUI)
 include_directories(${PICO_CODE_LIB}/Config)
+include_directories(${PICO_CODE_LIB}/Fonts)
+include_directories(${PICO_CODE_LIB}/LCD)
 include_directories(${PICO_CODE_LIB}/GUI)
 target_link_libraries(${PROJECT_NAME} PUBLIC GUI Config)
 
