@@ -10,20 +10,20 @@ This very first iteration of the project was based on the following devices:
 
 - **[1.28inch LCD Module](https://www.waveshare.com/wiki/1.28inch_LCD_Module)**, from WaveShare (using the [GC9A01 overlay](https://github.com/juliannojungle/gc9a01-overlay))
 
-![1.28inch LCD Module](Documentation/Image/waveshare_1.28inch_round_lcd.jpg)
+<img alt="1.28inch LCD Module" src="Documentation/Image/waveshare_1.28inch_round_lcd.jpg" width="300px">
 
 - **[Raspberry Pi Zero W](https://www.raspberrypi.com/products/raspberry-pi-zero-w/)**, from Raspberry Pi Foundation
 
-![Raspberry Pi Zero W](Documentation/Image/raspberry_pi_zero_w.jpg)
+<img alt="Raspberry Pi Zero W" src="Documentation/Image/raspberry_pi_zero_w.jpg" width="200px">
 
 Now, we're including the following embedded device:
 
 - **[RP2040-LCD-1.28]([https://www.waveshare.com/wiki/1.28inch_LCD_Module](https://www.waveshare.com/rp2040-lcd-1.28.htm))**, from WaveShare
 
-![RP2040-LCD-1.28_front](Documentation/Image/waveshare_rp2040-lcd-1.28_front.jpg)
-
-![RP2040-LCD-1.28_back](Documentation/Image/waveshare_rp2040-lcd-1.28_back.jpg)
-
+<p>
+<img alt="RP2040-LCD-1.28_front" src="Documentation/Image/waveshare_rp2040-lcd-1.28_front.jpg" width="200px">
+<img alt="RP2040-LCD-1.28_back" src="Documentation/Image/waveshare_rp2040-lcd-1.28_back.jpg" width="200px">
+</p>
 
 # Software
 
