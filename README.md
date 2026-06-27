@@ -1,7 +1,10 @@
 # Pedal Guru
-Pedal Guru is an open-source DIY project with the intention to bring useful resources that are appreciated by cyclists to easy-to-work platforms like RP2040 (Raspberry Pi Pico) and ESP32-S3, in a more organized manner than usual apps offer us. The intention is to include integration with some popular services.
 
 > ⚠️ This project is under active develpment. The documentation is growing along the project as it's a work-in-progress. If interested, please check the [development board](https://github.com/users/juliannojungle/projects/1) and the [reference diagram](DIAGRAM.md).
+
+An open-source DIY project to bring useful resources that are appreciated by cyclists to easy-to-work platforms like RP2040 (Raspberry Pi Pico) and ESP32-S3, in a more organized manner than usual. The intention is to include integration with some popular services.
+
+Currently supports **RP2040** (Raspberry Pi Pico) and **ESP32** from a single codebase.
 
 ---
 
