@@ -9,7 +9,7 @@ Pedal Guru is an open-source DIY project with the intention to bring useful reso
 
 | Platform | RP2040 | ESP32 |
 |---|---|---|
-| Pinout |<img alt="RP2040 LCD 1.28" src="src\Dependency\gui.ll\Documentation\Image\RP2040_LCD_1_28.png" width="300px">|<img alt="ESP32-S3 LCD 1.28" src="src\Dependency\gui.ll\Documentation\Image\ESP32_S3_LCD_1_28.png" width="300px">|
+| Pinout |<img alt="RP2040 LCD 1.28" src="Documentation\Image\RP2040_LCD_1_28.png" width="300px">|<img alt="ESP32-S3 LCD 1.28" src="Documentation\Image\ESP32_S3_LCD_1_28.png" width="300px">|
 | Device | [RP2040-LCD-1.28](https://www.waveshare.com/wiki/RP2040-LCD-1.28) | [ESP32-S3-LCD-1.28](https://www.waveshare.com/wiki/ESP32-S3-LCD-1.28) |
 | Toolchain | arm-none-eabi-gcc + Pico SDK | xtensa-esp32-elf-gcc + ESP-IDF |
 | Output | `.uf2` | `.bin` |
