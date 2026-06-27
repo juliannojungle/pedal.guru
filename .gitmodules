@@ -1,13 +1,6 @@
-[submodule "pico-sdk"]
-    path = src/Dependency/pico-sdk
-    url = https://github.com/raspberrypi/pico-sdk.git
+[submodule "gui.ll"]
+    path = src/Dependency/gui.ll
+    url = https://github.com/juliannojungle/gui.ll.git
     shallow = true
-    branch = master
-    ignore = all
-
-[submodule "pico-code"]
-    path = src/Dependency/Pico-code
-    url = https://github.com/juliannojungle/Pico_code.git
-    shallow = true
-    branch = juliannojungle/RP2040-LCD-1.28
+    branch = main
     ignore = all
