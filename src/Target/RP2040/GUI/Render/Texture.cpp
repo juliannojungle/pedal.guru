@@ -21,11 +21,11 @@
 
 #include "Image.cpp"
 
-namespace GUIDriver {
+namespace GUI_LL {
 
 extern "C" {
-    #include "DEV_Config.h"
-    #include "GUI_Paint.h"
+    // #include "DEV_Config.h"
+    #include "Canvas.h"
 }
 
 }
@@ -34,7 +34,7 @@ namespace PiRender {
 
 class Texture {
     private:
-        UWORD *data;
+        GUI_LL::UINT16 *data;
         void AllocateTexture();
     public:
         int width;
@@ -46,15 +46,15 @@ class Texture {
 };
 
 void Texture::AllocateTexture() {
-    UDOUBLE textureSize = this->height * this->width * 2;
+    GUI_LL::UINT32 textureSize = this->height * this->width * 2;
 
-    if ((this->data = (UWORD *)malloc(textureSize)) == NULL) {
+    if ((this->data = (GUI_LL::UINT16 *)malloc(textureSize)) == NULL) {
         printf("Failed to allocate memory...\r\n");
         exit(0);
     }
 
-    GUIDriver::Paint_NewImage((UBYTE *)this->data, this->width, this->height, ROTATE_0, WHITE);
-    GUIDriver::Paint_SetScale(65); // no scale
+    GUI_LL::CanvasNewTexture((GUI_LL::UINT8 *)this->data, this->width, this->height, GUI_LL::ROTATE_0);
+    GUI_LL::CanvasSetScale(65); // no scale
 }
 
 void Texture::LoadTextureFromImage(PiRender::Image& image) {

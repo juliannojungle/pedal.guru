@@ -19,10 +19,10 @@
 
 #pragma once
 
-namespace GUIDriver {
+namespace GUI_LL {
 
 extern "C" {
-    #include "GUI_Paint.h"
+    #include "Canvas.h"
 }
 
 }

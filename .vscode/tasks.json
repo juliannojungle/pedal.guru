@@ -1,0 +1,83 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build: RP2040 Full (DEBUGMSGS)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cd ~/pedal.guru && rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 -DDEBUGMSGS=ON && make"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Build: ESP32 Full (DEBUGMSGS)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ~/esp-idf/export.sh && cd ~/pedal.guru && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 -DDEBUGMSGS=ON build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Build: Incremental",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cd ~/pedal.guru/build && if [ -f build.ninja ]; then source ~/esp-idf/export.sh 2>/dev/null && ninja; else make; fi"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        }
+    ]
+}

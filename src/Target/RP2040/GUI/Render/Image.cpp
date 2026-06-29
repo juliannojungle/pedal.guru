@@ -24,10 +24,11 @@
 #include "Rectangle.cpp"
 #include <stdlib.h>
 
-namespace GUIDriver {
+namespace GUI_LL {
 
 extern "C" {
-    #include "GUI_Paint.h"
+    #include "Canvas.h"
+    #include "Types.h"
 }
 
 }
@@ -38,7 +39,7 @@ class Image {
     private:
         void AllocateImage();
     public:
-        uint16_t *data;
+        GUI_LL::UINT16 *data;
         int width;
         int height;
         PiRender::Color color;
@@ -53,16 +54,16 @@ class Image {
 };
 
 void Image::AllocateImage() {
-    uint32_t imageSize = this->height * this->width * 2;
+    GUI_LL::UINT32 imageSize = this->height * this->width * 2;
 
-    if ((this->data = (uint16_t *)malloc(imageSize)) == NULL) {
+    if ((this->data = (GUI_LL::UINT16 *)malloc(imageSize)) == NULL) {
         printf("Failed to allocate memory...\r\n");
         exit(0);
     }
 
-    uint16_t color(COLOR_TO_PICOCODE(this->color));
-    GUIDriver::Paint_NewImage((uint8_t *)this->data, this->width, this->height, ROTATE_0, color);
-    GUIDriver::Paint_SetScale(65); // no scale
+    GUI_LL::UINT16 color(COLOR_TO_PICOCODE(this->color));
+    GUI_LL::CanvasNewTexture((GUI_LL::UINT8 *)this->data, this->width, this->height, GUI_LL::ROTATE_0);
+    GUI_LL::CanvasSetScale(65); // no scale
 }
 
 Image::Image(int width, int height, PiRender::Color color) {
@@ -86,12 +87,12 @@ void Image::UnloadImage() {
 
 void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) {
     // const unsigned char imageData = image.data;
-    // GUIDriver::Paint_DrawImage(&imageData, destination.x, destination.y, origin.width, origin.height);
+    // GUI_LL::Paint_DrawImage(&imageData, destination.x, destination.y, origin.width, origin.height);
 
     // int i, j;
     // for (j = 0; j < origin.height; j++) {
     //     for (i = 0; i < origin.width; i++) {
-    //         if (destination.x + i < GUIDriver::Paint.WidthMemory && destination.y + j < GUIDriver::Paint.HeightMemory) //Exceeded part does not display
+    //         if (destination.x + i < GUI_LL::Paint.WidthMemory && destination.y + j < GUI_LL::Paint.HeightMemory) //Exceeded part does not display
     //             Paint_SetPixel(
     //                 destination.x + i,
     //                 destination.y + j,
@@ -101,7 +102,7 @@ void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Colo
 }
 
 void Image::ImageDrawPixel(int posX, int posY, PiRender::Color color) {
-    GUIDriver::Paint_SetPixel(posX, posY, COLOR_TO_PICOCODE(color));
+    GUI_LL::CanvasSetPixel(posX, posY, COLOR_TO_PICOCODE(color));
 }
 
 }

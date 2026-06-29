@@ -23,10 +23,10 @@
 #include "Color.cpp"
 #include "Texture.cpp"
 
-namespace GUIDriver {
+namespace GUI_LL {
 
 extern "C" {
-    #include "GUI_Paint.h"
+    #include "Canvas.h"
 }
 
 }
@@ -49,49 +49,49 @@ class Window {
 };
 
 void Window::Init(int width, int height, std::string title) {
-    GUIDriver::Paint_Clear(WHITE);
+    GUI_LL::CanvasClear(COLOR_TO_PICOCODE(COLOR_WHITE));
 }
 
 void Window::SetTargetFPS(int frameRate) {
-    // GUIDriver::SetTargetFPS(frameRate);
+    // GUI_LL::SetTargetFPS(frameRate);
 }
 
 void Window::HideCursor() {
-    // GUIDriver::HideCursor();
+    // GUI_LL::HideCursor();
 }
 
 bool Window::ShouldClose() {
-    // return GUIDriver::WindowShouldClose();
+    // return GUI_LL::WindowShouldClose();
     return false;
 }
 
 void Window::Close() {
-    // GUIDriver::CloseWindow();
+    // GUI_LL::CloseWindow();
 }
 
 void Window::BeginDrawing() {
-    // GUIDriver::BeginDrawing();
+    // GUI_LL::BeginDrawing();
 }
 
 void Window::ClearBackground(PiRender::Color color) {
-    GUIDriver::Paint_Clear(COLOR_TO_PICOCODE(color));
+    GUI_LL::CanvasClear(COLOR_TO_PICOCODE(color));
 }
 
 void Window::EndDrawing() {
-    // GUIDriver::EndDrawing();
+    // GUI_LL::EndDrawing();
 }
 
 void Window::DrawCircle(int centerX, int centerY, float radius, PiRender::Color color) {
-    // GUIDriver::DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
+    // GUI_LL::DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
 }
 
 void Window::DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color) {
-    // GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR_TO_RAYLIB(color));
+    // GUI_LL::DrawText(text.c_str(), posX, posY, fontSize, COLOR_TO_RAYLIB(color));
 }
 
 void Window::DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color) {
     // auto driverTexture(TEXTURE2D_TO_RAYLIB(texture));
-    // GUIDriver::DrawTexture(driverTexture, posX, posY, COLOR_TO_RAYLIB(color));
+    // GUI_LL::DrawTexture(driverTexture, posX, posY, COLOR_TO_RAYLIB(color));
 }
 
 }

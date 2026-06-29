@@ -2,10 +2,13 @@
     "editor.rulers": [120],
     "editor.tabSize": 4,
     "editor.detectIndentation": false,
-    "cmake.cmakePath": "/usr/bin/cmake",
-    "cmake.configureSettings": {
-        "CMAKE_MAKE_PROGRAM": "/usr/bin/make"
-    },
+    "clangd.path": "clangd",
+    "clangd.arguments": [
+        "--query-driver=/usr/bin/arm-none-eabi-gcc"
+    ],
+    "clangd.restartAfterCrash": true,
+    "editor.indentSize": 4,
+    "explorer.excludeGitIgnore": true,
     "files.associations": {
         "cstdarg": "cpp",
         "array": "cpp",
@@ -60,6 +63,10 @@
         "iomanip": "cpp",
         "iostream": "cpp",
         "thread": "cpp",
-        "cinttypes": "cpp"
-    }
+        "cinttypes": "cpp",
+        "*.h": "c",
+        "*.c": "c"
+    },
+    "git.detectSubmodules": false,
+    "git.autoRepositoryDetection": "openEditors"
 }

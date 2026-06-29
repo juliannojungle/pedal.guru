@@ -23,7 +23,7 @@
 #include "Color.cpp"
 #include "Rectangle.cpp"
 
-namespace GUIDriver {
+namespace RAYLIB {
 
 /* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
 extern "C" {
@@ -34,12 +34,12 @@ extern "C" {
 
 namespace PiRender {
 
-#define IMAGE_TO_RAYLIB(image) CLITERAL(GUIDriver::Image) \
+#define IMAGE_TO_RAYLIB(image) CLITERAL(RAYLIB::Image) \
     { image.data, image.width, image.height, image.mipmaps, image.format }
 
 class Image {
     private:
-        void Copy(GUIDriver::Image &image);
+        void Copy(RAYLIB::Image &image);
     public:
         void *data;
         int width;
@@ -57,7 +57,7 @@ class Image {
         void ImageDrawPixel(int posX, int posY, PiRender::Color color);
 };
 
-void Image::Copy(GUIDriver::Image &image) {
+void Image::Copy(RAYLIB::Image &image) {
     this->data = image.data;
     this->width = image.width;
     this->height = image.height;
@@ -66,7 +66,7 @@ void Image::Copy(GUIDriver::Image &image) {
 }
 
 Image::Image(int width, int height, PiRender::Color color) {
-    auto driverImage = GUIDriver::GenImageColor(width, height, COLOR_TO_RAYLIB(color));
+    auto driverImage = RAYLIB::GenImageColor(width, height, COLOR_TO_RAYLIB(color));
     Copy(driverImage);
 }
 
@@ -75,19 +75,19 @@ Image::Image(std::string path) {
 }
 
 void Image::LoadImage(std::string path) {
-    auto driverImage = GUIDriver::LoadImage(path.c_str());
+    auto driverImage = RAYLIB::LoadImage(path.c_str());
     Copy(driverImage);
 }
 
 void Image::UnloadImage() {
     auto driverImage(IMAGE_TO_RAYLIB((*this)));
-    GUIDriver::UnloadImage(driverImage);
+    RAYLIB::UnloadImage(driverImage);
 }
 
 void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint) {
     auto driverImageDestination(IMAGE_TO_RAYLIB((*this)));
     auto driverImageOrigin(IMAGE_TO_RAYLIB(image));
-    GUIDriver::ImageDraw(
+    RAYLIB::ImageDraw(
         &driverImageDestination,
         driverImageOrigin,
         RECTANGLE_TO_RAYLIB(origin),
@@ -98,7 +98,7 @@ void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Colo
 
 void Image::ImageDrawPixel(int posX, int posY, PiRender::Color color) {
     auto driverImage(IMAGE_TO_RAYLIB((*this)));
-    GUIDriver::ImageDrawPixel(&driverImage, posX, posY, COLOR_TO_RAYLIB(color));
+    RAYLIB::ImageDrawPixel(&driverImage, posX, posY, COLOR_TO_RAYLIB(color));
     Copy(driverImage);
 }
 

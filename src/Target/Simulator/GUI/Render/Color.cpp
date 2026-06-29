@@ -19,7 +19,7 @@
 
 #pragma once
 
-namespace GUIDriver {
+namespace RAYLIB {
 
 /* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
 extern "C" {
@@ -30,7 +30,7 @@ extern "C" {
 
 namespace PiRender {
 
-#define COLOR_TO_RAYLIB(color) CLITERAL(GUIDriver::Color) \
+#define COLOR_TO_RAYLIB(color) CLITERAL(RAYLIB::Color) \
     { color.red, color.green, color.blue, color.alpha }
 
 class Color {

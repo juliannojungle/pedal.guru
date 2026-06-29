@@ -19,7 +19,7 @@
 
 #pragma once
 
-namespace GUIDriver {
+namespace RAYLIB {
 
 /* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
 extern "C" {
@@ -30,7 +30,7 @@ extern "C" {
 
 namespace PiRender {
 
-#define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUIDriver::Rectangle) \
+#define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(RAYLIB::Rectangle) \
     { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
 
 struct Rectangle {
