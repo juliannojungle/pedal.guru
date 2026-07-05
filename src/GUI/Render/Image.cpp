@@ -38,11 +38,15 @@ void Image::AllocateImage() {
     CanvasSetScale(65); // no scale
 }
 
+Image::Image() {}
+
 Image::Image(int width, int height, PiRender::Color color) {
     this->width = width;
     this->height = height;
     this->color = color;
 }
+
+Image::Image(int width, int height): width(width), height(height) {}
 
 Image::Image(std::string path) {
     LoadImage(path);

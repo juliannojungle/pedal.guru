@@ -38,9 +38,9 @@ class Image {
         int width;
         int height;
         PiRender::Color color;
-        Image() {}
+        Image();
         Image(int width, int height, PiRender::Color color);
-        Image(int width, int height): width(width), height(height) {}
+        Image(int width, int height);
         Image(std::string path);
         void LoadImage(std::string path);
         void UnloadImage();

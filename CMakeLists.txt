@@ -39,7 +39,9 @@ elseif(PLATFORM_NAME STREQUAL "Simulator")
     set(SOURCES ${SOURCES})
     add_executable(${PROJECT_NAME} ${SOURCES})
     include_directories(${INCLUDE_DIRS})
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m)
+
+    find_package(CURL REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m CURL::libcurl)
 
 elseif(PLATFORM_NAME STREQUAL "RP2040")
     set(CMAKE_C_STANDARD 11)

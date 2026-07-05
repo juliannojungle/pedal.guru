@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "Image.cpp"
+#include "Image.hpp"
 
 extern "C" {
     #include "Types.h"

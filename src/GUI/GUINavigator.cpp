@@ -17,39 +17,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include <memory>
-#include <list>
-#include "Page/BasePage.cpp"
-#include "../HIDHandler.cpp"
+#include "GUINavigator.hpp"
 
 namespace OpenCC {
-
-class GUINavigator {
-    private:
-        OpenCC::HIDHandler& handler_;
-        std::list<std::unique_ptr<OpenCC::BasePage>>& pages_;
-        std::list<std::unique_ptr<OpenCC::BasePage>>::iterator pageIndex_;
-        void RegisterEvents();
-        void UnregisterEvents();
-        void GoToNextPage();
-        void GoToPreviousPage();
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator previousPageReference_;
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator nextPageReference_;
-    public:
-        GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::BasePage>>& pages)
-            : handler_(handler), pages_(pages) {
-            RegisterEvents();
-
-            if (pages_.size() == 0) return;
-
-            pageIndex_ = pages_.begin();
-            (*pageIndex_)->Setup();
-        }
-        ~GUINavigator() {
-            //TODO: This is throwing an invalid pointer exception. Check the iterators reference.
-            // UnregisterEvents();
-        }
-};
 
 void GUINavigator::RegisterEvents() {
     nextPageReference_ = handler_.RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});

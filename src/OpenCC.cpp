@@ -19,7 +19,7 @@
 
 #include "TaskManager.hpp"
 
-#if not defined (PLATFORM_NAME)
+#if !defined(SIMULATOR) && !defined(RP2040) && !defined(ESP32)
     #error Platform must be informed!
 #endif
 
