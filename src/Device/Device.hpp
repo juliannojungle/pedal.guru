@@ -19,6 +19,23 @@
 
 #pragma once
 
-#ifndef PLATFORM_NAME
-    #error Platform must be informed!
-#endif
+#include <list>
+#include <memory>
+#include "Sensor.hpp"
+
+namespace OpenCC {
+
+class Device {
+    protected:
+        bool connected_;
+        std::list<std::unique_ptr<Sensor>> sensors_;
+
+    public:
+        Device() : connected_(false), sensors_() {};
+        virtual ~Device() = default; // make it polymorphic
+        virtual void Connect() = 0;
+        virtual void Disconnect() = 0;
+        virtual bool Connected() = 0;
+        virtual void GetData() = 0;
+};
+}

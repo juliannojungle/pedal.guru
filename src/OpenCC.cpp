@@ -17,8 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "OpenCC.hpp"
-#include "TaskManager.cpp"
+#include "TaskManager.hpp"
+
+#if not defined (PLATFORM_NAME)
+    #error Platform must be informed!
+#endif
 
 int main(void) {
 #ifdef RP2040

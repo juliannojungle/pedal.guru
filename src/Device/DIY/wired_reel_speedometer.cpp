@@ -17,13 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
-#include "../iDevice.hpp"
+#include "../Device.hpp"
 
 namespace OpenCC {
 
-class WiredReelSpeedometer: public iDevice {
+class WiredReelSpeedometer: public Device {
     public:
         void Connect() override {
             // Do nothing, since it's wired.

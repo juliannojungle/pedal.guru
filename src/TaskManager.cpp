@@ -17,47 +17,27 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "TaskManager.hpp"
+#include "GUINavigator.hpp"
+#include "PageAltimetry.hpp"
+#include "PageDistance.hpp"
+#include "PageHillsGraph.hpp"
+#include "PageMap.hpp"
+#include "PageMapSync.hpp"
+#include "PageRoute.hpp"
+#include "PageSummary.hpp"
+#include "HIDHandler.hpp"
+#include "LocationModule.hpp"
 
-#include <memory>
-#include <list>
-#include <thread>
-#include "GUI/GUIDrawer.cpp"
-#include "GUI/GUINavigator.cpp"
-#include "GUI/Page/BasePage.cpp"
-#include "GUI/Page/PageAltimetry.cpp"
-#include "GUI/Page/PageDistance.cpp"
-#include "GUI/Page/PageHillsGraph.cpp"
-#include "GUI/Page/PageMap.cpp"
-#include "GUI/Page/PageMapSync.cpp"
-#include "GUI/Page/PageRoute.cpp"
-#include "GUI/Page/PageSummary.cpp"
-#include "HIDHandler.cpp"
-#include "Model/SettingsData.hpp"
-#include "Device/iDevice.hpp"
-#include "Device/Generic/LocationModule/LocationModule.cpp"
+#if defined (RP2040)
 #include "pico/multicore.h"
-#include <iomanip> // setprecision
+#else
+#include <thread>
+#endif
 
 namespace OpenCC {
 
-class TaskManager {
-    private:
-        OpenCC::SettingsData settings_;
-        static std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
-        std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
-        static bool running_;
-        void ReadSettings();
-        void CreateDevices();
-        void ConnectToDevices();
-        static void GetDevicesData();
-        void CreatePages(OpenCC::GUIDrawer& drawer);
-    public:
-        ~TaskManager();
-        void Execute();
-};
-
-std::list<std::unique_ptr<OpenCC::iDevice>> TaskManager::devices_;
+std::list<std::unique_ptr<OpenCC::Device>> TaskManager::devices_;
 bool TaskManager::running_;
 
 void TaskManager::Execute() {
@@ -69,7 +49,12 @@ void TaskManager::Execute() {
      * Start a parallel task to keep reading devices data,
      * while the main core keeps handling HID and GUI.
      */
+#if defined (RP2040)
     multicore_launch_core1(GetDevicesData);
+#else
+    std::thread t(&GetDevicesData, this);
+    t.detach();
+#endif
 
     OpenCC::GUIDrawer drawer;
     CreatePages(drawer);
@@ -145,7 +130,7 @@ void TaskManager::GetDevicesData() {
 
         device = (device == devices_.end()) ? devices_.begin() : device++;
 
-        sleep_ms(1000);//TODO something better.
+        Time::Delay(1000);//TODO something better.
     }
 }
 

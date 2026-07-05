@@ -19,18 +19,29 @@
 
 #pragma once
 
-extern "C" {
-    #include <pico/mutex.h>
-}
+#include <memory>
+#include <list>
+#include "Device.hpp"
+#include "GUIDrawer.hpp"
+#include "BasePage.hpp"
+#include "SettingsData.hpp"
 
 namespace OpenCC {
 
-class Mutex {
-private:
-    static mutex_t lock_;
-public:
-    void Lock();
-    void Release();
+class TaskManager {
+    private:
+        OpenCC::SettingsData settings_;
+        static std::list<std::unique_ptr<OpenCC::Device>> devices_;
+        std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
+        static bool running_;
+        void ReadSettings();
+        void CreateDevices();
+        void ConnectToDevices();
+        static void GetDevicesData();
+        void CreatePages(OpenCC::GUIDrawer& drawer);
+    public:
+        ~TaskManager();
+        void Execute();
 };
 
 }

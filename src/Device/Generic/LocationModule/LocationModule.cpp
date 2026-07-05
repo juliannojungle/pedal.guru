@@ -17,23 +17,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
 #include <list>
 #include <memory>
-#include "../../../Sensor/GPS.cpp"
-#include "../../iDevice.hpp"
+#include "GPS.hpp"
+#include "LocationModule.hpp"
 
 namespace OpenCC {
-
-class LocationModule : public iDevice {
-    public:
-        LocationModule();
-        void Connect() override;
-        bool Connected() override;
-        void Disconnect() override;
-        void GetData() override;
-};
 
 LocationModule::LocationModule() {
     this->sensors_.push_back(std::make_unique<OpenCC::GPS>());

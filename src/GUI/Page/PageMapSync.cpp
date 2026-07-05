@@ -17,8 +17,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
 #include "PageMapSync.hpp"
 
 namespace OpenCC {

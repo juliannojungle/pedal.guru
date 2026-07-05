@@ -19,18 +19,17 @@
 
 #pragma once
 
-extern "C" {
-    #include <pico/mutex.h>
-}
+#include "Device.hpp"
 
 namespace OpenCC {
 
-class Mutex {
-private:
-    static mutex_t lock_;
-public:
-    void Lock();
-    void Release();
+class LocationModule : public Device {
+    public:
+        LocationModule();
+        void Connect() override;
+        bool Connected() override;
+        void Disconnect() override;
+        void GetData() override;
 };
 
 }

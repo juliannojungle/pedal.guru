@@ -19,18 +19,23 @@
 
 #pragma once
 
-extern "C" {
-    #include <pico/mutex.h>
-}
+#include <string>
+#include "Sensor.hpp"
+#include "GPSFixData.hpp"
 
 namespace OpenCC {
 
-class Mutex {
-private:
-    static mutex_t lock_;
-public:
-    void Lock();
-    void Release();
+class GPS : public Sensor {
+    private:
+        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA.
+        const int startingPos = 3;
+        bool IsGpsFixInfo(std::string &info);
+        void UartGetLine(std::string &line);
+        void LogGpsData(OpenCC::GPSFixData &gpsFixData);
+    public:
+        void Enable() override;
+        void Disable() override;
+        void GetData() override;
 };
 
 }

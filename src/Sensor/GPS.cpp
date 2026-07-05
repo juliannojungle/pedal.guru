@@ -17,34 +17,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
-#include <string>
-#include "iSensor.hpp"
-#include "../Model/GPSFixData.hpp"
-#include "../DataManager.cpp"
+#include "GPS.hpp"
+#include "DataManager.hpp"
 // #include <fstream> // file stream
-#include "hardware/gpio.h"
-#include "hardware/uart.h"
+// #include "hardware/gpio.h"
+// #include "hardware/uart.h"
 
 #ifdef _DEBUG
     #include <iostream> // cout
 #endif
 
 namespace OpenCC {
-
-class GPS : public iSensor {
-    private:
-        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA.
-        const int startingPos = 3;
-        bool IsGpsFixInfo(std::string &info);
-        void UartGetLine(std::string &line);
-        void LogGpsData(OpenCC::GPSFixData &gpsFixData);
-    public:
-        void Enable() override;
-        void Disable() override;
-        void GetData() override;
-};
 
 void GPS::Enable() {
     // std::ifstream uart;
@@ -58,15 +41,15 @@ void GPS::Enable() {
     //     this->enabled_ = false;
     // }
 
-    uart_init(uart0, 9600);
-    gpio_set_function(0, GPIO_FUNC_UART); // GPIO pin 0 is UART0 TX
-    gpio_set_function(1, GPIO_FUNC_UART); // GPIO pin 1 is UART0 RX
+    // uart_init(uart0, 9600);
+    // gpio_set_function(0, GPIO_FUNC_UART); // GPIO pin 0 is UART0 TX
+    // gpio_set_function(1, GPIO_FUNC_UART); // GPIO pin 1 is UART0 RX
 
 #ifdef L96GPS
-    uart_puts(uart0, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
-    uart_puts(uart0, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
-    uart_puts(uart0, "$PMTK886,1*29\0"); // enable fitness mode.
-    //uart_puts(uart0, "$PMTK886,0*28\0"); // enable normal mode.
+    // uart_puts(uart0, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
+    // uart_puts(uart0, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
+    // uart_puts(uart0, "$PMTK886,1*29\0"); // enable fitness mode.
+    //#uart_puts(uart0, "$PMTK886,0*28\0"); // enable normal mode.
 #endif
 
     this->enabled_ = true;
@@ -74,7 +57,7 @@ void GPS::Enable() {
 
 void GPS::Disable() {
     // uart.close();
-    uart_deinit(uart0);
+    // uart_deinit(uart0);
     this->enabled_ = false;
 }
 
@@ -92,7 +75,7 @@ void GPS::UartGetLine(std::string &line) {
     line = "";
 
     while (true) {
-        singleChar = uart_getc(uart0);
+        // singleChar = uart_getc(uart0);
 
         if (singleChar == 0 || singleChar == '\0' || singleChar == '\n') break;
 
@@ -102,7 +85,7 @@ void GPS::UartGetLine(std::string &line) {
 
 void GPS::GetData() {
     // && uart.is_open()
-    if (!enabled_ || !uart_is_enabled(uart0)) return;
+    // if (!enabled_ || !uart_is_enabled(uart0)) return;
 
     std::string serial_rx = "";
     int attempts = 0;

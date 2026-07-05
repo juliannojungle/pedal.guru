@@ -17,46 +17,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
 #include <functional>
-#include <list>
-#include "Model/HIDEventType.hpp"
-#include "Model/Callback.hpp"
+#include "HIDHandler.hpp"
 
 namespace OpenCC {
-
-class HIDHandler {
-    private:
-        void ExecuteHandlers(std::list<std::shared_ptr<OpenCC::Callback>> handlers);
-        std::list<std::shared_ptr<Callback>> OnEnterDown_;
-        std::list<std::shared_ptr<Callback>> OnEnterUp_;
-        std::list<std::shared_ptr<Callback>> OnEnterPressed_;
-        std::list<std::shared_ptr<Callback>> OnEnterPressed2Seconds_;
-        std::list<std::shared_ptr<Callback>> OnEnterPressed5Seconds_;
-        std::list<std::shared_ptr<Callback>> OnExitDown_;
-        std::list<std::shared_ptr<Callback>> OnExitUp_;
-        std::list<std::shared_ptr<Callback>> OnExitPressed_;
-        std::list<std::shared_ptr<Callback>> OnExitPressed2Seconds_;
-        std::list<std::shared_ptr<Callback>> OnExitPressed5Seconds_;
-
-        //TODO: Functions below should be interruption callbacks from GPIO
-        void EnterDown() { ExecuteHandlers(OnEnterDown_); };
-        void EnterUp() { ExecuteHandlers(OnEnterUp_); };
-        void EnterPressed() { ExecuteHandlers(OnEnterPressed_); };
-        void EnterPressed2Seconds() { ExecuteHandlers(OnEnterPressed2Seconds_); }
-        void EnterPressed5Seconds() { ExecuteHandlers(OnEnterPressed5Seconds_); }
-        void ExitDown() { ExecuteHandlers(OnExitDown_); }
-        void ExitUp() { ExecuteHandlers(OnExitUp_); }
-        void ExitPressed() { ExecuteHandlers(OnExitPressed_); }
-        void ExitPressed2Seconds() { ExecuteHandlers(OnExitPressed2Seconds_); }
-        void ExitPressed5Seconds() { ExecuteHandlers(OnExitPressed5Seconds_); }
-    public:
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator RegisterEventHandler(
-            HIDEventType eventType, std::function<void()> handler);
-        void UnregisterEventHandler(
-            HIDEventType eventType, std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator iterator);
-};
 
 void HIDHandler::ExecuteHandlers(std::list<std::shared_ptr<OpenCC::Callback>> handlers) {
     for (auto handler : handlers) {

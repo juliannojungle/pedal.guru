@@ -21,13 +21,13 @@
 
 namespace OpenCC {
 
-class iSensor {
+class Sensor {
     protected:
         bool enabled_;
 
     public:
-        iSensor() : enabled_(false) {};
-        virtual ~iSensor() = default; // make it polymorphic
+        Sensor() : enabled_(false) {};
+        virtual ~Sensor() = default; // make it polymorphic
 
         bool Enabled() const {
             return this->enabled_;
