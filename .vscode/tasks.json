@@ -2,12 +2,12 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build: RP2040 Full (DEBUGMSGS)",
+            "label": "Build: RP2040 Full",
             "type": "shell",
             "command": "bash",
             "args": [
                 "-c",
-                "cd ~/pedal.guru && rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 -DDEBUGMSGS=ON && make"
+                "cd ~/pedal.guru && rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 && make"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -16,7 +16,8 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared",
-                "clear": true
+                "clear": true,
+                "focus": true
             },
             "problemMatcher": {
                 "owner": "gcc",
@@ -28,12 +29,12 @@
             }
         },
         {
-            "label": "Build: ESP32 Full (DEBUGMSGS)",
+            "label": "Build: ESP32 Full",
             "type": "shell",
             "command": "bash",
             "args": [
                 "-c",
-                "source ~/esp-idf/export.sh && cd ~/pedal.guru && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 -DDEBUGMSGS=ON build"
+                "source ~/esp-idf/export.sh && cd ~/pedal.guru && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 build"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -42,7 +43,8 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared",
-                "clear": true
+                "clear": true,
+                "focus": true
             },
             "problemMatcher": {
                 "owner": "gcc",
@@ -68,7 +70,35 @@
             "presentation": {
                 "reveal": "always",
                 "panel": "shared",
-                "clear": true
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Build: Simulator Incremental",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "cd ~/pedal.guru && if [ -d build ] && grep -q 'Simulator' build/CMakeCache.txt 2>/dev/null; then cd build && make; else rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator && make; fi"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
             },
             "problemMatcher": {
                 "owner": "gcc",

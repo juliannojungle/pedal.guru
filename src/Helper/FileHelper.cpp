@@ -19,22 +19,17 @@
 
 #pragma once
 
-#include <sys/stat.h>
-#include <cstring>
+#include "FileHelper.hpp"
+#include <cstdio>
 
 namespace OpenCC {
-
-class FileHelper {
-    public:
-        static void CreatePathDirectories(const char *path);
-};
 
 void FileHelper::CreatePathDirectories(const char *path) {
     char tmp[256];
     char *p = NULL;
     size_t len;
 
-    snprintf(tmp, sizeof(tmp),"%s",path);
+    snprintf(tmp, sizeof(tmp), "%s", path);
     len = strlen(tmp);
     if (tmp[len - 1] == '/')
         tmp[len - 1] = 0;

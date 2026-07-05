@@ -19,20 +19,15 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string>
-#include "FileHelper.cpp"
+#include "HTTPHelper.hpp"
+#include <cstdio>
+#include "FileHelper.hpp"
 
 extern "C" {
     #include <curl/curl.h>
 }
 
 namespace OpenCC {
-
-class HTTPHelper {
-    public:
-        static void DownloadFile(std::string url, std::string filePath);
-};
 
 size_t WriteData(void *elements, size_t size, size_t count, FILE *file) {
     size_t elementsWritten = fwrite(elements, size, count, file);

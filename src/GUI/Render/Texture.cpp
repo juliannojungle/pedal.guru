@@ -19,17 +19,32 @@
 
 #pragma once
 
-#include "PageAltimetry.hpp"
+#include "Texture.hpp"
 
-namespace OpenCC {
+namespace PiRender {
 
-void PageAltimetry::PreDrawPageContents() {
+void Texture::AllocateTexture() {
+    UINT32 textureSize = this->height * this->width * 2;
+
+    if ((this->data = (UINT16 *)malloc(textureSize)) == NULL) {
+        printf("Failed to allocate memory...\r\n");
+        exit(0);
+    }
+
+    CanvasNewTexture((UINT8 *)this->data, this->width, this->height, ROTATE_0);
+    CanvasSetScale(65); // no scale
 }
 
-void PageAltimetry::DrawPageContents() {
+void Texture::LoadTextureFromImage(PiRender::Image& image) {
+    this->height = image.height;
+    this->width = image.width;
+    AllocateTexture();
+    this->data = image.data;
 }
 
-void PageAltimetry::PostDrawPageContents() {
+void Texture::UnloadTexture() {
+    free(this->data);
+    this->data = NULL;
 }
 
 }

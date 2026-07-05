@@ -19,39 +19,18 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+namespace PiRender {
 
-namespace OpenCC {
+// #define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUI_LL::Rectangle) \
+//     { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
 
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
-}
-
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
-}
+struct Rectangle {
+    float x;
+    float y;
+    float width;
+    float height;
+    Rectangle(float x, float y, float width, float height)
+        : x(x), y(y), width(width), height(height) {}
+};
 
 }

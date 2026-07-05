@@ -19,44 +19,23 @@
 
 #pragma once
 
-#include <string>
-#include <cmath>
+#include "OpenStreetMapAPI.hpp"
+// #include "HTTPHelper.hpp"
 
-// #include <chrono>
-// #include <thread>
-#include "pico/time.h"
-
-#include "../Model/MapTile.hpp"
-// #include "../Helper/HTTPHelper.cpp"
-#include "../Model/MapGrid.hpp"
-
-/* define the constant since it's not standard c++ and some compilers does not include it */
-#ifndef M_PI
-    #define M_PI 3.14159265358979323846
-#endif
-
-#define TILE_WIDTH 256
-#define TILE_HEIGHT 256
-#define ZERO_CENTER_SCREEN (SCREEN_HEIGHT / 2)
+extern "C" {
+    #include "LCDSetup.h"
+}
 
 namespace OpenCC {
 
-class OpenStreetMapAPI {
-    private:
-        void Swap(int &a, int &b);
-    public:
-        std::string LatLongZoomToHashPath(double latitude, double longitude, int zoom);
-        std::string LatLongZoomToXyzPath(double latitude, double longitude, int zoom);
-        int LongitudeToTileX(double longitude, int zoom);
-        int LatitudeToTileY(double latitude, int zoom);
-        double TilexToLongitude(int x, int zoom);
-        double TileyToLatitude(int y, int zoom);
-        std::string XyZoomToHashPath(int x, int y, int zoom);
-        std::string DownloadTile(OpenCC::MapTile mapTile, std::string baseUrl);
-        void ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
-            double latitudeMin, double latitudeMax, double longitudeMin, double longitudeMax, int zoom);
-        void MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom);
-};
+    /* define the constant since it's not standard c++ and some compilers does not include it */
+    #ifndef M_PI
+        #define M_PI 3.14159265358979323846
+    #endif
+    
+    #define TILE_WIDTH 256
+    #define TILE_HEIGHT 256
+    #define ZERO_CENTER_SCREEN (LCD.HEIGHT / 2.0)
 
 std::string OpenStreetMapAPI::LatLongZoomToHashPath(double latitude, double longitude, int zoom) {
     int tileY = LatitudeToTileY(latitude, zoom);
@@ -151,8 +130,7 @@ std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string 
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
      * Only two requests per second, as OSM API requires low brandwidth usage.
      */
-    // std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    sleep_ms(500);
+    Time::Delay(500);
 
     return fileHashPath;
 }
@@ -197,14 +175,14 @@ void OpenStreetMapAPI::MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double lat
     // Find pointX of the pixel in the tile for the given longitude.
     auto maxLongitude = tileRightLongitude - tileLeftLongitude;
     auto pointLongitude = absLongitude - tileLeftLongitude;
-    auto percentualX = (pointLongitude * 100) / maxLongitude;
-    auto pointX = (percentualX * TILE_WIDTH) / 100;
+    auto percentualX = (pointLongitude * 100.0) / maxLongitude;
+    auto pointX = (percentualX * TILE_WIDTH) / 100.0;
 
     // Find pointY of the pixel in the tile for the given latitude.
     auto maxLatitude = tileTopLatitude - tileBottomLatitude;
     auto pointLatitude = absLatitude - tileBottomLatitude;
-    auto percentualY = 100 - ((pointLatitude * 100) / maxLatitude); // inverted: latitude grows up, pixel grows down
-    auto pointY = (percentualY * TILE_HEIGHT) / 100;
+    auto percentualY = 100.0 - ((pointLatitude * 100.0) / maxLatitude); // inverted: latitude grows up, pixel grows down
+    auto pointY = (percentualY * TILE_HEIGHT) / 100.0;
 
     mapGrid.offsetX = ZERO_CENTER_SCREEN - (indexLongitude * TILE_WIDTH) - pointX;
     mapGrid.offsetY = ZERO_CENTER_SCREEN - (indexLatitude * TILE_HEIGHT) - pointY;

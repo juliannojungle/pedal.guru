@@ -19,26 +19,9 @@
 
 #pragma once
 
-#include "BasePage.cpp"
-#include "../../API/OpenStreetMapAPI.cpp"
-#include "../../Model/MapTile.hpp"
-#include <list>
+#include "PageMapSync.hpp"
 
 namespace OpenCC {
-
-class PageMapSync : public OpenCC::BasePage {
-    private:
-        OpenStreetMapAPI mapApi_;
-        std::list<OpenCC::MapTile> mapList_;
-        int syncedTiles_, totalTiles_;
-        PiRender::Texture mapTexture_;
-        void ShowTile(std::string filePath);
-    public:
-        using BasePage::BasePage; // nothing to do here, using parent constructor
-        void PreDrawPageContents() override;
-        void DrawPageContents() override;
-        void PostDrawPageContents() override;
-};
 
 void PageMapSync::PreDrawPageContents() {
     mapApi_.ListTilesForArea(mapList_, -22.4701917, -22.1223827, -43.047406, -42.7110277, 16);

@@ -19,17 +19,9 @@
 
 #pragma once
 
-#include "BasePage.cpp"
+#include "PageSummary.hpp"
 
 namespace OpenCC {
-
-class PageSummary : public OpenCC::BasePage {
-    public:
-        using BasePage::BasePage; // nothing to do here, using parent constructor
-        void PreDrawPageContents() override;
-        void DrawPageContents() override;
-        void PostDrawPageContents() override;
-};
 
 void PageSummary::PreDrawPageContents() {
 }

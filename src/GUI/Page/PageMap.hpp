@@ -19,39 +19,25 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+#include "BasePage.hpp"
+#include "OpenStreetMapAPI.hpp"
+#include "MapGrid.hpp"
 
 namespace OpenCC {
 
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
-}
-
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
-}
+class PageMap : public OpenCC::BasePage {
+    private:
+        OpenCC::OpenStreetMapAPI mapApi_;
+        PiRender::Texture mapTexture_;
+        OpenCC::MapGrid mapGrid_;
+        double previousLatitude, previousLongitude;
+        void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
+        void LoadGridImage();
+    public:
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        void PreDrawPageContents() override;
+        void DrawPageContents() override;
+        void PostDrawPageContents() override;
+};
 
 }

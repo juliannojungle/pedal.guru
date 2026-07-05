@@ -19,39 +19,25 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+#include <string>
+#include "Color.hpp"
+#include "Texture.hpp"
 
-namespace OpenCC {
+namespace PiRender {
 
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
-}
-
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
-}
+class Window {
+    public:
+        void Init(int width, int height, std::string title);
+        void SetTargetFPS(int frameRate);
+        void HideCursor();
+        bool ShouldClose();
+        void Close();
+        void BeginDrawing();
+        void ClearBackground(PiRender::Color color);
+        void EndDrawing();
+        void DrawCircle(int centerX, int centerY, float radius, PiRender::Color color);
+        void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color);
+        void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color);
+};
 
 }

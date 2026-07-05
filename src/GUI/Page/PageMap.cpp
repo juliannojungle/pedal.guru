@@ -19,32 +19,11 @@
 
 #pragma once
 
-#include "BasePage.cpp"
-#include "../../API/OpenStreetMapAPI.cpp"
-#include "../../Model/MapGrid.hpp"
-#include "../../DataManager.cpp"
-#include "../../Model/GPSFixData.hpp"
-
-// #include <chrono>
-// #include <thread>
-#include "pico/time.h"
+#include "PageMap.hpp"
+#include "DataManager.hpp"
+#include "GPSFixData.hpp"
 
 namespace OpenCC {
-
-class PageMap : public OpenCC::BasePage {
-    private:
-        OpenCC::OpenStreetMapAPI mapApi_;
-        PiRender::Texture mapTexture_;
-        OpenCC::MapGrid mapGrid_;
-        double previousLatitude, previousLongitude;
-        void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
-        void LoadGridImage();
-    public:
-        using BasePage::BasePage; // nothing to do here, using parent constructor
-        void PreDrawPageContents() override;
-        void DrawPageContents() override;
-        void PostDrawPageContents() override;
-};
 
 void PageMap::PreDrawPageContents() {
 }
@@ -101,7 +80,7 @@ void PageMap::DrawPageContents() {
 
     // We only get gps readings once per second.
     // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-    sleep_ms(1000);
+    Time::Delay(1000);
 }
 
 void PageMap::PostDrawPageContents() {

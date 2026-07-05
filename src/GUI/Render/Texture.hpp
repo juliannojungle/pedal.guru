@@ -19,39 +19,25 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+#include "Image.cpp"
 
-namespace OpenCC {
-
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
+extern "C" {
+    #include "Types.h"
 }
 
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
+namespace PiRender {
 
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
-}
+class Texture {
+    private:
+        UINT16 *data;
+        void AllocateTexture();
+    public:
+        int width;
+        int height;
+        Texture() {}
+        Texture(int width, int height): width(width), height(height) {}
+        void LoadTextureFromImage(PiRender::Image& image);
+        void UnloadTexture();
+};
 
 }

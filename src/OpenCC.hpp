@@ -19,9 +19,6 @@
 
 #pragma once
 
-#ifdef TARGET_RP2040
-    #define RP2040
-    #include "Target/RP2040/HalRP2040.hpp"
-#else
-    #error Target must be informed!
+#ifndef PLATFORM_NAME
+    #error Platform must be informed!
 #endif

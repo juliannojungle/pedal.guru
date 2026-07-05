@@ -19,18 +19,9 @@
 
 #pragma once
 
-#include <vector>
-#include <string>
-#include <cstring>
+#include "TextHelper.hpp"
 
 namespace OpenCC {
-
-class TextHelper {
-    public:
-        static void Tokenize(std::string &source, char delimiter, char checksumChar, char (&target)[16][16]);
-        static std::vector<std::string> Tokenize(std::string &text, char delimiter, char checksumChar);
-        static bool contains(char* string, char* substring);
-};
 
 bool TextHelper::contains(char* string, char* substring) {
     if (std::strlen(string) < std::strlen(substring)) return false;

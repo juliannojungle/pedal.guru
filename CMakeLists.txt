@@ -17,67 +17,51 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 ]]
 
-# version requirements
 cmake_minimum_required(VERSION 3.16)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # Generate compile_commands.json (consumed by clangd for code intelligence)
+set(PROJECT_NAME "pedal.guru")
 
-# Generate compile_commands.json (consumed by clangd for code intelligence)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# Platform definitions
-set(PLATFORMS "RP2040" "ESP32")
-set(PLATFORM_NAME "RP2040" CACHE STRING "Build platform, one of: ${PLATFORMS}")
-set_property(CACHE PLATFORM_NAME PROPERTY STRINGS ${PLATFORMS})
-
-# Default platform selection
-if(NOT DEFINED PLATFORM_NAME)
-    set(PLATFORM_NAME "RP2040")
+if(DEFINED DEBUGMSGS) # Optional debug messages: pass -DDEBUGMSGS (no value needed)
+    add_compile_definitions(DEBUGMSGS _DEBUG)
 endif()
-
-# Platform-agnostic translation units.
-include(${CMAKE_SOURCE_DIR}/src/Dependency/gui.ll/gui.ll.cmake)
-
-# Optional debug messages: pass -DDEBUGMSGS (no value needed) at configure time to
-# define the DEBUGMSGS macro for the build (used via #ifdef DEBUGMSGS in the sources).
-# Guarded with DEFINED so it triggers whether CMake stores it as "ON" or as an empty value.
-if(DEFINED DEBUGMSGS)
-    add_compile_definitions(DEBUGMSGS)
-endif()
-
-set(PEDAL_GURU "pedal.guru")
-set(MAIN_EXECUTABLE src/OpenCC.cpp)
 
 # Build system per platform
 if(PLATFORM_NAME STREQUAL "ESP32")
-    # ESP-IDF orchestrates the build.
-    # EXTRA_COMPONENT_DIRS adds our component without losing ESP-IDF built-in components.
-    set(EXTRA_COMPONENT_DIRS
-        ${MAIN_EXECUTABLE}
-        ${EXTRA_COMPONENT_DIRS}
-    )
+    # ESP-IDF orchestrates the build: EXTRA_COMPONENT_DIRS adds our component keeping ESP-IDF built-in components.
+    set(EXTRA_COMPONENT_DIRS "${CMAKE_SOURCE_DIR}/src/lib/Platform/ESP32")
     include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-    project(${PEDAL_GURU})
+    project(${PROJECT_NAME})
+
+elseif(PLATFORM_NAME STREQUAL "Simulator")
+    set(CMAKE_C_STANDARD 11)
+    project(${PROJECT_NAME})
+    include(${CMAKE_SOURCE_DIR}/pedal.guru.cmake)
+    set(SOURCES ${SOURCES})
+    add_executable(${PROJECT_NAME} ${SOURCES})
+    include_directories(${INCLUDE_DIRS})
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m)
 
 elseif(PLATFORM_NAME STREQUAL "RP2040")
     set(CMAKE_C_STANDARD 11)
     set(CMAKE_CXX_STANDARD 14)
+    set(PICO_TOOLCHAIN_PATH /usr/bin)
 
     if(NOT DEFINED PICO_SDK_PATH)
         set(PICO_SDK_PATH ~/pico-sdk)
     endif()
-    include(${CMAKE_SOURCE_DIR}/src/Dependency/gui.ll/src/Dependency/pico_sdk_import.cmake)
+    include(${CMAKE_SOURCE_DIR}/src/Dependency/pico_sdk_import.cmake)
 
-    project(${PEDAL_GURU})
+    project(${PROJECT_NAME})
     pico_sdk_init()
+    include(${CMAKE_SOURCE_DIR}/pedal.guru.cmake)
+    set(SOURCES ${SOURCES})
+    add_executable(${PROJECT_NAME} ${SOURCES})
+    include_directories(${INCLUDE_DIRS})
 
-    # Include platform-specific cmake fragments
-    include(${CMAKE_SOURCE_DIR}/src/Dependency/gui.ll/src/lib/Platform/RP2040/PreExecutable.cmake)
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+        pico_stdlib pico_multicore hardware_spi hardware_gpio hardware_pwm hardware_adc hardware_rtc)
 
-    add_executable(${PROJECT_NAME}
-        ${MAIN_EXECUTABLE}
-        ${GUILL_RP2040_SRCS}
-    )
-
-    # Include platform-specific cmake fragments
-    include(${CMAKE_SOURCE_DIR}/src/Dependency/gui.ll/src/lib/Platform/RP2040/PostExecutable.cmake)
-    include(${CMAKE_SOURCE_DIR}/src/Target/RP2040/configure_target.cmake)
+    pico_enable_stdio_usb(${PROJECT_NAME} 1)  # enable usb output
+    pico_enable_stdio_uart(${PROJECT_NAME} 0) # disable uart output
+    pico_add_extra_outputs(${PROJECT_NAME})   # create map/bin/hex/uf2 files in addition to elf
 endif()

@@ -20,7 +20,6 @@
 #pragma once
 
 #include <string>
-#include "../Helper/TextHelper.cpp"
 
 namespace OpenCC {
 
@@ -59,26 +58,5 @@ class GPSFixData {
             checksum(nullptr) {}
         void set(std::string serial_rx);
 };
-
-void GPSFixData::set(std::string serial_rx) {
-    char data[16][16];
-    TextHelper::Tokenize(serial_rx, ',', '*', data);
-
-    this->UTCTime = atof(data[1]);
-    this->latitude = atof(data[2]);
-    this->latitudeCardinal = data[3][0];
-    this->longitude = atof(data[4]);
-    this->longitudeCardinal = data[5][0];
-    this->fixQuality = atoi(data[6]);
-    this->satellitesCount = atoi(data[7]);
-    this->horizontalAccuracy = atof(data[8]);
-    this->altitude = atof(data[9]);
-    this->altitudeUnit = data[10][0];
-    this->geoidalSeparation = data[11];
-    this->geoidalSeparationUnit = data[12][0];
-    this->differentialGPSLastUpdate = atof(data[13]);
-    this->differentialGPSStationId = data[14];
-    this->checksum = data[15];
-}
 
 }

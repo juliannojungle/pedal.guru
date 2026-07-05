@@ -19,39 +19,14 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+#include <sys/stat.h>
+#include <cstring>
 
 namespace OpenCC {
 
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
-}
-
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
-}
+class FileHelper {
+    public:
+        static void CreatePathDirectories(const char *path);
+};
 
 }

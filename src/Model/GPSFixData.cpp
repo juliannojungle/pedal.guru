@@ -19,39 +19,31 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+#include <string>
+#include "GPSFixData.hpp"
+#include "TextHelper.hpp"
 
 namespace OpenCC {
 
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
-}
+void GPSFixData::set(std::string serial_rx) {
+    char data[16][16];
+    TextHelper::Tokenize(serial_rx, ',', '*', data);
 
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
+    this->UTCTime = atof(data[1]);
+    this->latitude = atof(data[2]);
+    this->latitudeCardinal = data[3][0];
+    this->longitude = atof(data[4]);
+    this->longitudeCardinal = data[5][0];
+    this->fixQuality = atoi(data[6]);
+    this->satellitesCount = atoi(data[7]);
+    this->horizontalAccuracy = atof(data[8]);
+    this->altitude = atof(data[9]);
+    this->altitudeUnit = data[10][0];
+    this->geoidalSeparation = data[11];
+    this->geoidalSeparationUnit = data[12][0];
+    this->differentialGPSLastUpdate = atof(data[13]);
+    this->differentialGPSStationId = data[14];
+    this->checksum = data[15];
 }
 
 }

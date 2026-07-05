@@ -21,6 +21,10 @@
 
 #include "GUIDrawer.hpp"
 
+extern "C" {
+    #include "LCDSetup.h"
+}
+
 namespace OpenCC {
 
 void GUIDrawer::SetPageContentsPreDrawMethod(std::function<void()> method) {
@@ -36,9 +40,7 @@ void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
 };
 
 void GUIDrawer::Execute() {
-    window.Init(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC").c_str());
-    window.SetTargetFPS(FRAME_RATE);
-    window.HideCursor();
+    window.Init(LCD.WIDTH, LCD.HEIGHT, std::string("OpenCC").c_str());
 
     if (pageContentsPreDrawCallback_ != nullptr)
         pageContentsPreDrawCallback_->Method();

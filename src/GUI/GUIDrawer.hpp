@@ -19,21 +19,10 @@
 
 #pragma once
 
-#include <string>
 #include <functional>
 #include <memory>
-#include "../Model/Callback.hpp"
-#include "Color.cpp"
-#include "Rectangle.cpp"
-#include "Image.cpp"
-#include "Texture.cpp"
-#include "Window.cpp"
-
-#ifdef DESKTOP_SIMULATOR
-#include "Interface/DesktopSimulator.hpp"
-#else
-#include "Interface/Spi240x240.hpp"
-#endif
+#include "Callback.hpp"
+#include "Window.hpp"
 
 namespace OpenCC {
 

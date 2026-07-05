@@ -19,39 +19,17 @@
 
 #pragma once
 
-#include "DataManager.hpp"
+#include <vector>
+#include <string>
+#include <cstring>
 
 namespace OpenCC {
 
-void DataManager::Push(OpenCC::GPSFixData &gpsFixData) {
-    mutex_.Lock();
-    this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
-}
-
-void DataManager::Pop(OpenCC::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
-    mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
-    mutex_.Release();
-}
-
-/** Initializing static members. */
-DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
-
-/** Static methods should be defined outside the class. */
-DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
-    if (instance_ == nullptr)
-    {
-        instance_ = new DataManager();
-    }
-    mutex_.Release();
-
-    return instance_;
-}
+class TextHelper {
+    public:
+        static void Tokenize(std::string &source, char delimiter, char checksumChar, char (&target)[16][16]);
+        static std::vector<std::string> Tokenize(std::string &text, char delimiter, char checksumChar);
+        static bool contains(char* string, char* substring);
+};
 
 }
