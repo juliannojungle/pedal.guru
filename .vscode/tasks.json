@@ -88,7 +88,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "cd ~/pedal.guru && if [ -d build ] && grep -q 'Simulator' build/CMakeCache.txt 2>/dev/null; then cd build && make; else rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator && make; fi"
+                "cd ~/pedal.guru && if [ -d build ] && grep -q 'Simulator' build/CMakeCache.txt 2>/dev/null; then cd build && make; else rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator -DCMAKE_BUILD_TYPE=Debug && make; fi"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
