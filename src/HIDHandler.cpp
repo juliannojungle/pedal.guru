@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -20,46 +20,46 @@
 #include <functional>
 #include "HIDHandler.hpp"
 
-namespace OpenCC {
+namespace PedalGuru {
 
-void HIDHandler::ExecuteHandlers(std::list<std::shared_ptr<OpenCC::Callback>> handlers) {
+void HIDHandler::ExecuteHandlers(std::list<std::shared_ptr<PedalGuru::Callback>> handlers) {
     for (auto handler : handlers) {
         handler->Method();
     }
 }
 
-std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator HIDHandler::RegisterEventHandler(
+std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator HIDHandler::RegisterEventHandler(
     HIDEventType eventType, std::function<void()> handler) {
     switch (eventType) {
         case ENTER_DOWN:
-            OnEnterDown_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnEnterDown_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnEnterDown_.end();
         case ENTER_UP:
-            OnEnterUp_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnEnterUp_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnEnterUp_.end();
         case ENTER_PRESSED:
-            OnEnterPressed_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnEnterPressed_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnEnterPressed_.end();
         case ENTER_PRESSED_2_SECONDS:
-            OnEnterPressed2Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnEnterPressed2Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnEnterPressed2Seconds_.end();
         case ENTER_PRESSED_5_SECONDS:
-            OnEnterPressed5Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnEnterPressed5Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnEnterPressed5Seconds_.end();
         case EXIT_DOWN:
-            OnExitDown_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnExitDown_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnExitDown_.end();
         case EXIT_UP:
-            OnExitUp_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnExitUp_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnExitUp_.end();
         case EXIT_PRESSED:
-            OnExitPressed_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnExitPressed_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnExitPressed_.end();
         case EXIT_PRESSED_2_SECONDS:
-            OnExitPressed2Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnExitPressed2Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnExitPressed2Seconds_.end();
         case EXIT_PRESSED_5_SECONDS:
-            OnExitPressed5Seconds_.push_back(std::make_shared<OpenCC::Callback>(handler));
+            OnExitPressed5Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
             return OnExitPressed5Seconds_.end();
     }
 
@@ -68,7 +68,7 @@ std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator HIDHandler::Registe
 }
 
 void HIDHandler::UnregisterEventHandler(
-    HIDEventType eventType, std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator iterator) {
+    HIDEventType eventType, std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator iterator) {
     switch (eventType) {
         case ENTER_PRESSED:
             OnEnterPressed_.erase(iterator);

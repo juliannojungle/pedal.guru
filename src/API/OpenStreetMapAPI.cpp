@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -24,7 +24,7 @@ extern "C" {
     #include "LCDSetup.h"
 }
 
-namespace OpenCC {
+namespace PedalGuru {
 
     /* define the constant since it's not standard c++ and some compilers does not include it */
     #ifndef M_PI
@@ -97,7 +97,7 @@ void OpenStreetMapAPI::Swap(int &a, int &b) {
     b = temp;
 }
 
-void OpenStreetMapAPI::ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
+void OpenStreetMapAPI::ListTilesForArea(std::list<PedalGuru::MapTile> &mapList,
     double latitudeMin, double latitudeMax, double longitudeMin, double longitudeMax, int zoom) {
     auto tileYMin = LatitudeToTileY(latitudeMin, zoom);
     auto tileYMax = LatitudeToTileY(latitudeMax, zoom);
@@ -112,12 +112,12 @@ void OpenStreetMapAPI::ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
     {
         for (int y = tileYMin; y <= tileYMax; y++)
         {
-            mapList.push_back(OpenCC::MapTile(x, y, zoom));
+            mapList.push_back(PedalGuru::MapTile(x, y, zoom));
         }
     }
 }
 
-std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string baseUrl) {
+std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::string baseUrl) {
     char tileUrl[1024];
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
@@ -137,7 +137,7 @@ int ApplyOperator(int tilePos, int value, int gridPos) {
     return (gridPos == 0) ? tilePos + value : tilePos - value;
 }
 
-void OpenStreetMapAPI::MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom) {
+void OpenStreetMapAPI::MapGridForCoordinate(PedalGuru::MapGrid &mapGrid, double latitude, double longitude, int zoom) {
     int tileX = LongitudeToTileX(longitude, zoom);
     int tileY = LatitudeToTileY(latitude, zoom);
 

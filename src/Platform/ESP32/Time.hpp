@@ -1,4 +1,4 @@
-namespace OpenCC {
+namespace PedalGuru {
     
 
 }

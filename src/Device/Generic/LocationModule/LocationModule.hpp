@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -21,7 +21,7 @@
 
 #include "Device.hpp"
 
-namespace OpenCC {
+namespace PedalGuru {
 
 class LocationModule : public Device {
     public:

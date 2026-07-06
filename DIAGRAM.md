@@ -1,5 +1,5 @@
 <!---
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -28,7 +28,7 @@ classDiagram
 
 class SettingsData
 
-link SettingsData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+link SettingsData "https://github.com/juliannojungle/PedalGuru/blob/main/src/PedalGuru.hpp"
 
 class TaskManager {
     -SettingsData *settings_
@@ -40,7 +40,7 @@ class TaskManager {
     +Run()
 }
 
-link TaskManager "https://github.com/juliannojungle/OpenCC/blob/main/src/task_manager.cpp"
+link TaskManager "https://github.com/juliannojungle/PedalGuru/blob/main/src/task_manager.cpp"
 TaskManager ..|> BasePage
 TaskManager ..|> Device
 TaskManager ..> SettingsData : Reads
@@ -56,7 +56,7 @@ class BasePage {
     +NextPage()
 }
 
-link BasePage "https://github.com/juliannojungle/OpenCC/blob/main/src/gui/pages/BasePage.cpp"
+link BasePage "https://github.com/juliannojungle/PedalGuru/blob/main/src/gui/pages/BasePage.cpp"
 
 class Sensor {
     <<interface>>
@@ -66,7 +66,7 @@ class Sensor {
     +Disable()
 }
 
-link Sensor "https://github.com/juliannojungle/OpenCC/blob/main/src/sensors/Sensor.hpp"
+link Sensor "https://github.com/juliannojungle/PedalGuru/blob/main/src/sensors/Sensor.hpp"
 
 class Device {
     <<interface>>
@@ -77,11 +77,11 @@ class Device {
     +Connected()
 }
 
-link Device "https://github.com/juliannojungle/OpenCC/blob/main/src/devices/Device.hpp"
+link Device "https://github.com/juliannojungle/PedalGuru/blob/main/src/devices/Device.hpp"
 
 class SensorData
 
-link SensorData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+link SensorData "https://github.com/juliannojungle/PedalGuru/blob/main/src/PedalGuru.hpp"
 
 Device "1" --* "1..*" Sensor : Contains
 SensorData <.. Device : Writes

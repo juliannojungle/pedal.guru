@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -24,21 +24,21 @@
 #include "BasePage.hpp"
 #include "HIDHandler.hpp"
 
-namespace OpenCC {
+namespace PedalGuru {
 
 class GUINavigator {
     private:
-        OpenCC::HIDHandler& handler_;
-        std::list<std::unique_ptr<OpenCC::BasePage>>& pages_;
-        std::list<std::unique_ptr<OpenCC::BasePage>>::iterator pageIndex_;
+        PedalGuru::HIDHandler& handler_;
+        std::list<std::unique_ptr<PedalGuru::BasePage>>& pages_;
+        std::list<std::unique_ptr<PedalGuru::BasePage>>::iterator pageIndex_;
         void RegisterEvents();
         void UnregisterEvents();
         void GoToNextPage();
         void GoToPreviousPage();
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator previousPageReference_;
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator nextPageReference_;
+        std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator previousPageReference_;
+        std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator nextPageReference_;
     public:
-        GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::BasePage>>& pages)
+        GUINavigator(PedalGuru::HIDHandler& handler, std::list<std::unique_ptr<PedalGuru::BasePage>>& pages)
             : handler_(handler), pages_(pages) {
             RegisterEvents();
 

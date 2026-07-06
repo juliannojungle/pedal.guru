@@ -1,4 +1,4 @@
-namespace OpenCC {
+namespace PedalGuru {
     #include "Time.hpp"
 
 Time::Delay(milliseconds: unsigned int) {

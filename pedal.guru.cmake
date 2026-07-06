@@ -29,7 +29,7 @@ set(SOURCES
     ${SOURCES}
     "${CMAKE_CURRENT_LIST_DIR}/src/DataManager.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/HIDHandler.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/OpenCC.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/PedalGuru.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/TaskManager.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/API/OpenStreetMapAPI.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Device/Generic/LocationModule/LocationModule.cpp"

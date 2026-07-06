@@ -1,4 +1,4 @@
-namespace OpenCC {
+namespace PedalGuru {
 #include "Thread.hpp"
 
 Mutex::lock_ = xSemaphoreCreateMutex();

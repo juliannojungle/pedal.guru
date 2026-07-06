@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -19,29 +19,36 @@
 
 #include "TaskManager.hpp"
 
+extern "C" {
+    #include "HAL.h"
+}
+
 #if !defined(SIMULATOR) && !defined(RP2040) && !defined(ESP32)
     #error Platform must be informed!
 #endif
 
-int main(void) {
-#ifdef RP2040
-    stdio_init_all();
-
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    gpio_put(PICO_DEFAULT_LED_PIN, 1);
-#endif
+void app_entry(void) {
+    STDIOInitAll();
 
 #ifdef _DEBUG
-    std::cout << "Welcome to OpenCC!\n";
+    std::cout << "Welcome to Pedal.Guru!\n";
 #endif
 
-    OpenCC::TaskManager taskManager;
+    PedalGuru::TaskManager taskManager;
     taskManager.Execute();
 
 #ifdef _DEBUG
     std::cout << "See you later!\n";
 #endif
+}
 
+#ifdef ESP_PLATFORM
+void app_main(void) {
+    app_entry();
+}
+#else
+int main(void) {
+    app_entry();
     return 0;
 }
+#endif

@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -23,22 +23,22 @@ extern "C" {
     #include "LCDSetup.h"
 }
 
-namespace OpenCC {
+namespace PedalGuru {
 
 void GUIDrawer::SetPageContentsPreDrawMethod(std::function<void()> method) {
-    pageContentsPreDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+    pageContentsPreDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };
 
 void GUIDrawer::SetPageContentsDrawMethod(std::function<void()> method) {
-    pageContentsDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+    pageContentsDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };
 
 void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
-    pageContentsPostDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+    pageContentsPostDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };
 
 void GUIDrawer::Execute() {
-    window.Init(LCD.WIDTH, LCD.HEIGHT, std::string("OpenCC").c_str());
+    window.Init(LCD.WIDTH, LCD.HEIGHT, std::string("PedalGuru").c_str());
 
     if (pageContentsPreDrawCallback_ != nullptr)
         pageContentsPreDrawCallback_->Method();

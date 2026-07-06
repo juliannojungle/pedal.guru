@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -24,11 +24,11 @@
 #include <memory>
 #include "HIDEventType.hpp"
 
-namespace OpenCC {
+namespace PedalGuru {
 
 class HIDHandler {
     private:
-        void ExecuteHandlers(std::list<std::shared_ptr<OpenCC::Callback>> handlers);
+        void ExecuteHandlers(std::list<std::shared_ptr<PedalGuru::Callback>> handlers);
         std::list<std::shared_ptr<Callback>> OnEnterDown_;
         std::list<std::shared_ptr<Callback>> OnEnterUp_;
         std::list<std::shared_ptr<Callback>> OnEnterPressed_;
@@ -52,10 +52,10 @@ class HIDHandler {
         void ExitPressed2Seconds() { ExecuteHandlers(OnExitPressed2Seconds_); }
         void ExitPressed5Seconds() { ExecuteHandlers(OnExitPressed5Seconds_); }
     public:
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator RegisterEventHandler(
+        std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator RegisterEventHandler(
             HIDEventType eventType, std::function<void()> handler);
         void UnregisterEventHandler(
-            HIDEventType eventType, std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator iterator);
+            HIDEventType eventType, std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator iterator);
 };
 
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace OpenCC {
+namespace PedalGuru {
 
 extern "C" {
     #include <freertos/FreeRTOS.h>

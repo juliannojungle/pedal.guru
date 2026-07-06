@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -23,7 +23,7 @@
 #include <list>
 #include "GPSFixData.hpp"
 
-namespace OpenCC {
+namespace PedalGuru {
 
 /**
  * The DataManager class is a singleton with a `GetInstance` static method
@@ -40,7 +40,7 @@ private:
     static Mutex mutex_;
     DataManager() {}
     ~DataManager() {}
-    std::list<OpenCC::GPSFixData> gpsFixData_;
+    std::list<PedalGuru::GPSFixData> gpsFixData_;
 
 public:
     /** Singletons should not be cloneable. */
@@ -49,8 +49,8 @@ public:
     /** Singletons should not be assignable. */
     void operator=(const DataManager &) = delete;
 
-    void Push(OpenCC::GPSFixData &gpsFixData);
-    void Pop(OpenCC::GPSFixData &gpsFixData);
+    void Push(PedalGuru::GPSFixData &gpsFixData);
+    void Pop(PedalGuru::GPSFixData &gpsFixData);
 
     /**
      * This is the static method that controls the access to the singleton

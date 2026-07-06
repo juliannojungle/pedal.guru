@@ -1,5 +1,5 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
+    Pedal.guru is an open-source software
     for cycle computers based on DIY hardware (primarily Raspberry Pi).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
@@ -35,9 +35,9 @@
 #include <thread>
 #endif
 
-namespace OpenCC {
+namespace PedalGuru {
 
-std::list<std::unique_ptr<OpenCC::Device>> TaskManager::devices_;
+std::list<std::unique_ptr<PedalGuru::Device>> TaskManager::devices_;
 bool TaskManager::running_;
 
 void TaskManager::Execute() {
@@ -56,43 +56,43 @@ void TaskManager::Execute() {
     t.detach();
 #endif
 
-    OpenCC::GUIDrawer drawer;
+    PedalGuru::GUIDrawer drawer;
     CreatePages(drawer);
-    OpenCC::HIDHandler handler;
-    OpenCC::GUINavigator guiNavigator(handler, pages_);
+    PedalGuru::HIDHandler handler;
+    PedalGuru::GUINavigator guiNavigator(handler, pages_);
     drawer.Execute();
 }
 
-void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
+void TaskManager::CreatePages(PedalGuru::GUIDrawer& drawer) {
     /*
      * The pages order here is crucial, since it represents the pages cycle order!
      */
     if (settings_.pageMapEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
+        pages_.push_back(std::make_unique<PedalGuru::PageMap>(drawer, settings_));
     }
 
     if (settings_.pageRouteEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
+        pages_.push_back(std::make_unique<PedalGuru::PageRoute>(drawer, settings_));
     }
 
     if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
+        pages_.push_back(std::make_unique<PedalGuru::PageHillsGraph>(drawer, settings_));
     }
 
     if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
+        pages_.push_back(std::make_unique<PedalGuru::PageDistance>(drawer, settings_));
     }
 
     if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
+        pages_.push_back(std::make_unique<PedalGuru::PageAltimetry>(drawer, settings_));
     }
 
     if (settings_.pageSummaryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
+        pages_.push_back(std::make_unique<PedalGuru::PageSummary>(drawer, settings_));
     }
 
     // Settings pages aren't optional.
-    pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
+    pages_.push_back(std::make_unique<PedalGuru::PageMapSync>(drawer, settings_));
 }
 
 void TaskManager::ReadSettings() {
@@ -108,7 +108,7 @@ void TaskManager::ReadSettings() {
 
 void TaskManager::CreateDevices() {
     //TODO: condition to settings
-    devices_.push_back(std::make_unique<OpenCC::LocationModule>());
+    devices_.push_back(std::make_unique<PedalGuru::LocationModule>());
 }
 
 void TaskManager::ConnectToDevices() {
