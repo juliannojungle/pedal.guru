@@ -20,13 +20,13 @@
 #include "Window.hpp"
 
 extern "C" {
-    #include "Canvas.h"
+    #include "LCDRenderer.h"
 }
 
 namespace Render {
 
 void Window::Init(int width, int height, std::string title) {
-    CanvasClear(COLOR_LL(COLOR_WHITE));
+    LCDClear(COLOR_LL(COLOR_BLACK));
 }
 
 bool Window::ShouldClose() {
@@ -43,7 +43,7 @@ void Window::BeginDrawing() {
 }
 
 void Window::ClearBackground(Render::Color color) {
-    CanvasClear(COLOR_LL(color));
+    LCDClear(COLOR_LL(color));
 }
 
 void Window::EndDrawing() {
@@ -51,16 +51,16 @@ void Window::EndDrawing() {
 }
 
 void Window::DrawCircle(int centerX, int centerY, float radius, Render::Color color) {
-    // DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
+    // DrawCircle(centerX, centerY, radius, COLOR_LL(color));
 }
 
 void Window::DrawText(std::string text, int posX, int posY, int fontSize, Render::Color color) {
-    // DrawText(text.c_str(), posX, posY, fontSize, COLOR_TO_RAYLIB(color));
+    // DrawText(text.c_str(), posX, posY, fontSize, COLOR_LL(color));
 }
 
 void Window::DrawTexture(Render::Texture& texture, int posX, int posY, Render::Color color) {
     // auto driverTexture(TEXTURE2D_TO_RAYLIB(texture));
-    // DrawTexture(driverTexture, posX, posY, COLOR_TO_RAYLIB(color));
+    // DrawTexture(driverTexture, posX, posY, COLOR_LL(color));
 }
 
 }

@@ -51,7 +51,7 @@ void TaskManager::Execute() {
      */
 #if defined (RP2040)
     multicore_launch_core1(GetDevicesData);
-#else
+#elif defined (SIMULATOR)
     std::thread t(&GetDevicesData);
     t.detach();
 #endif
