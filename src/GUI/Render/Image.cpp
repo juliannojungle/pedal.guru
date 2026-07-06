@@ -23,7 +23,7 @@ extern "C" {
     #include "Canvas.h"
 }
 
-namespace PiRender {
+namespace Render {
 
 void Image::AllocateImage() {
     UINT32 imageSize = this->height * this->width * 2;
@@ -40,7 +40,7 @@ void Image::AllocateImage() {
 
 Image::Image() {}
 
-Image::Image(int width, int height, PiRender::Color color) {
+Image::Image(int width, int height, Render::Color color) {
     this->width = width;
     this->height = height;
     this->color = color;
@@ -77,7 +77,7 @@ void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Colo
     // }
 }
 
-void Image::ImageDrawPixel(int posX, int posY, PiRender::Color color) {
+void Image::ImageDrawPixel(int posX, int posY, Render::Color color) {
     CanvasSetPixel(posX, posY, COLOR_LL(color));
 }
 

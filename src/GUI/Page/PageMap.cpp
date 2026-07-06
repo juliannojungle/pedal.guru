@@ -35,10 +35,10 @@ void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed)
 }
 
 void PageMap::LoadGridImage() {
-    PiRender::Image gridImage(512, 512, PiRender::COLOR_BLUE);
+    Render::Image gridImage(512, 512, Render::COLOR_BLUE);
     int latitude, longitude;
-    PiRender::Rectangle tileRectangle(0, 0, 256, 256);
-    PiRender::Rectangle gridRectangle(0, 0, 256, 256);
+    Render::Rectangle tileRectangle(0, 0, 256, 256);
+    Render::Rectangle gridRectangle(0, 0, 256, 256);
 
     for (int latitude = 0; latitude < 2; latitude++)
     {
@@ -48,10 +48,10 @@ void PageMap::LoadGridImage() {
                 mapGrid_.tiles[latitude][longitude].x,
                 mapGrid_.tiles[latitude][longitude].y,
                 mapGrid_.tiles[latitude][longitude].zoom) + ".png";
-            PiRender::Image tileImage(imagePath);
+            Render::Image tileImage(imagePath);
             gridRectangle.x = longitude * 256;
             gridRectangle.y = latitude * 256;
-            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, PiRender::COLOR_WHITE);
+            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, Render::COLOR_WHITE);
             tileImage.UnloadImage();
         }
     }
@@ -73,8 +73,8 @@ void PageMap::DrawPageContents() {
         LoadGridImage();
     }
 
-    window_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, PiRender::COLOR_WHITE);
-    window_.DrawCircle(120, 120, 4, (fixed ? PiRender::COLOR_GREEN : PiRender::COLOR_ORANGE));
+    window_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, Render::COLOR_WHITE);
+    window_.DrawCircle(120, 120, 4, (fixed ? Render::COLOR_GREEN : Render::COLOR_ORANGE));
 
     // We only get gps readings once per second.
     // std::this_thread::sleep_for(std::chrono::milliseconds(1000));

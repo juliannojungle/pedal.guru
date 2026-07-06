@@ -23,21 +23,19 @@
 #include "Color.hpp"
 #include "Texture.hpp"
 
-namespace PiRender {
+namespace Render {
 
 class Window {
     public:
         void Init(int width, int height, std::string title);
-        void SetTargetFPS(int frameRate);
-        void HideCursor();
         bool ShouldClose();
         void Close();
         void BeginDrawing();
-        void ClearBackground(PiRender::Color color);
+        void ClearBackground(Render::Color color);
         void EndDrawing();
-        void DrawCircle(int centerX, int centerY, float radius, PiRender::Color color);
-        void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color);
-        void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color);
+        void DrawCircle(int centerX, int centerY, float radius, Render::Color color);
+        void DrawText(std::string text, int posX, int posY, int fontSize, Render::Color color);
+        void DrawTexture(Render::Texture& texture, int posX, int posY, Render::Color color);
 };
 
 }

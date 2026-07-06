@@ -25,7 +25,7 @@ extern "C" {
     #include "Types.h"
 }
 
-namespace PiRender {
+namespace Render {
 
 class Texture {
     private:
@@ -36,7 +36,7 @@ class Texture {
         int height;
         Texture() {}
         Texture(int width, int height): width(width), height(height) {}
-        void LoadTextureFromImage(PiRender::Image& image);
+        void LoadTextureFromImage(Render::Image& image);
         void UnloadTexture();
 };
 

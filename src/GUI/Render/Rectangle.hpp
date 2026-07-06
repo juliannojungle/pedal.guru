@@ -19,7 +19,7 @@
 
 #pragma once
 
-namespace PiRender {
+namespace Render {
 
 // #define RECTANGLE_TO_RAYLIB(rectangle) CLITERAL(GUI_LL::Rectangle) \
 //     { rectangle.x, rectangle.y, rectangle.width, rectangle.height }

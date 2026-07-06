@@ -19,7 +19,7 @@
 
 #include "Texture.hpp"
 
-namespace PiRender {
+namespace Render {
 
 void Texture::AllocateTexture() {
     UINT32 textureSize = this->height * this->width * 2;
@@ -33,7 +33,7 @@ void Texture::AllocateTexture() {
     CanvasSetScale(65); // no scale
 }
 
-void Texture::LoadTextureFromImage(PiRender::Image& image) {
+void Texture::LoadTextureFromImage(Render::Image& image) {
     this->height = image.height;
     this->width = image.width;
     AllocateTexture();

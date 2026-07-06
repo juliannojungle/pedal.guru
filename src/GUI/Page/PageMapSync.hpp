@@ -31,7 +31,7 @@ class PageMapSync : public PedalGuru::BasePage {
         OpenStreetMapAPI mapApi_;
         std::list<PedalGuru::MapTile> mapList_;
         int syncedTiles_, totalTiles_;
-        PiRender::Texture mapTexture_;
+        Render::Texture mapTexture_;
         void ShowTile(std::string filePath);
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor

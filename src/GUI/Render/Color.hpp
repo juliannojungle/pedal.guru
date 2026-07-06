@@ -23,7 +23,7 @@ extern "C" {
     #include "Canvas.h"
 }
 
-namespace PiRender {
+namespace Render {
 
 #define COLOR_LL(color) (short)RGB_COLOR(color.red, color.green, color.blue)
 
@@ -37,30 +37,30 @@ class Color {
             : red(red), green(green), blue(blue) {}
 };
 
-const PiRender::Color COLOR_LIGHT_GRAY  {200, 200, 200};
-const PiRender::Color COLOR_GRAY        {130, 130, 130};
-const PiRender::Color COLOR_DARK_GRAY   {80, 80, 80};
-const PiRender::Color COLOR_YELLOW      {253, 249, 0};
-const PiRender::Color COLOR_GOLD        {255, 203, 0};
-const PiRender::Color COLOR_ORANGE      {255, 161, 0};
-const PiRender::Color COLOR_PINK        {255, 109, 194};
-const PiRender::Color COLOR_RED         {230, 41, 55};
-const PiRender::Color COLOR_MAROON      {190, 33, 55};
-const PiRender::Color COLOR_GREEN       {0, 228, 48};
-const PiRender::Color COLOR_LIME        {0, 158, 47};
-const PiRender::Color COLOR_DARK_GREEN  {0, 117, 44};
-const PiRender::Color COLOR_SKY_BLUE    {102, 191, 255};
-const PiRender::Color COLOR_BLUE        {0, 121, 241};
-const PiRender::Color COLOR_DARK_BLUE   {0, 82, 172};
-const PiRender::Color COLOR_PURPLE      {200, 122, 255};
-const PiRender::Color COLOR_VIOLET      {135, 60, 190};
-const PiRender::Color COLOR_DARK_PURPLE {112, 31, 126};
-const PiRender::Color COLOR_BEIGE       {211, 176, 131};
-const PiRender::Color COLOR_BROWN       {127, 106, 79};
-const PiRender::Color COLOR_DARK_BROWN  {76, 63, 47};
-const PiRender::Color COLOR_WHITE       {255, 255, 255};
-const PiRender::Color COLOR_BLACK       {0, 0, 0};
-const PiRender::Color COLOR_TRANSPARENT {0, 0, 0};
-const PiRender::Color COLOR_MAGENTA     {255, 0, 255};
+const Render::Color COLOR_LIGHT_GRAY  {200, 200, 200};
+const Render::Color COLOR_GRAY        {130, 130, 130};
+const Render::Color COLOR_DARK_GRAY   {80, 80, 80};
+const Render::Color COLOR_YELLOW      {253, 249, 0};
+const Render::Color COLOR_GOLD        {255, 203, 0};
+const Render::Color COLOR_ORANGE      {255, 161, 0};
+const Render::Color COLOR_PINK        {255, 109, 194};
+const Render::Color COLOR_RED         {230, 41, 55};
+const Render::Color COLOR_MAROON      {190, 33, 55};
+const Render::Color COLOR_GREEN       {0, 228, 48};
+const Render::Color COLOR_LIME        {0, 158, 47};
+const Render::Color COLOR_DARK_GREEN  {0, 117, 44};
+const Render::Color COLOR_SKY_BLUE    {102, 191, 255};
+const Render::Color COLOR_BLUE        {0, 121, 241};
+const Render::Color COLOR_DARK_BLUE   {0, 82, 172};
+const Render::Color COLOR_PURPLE      {200, 122, 255};
+const Render::Color COLOR_VIOLET      {135, 60, 190};
+const Render::Color COLOR_DARK_PURPLE {112, 31, 126};
+const Render::Color COLOR_BEIGE       {211, 176, 131};
+const Render::Color COLOR_BROWN       {127, 106, 79};
+const Render::Color COLOR_DARK_BROWN  {76, 63, 47};
+const Render::Color COLOR_WHITE       {255, 255, 255};
+const Render::Color COLOR_BLACK       {0, 0, 0};
+const Render::Color COLOR_TRANSPARENT {0, 0, 0};
+const Render::Color COLOR_MAGENTA     {255, 0, 255};
 
 }

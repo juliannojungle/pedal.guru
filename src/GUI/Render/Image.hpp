@@ -28,7 +28,7 @@ extern "C" {
     #include "Types.h"
 }
 
-namespace PiRender {
+namespace Render {
 
 class Image {
     private:
@@ -37,15 +37,15 @@ class Image {
         UINT16 *data;
         int width;
         int height;
-        PiRender::Color color;
+        Render::Color color;
         Image();
-        Image(int width, int height, PiRender::Color color);
+        Image(int width, int height, Render::Color color);
         Image(int width, int height);
         Image(std::string path);
         void LoadImage(std::string path);
         void UnloadImage();
         void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint);
-        void ImageDrawPixel(int posX, int posY, PiRender::Color color);
+        void ImageDrawPixel(int posX, int posY, Render::Color color);
 };
 
 }

@@ -28,7 +28,7 @@ namespace PedalGuru {
 
 class GUIDrawer {
     private:
-        PiRender::Window window;
+        Render::Window window;
         std::shared_ptr<PedalGuru::Callback> pageContentsPreDrawCallback_;
         std::shared_ptr<PedalGuru::Callback> pageContentsDrawCallback_;
         std::shared_ptr<PedalGuru::Callback> pageContentsPostDrawCallback_;

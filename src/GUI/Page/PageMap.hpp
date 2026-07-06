@@ -26,7 +26,7 @@ namespace PedalGuru {
 class PageMap : public PedalGuru::BasePage {
     private:
         PedalGuru::OpenStreetMapAPI mapApi_;
-        PiRender::Texture mapTexture_;
+        Render::Texture mapTexture_;
         PedalGuru::MapGrid mapGrid_;
         double previousLatitude, previousLongitude;
         void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
