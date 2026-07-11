@@ -32,7 +32,6 @@ void Texture::Allocate() {
     }
 
     CanvasNewTexture((UINT8 *)this->data, this->width, this->height, ROTATE_0);
-    CanvasSetColorDepth(65); // no scale
 }
 
 void Texture::LoadTextureFromImage(Image& image) {

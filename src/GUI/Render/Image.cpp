@@ -35,7 +35,6 @@ void Image::AllocateImage() {
 
     UINT16 color(COLOR_LL(this->color));
     CanvasNewTexture((UINT8 *)this->data, this->width, this->height, ROTATE_0);
-    CanvasSetColorDepth(65); // no scale
 }
 
 Image::Image() {}
