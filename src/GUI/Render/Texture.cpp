@@ -18,31 +18,53 @@
 */
 
 #include "Texture.hpp"
+#include "Canvas.h"
+#include "fonts.h"
 
-namespace Render {
+namespace PedalGuru {
 
-void Texture::AllocateTexture() {
+void Texture::Allocate() {
     UINT32 textureSize = this->height * this->width * 2;
 
     if ((this->data = (UINT16 *)malloc(textureSize)) == NULL) {
         printf("Failed to allocate memory...\r\n");
-        exit(0);
+        exit(EXIT_FAILURE);
     }
 
     CanvasNewTexture((UINT8 *)this->data, this->width, this->height, ROTATE_0);
-    CanvasSetScale(65); // no scale
+    CanvasSetColorDepth(65); // no scale
 }
 
-void Texture::LoadTextureFromImage(Render::Image& image) {
+void Texture::LoadTextureFromImage(Image& image) {
     this->height = image.height;
     this->width = image.width;
-    AllocateTexture();
+    Allocate();
     this->data = image.data;
 }
 
-void Texture::UnloadTexture() {
+void Texture::Release() {
     free(this->data);
     this->data = NULL;
+}
+
+void Texture::DrawCircle(int xCenter, int yCenter, int radius, Color color, int lineWidth, bool fillCircle) {
+    CanvasDrawCircle(
+        xCenter,
+        yCenter,
+        radius,
+        COLOR_LL(color),
+        (PixelSize)lineWidth,
+        (DrawFillStyle)fillCircle);
+}
+
+void Texture::DrawText(std::string text, int x, int y, sFONT* fontSize, Color foregroundColor, Color backgroundColor) {
+    CanvasDrawText(
+        x,
+        y,
+        text.c_str(),
+        fontSize,
+        COLOR_LL(foregroundColor),
+        COLOR_LL(backgroundColor));
 }
 
 }

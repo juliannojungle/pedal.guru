@@ -47,7 +47,7 @@ void GUIDrawer::Execute() {
     {
         window.BeginDrawing();
         {
-            window.ClearBackground(Render::COLOR_WHITE);
+            window.ClearBackground(COLOR_WHITE);
 
             if (pageContentsDrawCallback_ != nullptr)
                 pageContentsDrawCallback_->Method();

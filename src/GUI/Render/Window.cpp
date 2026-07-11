@@ -20,47 +20,31 @@
 #include "Window.hpp"
 
 extern "C" {
+    #include "LCDSetup.h"
     #include "LCDRenderer.h"
 }
 
-namespace Render {
+namespace PedalGuru {
 
-void Window::Init(int width, int height, std::string title) {
+void Window::Init() {
+    LCDInitialize();
     LCDClear(COLOR_LL(COLOR_BLACK));
 }
 
 bool Window::ShouldClose() {
-    // return WindowShouldClose();
-    return false;
+    return LCDRenderShouldClose();
 }
 
 void Window::Close() {
-    // CloseWindow();
+    LCDRenderClose();
 }
 
-void Window::BeginDrawing() {
-    // BeginDrawing();
-}
-
-void Window::ClearBackground(Render::Color color) {
+void Window::ClearBackground(Color color) {
     LCDClear(COLOR_LL(color));
 }
 
-void Window::EndDrawing() {
-    // EndDrawing();
-}
-
-void Window::DrawCircle(int centerX, int centerY, float radius, Render::Color color) {
-    // DrawCircle(centerX, centerY, radius, COLOR_LL(color));
-}
-
-void Window::DrawText(std::string text, int posX, int posY, int fontSize, Render::Color color) {
-    // DrawText(text.c_str(), posX, posY, fontSize, COLOR_LL(color));
-}
-
-void Window::DrawTexture(Render::Texture& texture, int posX, int posY, Render::Color color) {
-    // auto driverTexture(TEXTURE2D_TO_RAYLIB(texture));
-    // DrawTexture(driverTexture, posX, posY, COLOR_LL(color));
+void Window::DrawTexture(Texture texture) {
+    LCDRenderTexture(texture.data);
 }
 
 }

@@ -21,24 +21,28 @@
 #include "DataManager.hpp"
 #include "GPSFixData.hpp"
 
+extern "C" {
+    #include "Canvas.h"
+}
+
 namespace PedalGuru {
 
 void PageMap::PreDrawPageContents() {
 }
 
 void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
-    PedalGuru::GPSFixData gpsFixData;
-    PedalGuru::DataManager::GetInstance()->Pop(gpsFixData);
+    GPSFixData gpsFixData;
+    DataManager::GetInstance()->Pop(gpsFixData);
     latitude = gpsFixData.latitude;
     longitude = gpsFixData.longitude;
     fixed = gpsFixData.fixQuality > 0;
 }
 
 void PageMap::LoadGridImage() {
-    Render::Image gridImage(512, 512, Render::COLOR_BLUE);
+    Image gridImage(512, 512, COLOR_BLUE);
     int latitude, longitude;
-    Render::Rectangle tileRectangle(0, 0, 256, 256);
-    Render::Rectangle gridRectangle(0, 0, 256, 256);
+    Rectangle tileRectangle(0, 0, 256, 256);
+    Rectangle gridRectangle(0, 0, 256, 256);
 
     for (int latitude = 0; latitude < 2; latitude++)
     {
@@ -48,10 +52,10 @@ void PageMap::LoadGridImage() {
                 mapGrid_.tiles[latitude][longitude].x,
                 mapGrid_.tiles[latitude][longitude].y,
                 mapGrid_.tiles[latitude][longitude].zoom) + ".png";
-            Render::Image tileImage(imagePath);
+            Image tileImage(imagePath);
             gridRectangle.x = longitude * 256;
             gridRectangle.y = latitude * 256;
-            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, Render::COLOR_WHITE);
+            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, COLOR_WHITE);
             tileImage.UnloadImage();
         }
     }
@@ -73,11 +77,11 @@ void PageMap::DrawPageContents() {
         LoadGridImage();
     }
 
-    window_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, Render::COLOR_WHITE);
-    window_.DrawCircle(120, 120, 4, (fixed ? Render::COLOR_GREEN : Render::COLOR_ORANGE));
+    // mapTexture_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, COLOR_WHITE);
+    mapTexture_.DrawCircle(120, 120, 4, (fixed ? COLOR_GREEN : COLOR_ORANGE), 1, false);
+    window_.DrawTexture(mapTexture_);
 
     // We only get gps readings once per second.
-    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     Time::Delay(1000);
 }
 

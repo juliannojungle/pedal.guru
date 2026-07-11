@@ -23,7 +23,7 @@ extern "C" {
     #include "Canvas.h"
 }
 
-namespace Render {
+namespace PedalGuru {
 
 void Image::AllocateImage() {
     UINT32 imageSize = this->height * this->width * 2;
@@ -35,12 +35,12 @@ void Image::AllocateImage() {
 
     UINT16 color(COLOR_LL(this->color));
     CanvasNewTexture((UINT8 *)this->data, this->width, this->height, ROTATE_0);
-    CanvasSetScale(65); // no scale
+    CanvasSetColorDepth(65); // no scale
 }
 
 Image::Image() {}
 
-Image::Image(int width, int height, Render::Color color) {
+Image::Image(int width, int height, Color color) {
     this->width = width;
     this->height = height;
     this->color = color;
@@ -77,7 +77,7 @@ void Image::ImageDraw(Image image, Rectangle origin, Rectangle destination, Colo
     // }
 }
 
-void Image::ImageDrawPixel(int posX, int posY, Render::Color color) {
+void Image::ImageDrawPixel(int posX, int posY, Color color) {
     CanvasSetPixel(posX, posY, COLOR_LL(color));
 }
 

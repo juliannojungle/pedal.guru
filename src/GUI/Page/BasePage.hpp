@@ -28,7 +28,7 @@ class BasePage {
     protected:
         PedalGuru::SettingsData& settings_;
         PedalGuru::GUIDrawer& drawer_;
-        Render::Window window_;
+        Window window_;
     public:
         virtual ~BasePage() = default; // make it polymorphic
         BasePage(PedalGuru::GUIDrawer& drawer, PedalGuru::SettingsData& settings)

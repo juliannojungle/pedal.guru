@@ -38,7 +38,7 @@ void PageMapSync::DrawPageContents() {
 
     char progress[100];
     std::sprintf(progress, "%d / %d", syncedTiles_, totalTiles_);
-    window_.DrawText(std::string(progress), 50, 125, 20, Render::COLOR_BLACK);
+    window_.DrawText(std::string(progress), 50, 125, 20, COLOR_BLACK);
 }
 
 void PageMapSync::PostDrawPageContents() {
@@ -46,13 +46,13 @@ void PageMapSync::PostDrawPageContents() {
 }
 
 void PageMapSync::ShowTile(std::string filePath) {
-    Render::Image mapTile;
+    Image mapTile;
     mapTile.LoadImage(filePath);
     mapTexture_.UnloadTexture();
     mapTexture_.LoadTextureFromImage(mapTile);
     mapTile.UnloadImage();
     // 256x256 tile on 240x240 display: -8 padding to center the tile.
-    window_.DrawTexture(mapTexture_, -8, -8, Render::COLOR_WHITE);
+    window_.DrawTexture(mapTexture_, -8, -8, COLOR_WHITE);
 }
 
 }

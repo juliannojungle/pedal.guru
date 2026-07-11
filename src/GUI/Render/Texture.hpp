@@ -20,24 +20,27 @@
 #pragma once
 
 #include "Image.hpp"
+#include "fonts.h"
 
 extern "C" {
     #include "Types.h"
 }
 
-namespace Render {
+namespace PedalGuru {
 
 class Texture {
     private:
-        UINT16 *data;
-        void AllocateTexture();
+    void Allocate();
     public:
+        UINT16 *data;
         int width;
         int height;
         Texture() {}
         Texture(int width, int height): width(width), height(height) {}
-        void LoadTextureFromImage(Render::Image& image);
-        void UnloadTexture();
+        void LoadTextureFromImage(Image& image);
+        void Release();
+        void DrawCircle(int xCenter, int yCenter, int radius, Color color, int lineWidth, bool fillCircle);
+        void DrawText(std::string text, int x, int y, sFONT* fontSize, Color foregroundColor, Color backgroundColor);
 };
 
 }

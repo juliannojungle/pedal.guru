@@ -23,7 +23,7 @@ extern "C" {
     #include "Canvas.h"
 }
 
-namespace Render {
+namespace PedalGuru {
 
 #define COLOR_LL(color) (short)RGB_COLOR(color.red, color.green, color.blue)
 
@@ -37,30 +37,30 @@ class Color {
             : red(red), green(green), blue(blue) {}
 };
 
-const Render::Color COLOR_LIGHT_GRAY  {200, 200, 200};
-const Render::Color COLOR_GRAY        {130, 130, 130};
-const Render::Color COLOR_DARK_GRAY   {80, 80, 80};
-const Render::Color COLOR_YELLOW      {253, 249, 0};
-const Render::Color COLOR_GOLD        {255, 203, 0};
-const Render::Color COLOR_ORANGE      {255, 161, 0};
-const Render::Color COLOR_PINK        {255, 109, 194};
-const Render::Color COLOR_RED         {230, 41, 55};
-const Render::Color COLOR_MAROON      {190, 33, 55};
-const Render::Color COLOR_GREEN       {0, 228, 48};
-const Render::Color COLOR_LIME        {0, 158, 47};
-const Render::Color COLOR_DARK_GREEN  {0, 117, 44};
-const Render::Color COLOR_SKY_BLUE    {102, 191, 255};
-const Render::Color COLOR_BLUE        {0, 121, 241};
-const Render::Color COLOR_DARK_BLUE   {0, 82, 172};
-const Render::Color COLOR_PURPLE      {200, 122, 255};
-const Render::Color COLOR_VIOLET      {135, 60, 190};
-const Render::Color COLOR_DARK_PURPLE {112, 31, 126};
-const Render::Color COLOR_BEIGE       {211, 176, 131};
-const Render::Color COLOR_BROWN       {127, 106, 79};
-const Render::Color COLOR_DARK_BROWN  {76, 63, 47};
-const Render::Color COLOR_WHITE       {255, 255, 255};
-const Render::Color COLOR_BLACK       {0, 0, 0};
-const Render::Color COLOR_TRANSPARENT {0, 0, 0};
-const Render::Color COLOR_MAGENTA     {255, 0, 255};
+const Color COLOR_LIGHT_GRAY  {200, 200, 200};
+const Color COLOR_GRAY        {130, 130, 130};
+const Color COLOR_DARK_GRAY   {80, 80, 80};
+const Color COLOR_YELLOW      {253, 249, 0};
+const Color COLOR_GOLD        {255, 203, 0};
+const Color COLOR_ORANGE      {255, 161, 0};
+const Color COLOR_PINK        {255, 109, 194};
+const Color COLOR_RED         {230, 41, 55};
+const Color COLOR_MAROON      {190, 33, 55};
+const Color COLOR_GREEN       {0, 228, 48};
+const Color COLOR_LIME        {0, 158, 47};
+const Color COLOR_DARK_GREEN  {0, 117, 44};
+const Color COLOR_SKY_BLUE    {102, 191, 255};
+const Color COLOR_BLUE        {0, 121, 241};
+const Color COLOR_DARK_BLUE   {0, 82, 172};
+const Color COLOR_PURPLE      {200, 122, 255};
+const Color COLOR_VIOLET      {135, 60, 190};
+const Color COLOR_DARK_PURPLE {112, 31, 126};
+const Color COLOR_BEIGE       {211, 176, 131};
+const Color COLOR_BROWN       {127, 106, 79};
+const Color COLOR_DARK_BROWN  {76, 63, 47};
+const Color COLOR_WHITE       {255, 255, 255};
+const Color COLOR_BLACK       {0, 0, 0};
+const Color COLOR_TRANSPARENT {0, 0, 0};
+const Color COLOR_MAGENTA     {255, 0, 255};
 
 }
