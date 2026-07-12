@@ -19,33 +19,31 @@
 
 #pragma once
 
-#include <string>
-#include "Color.hpp"
-#include "Rectangle.hpp"
-#include <stdlib.h>
-
 extern "C" {
     #include "Types.h"
 }
 
 namespace PedalGuru {
 
-class Image {
-    private:
-        void AllocateImage();
-    public:
-        UINT16 *data;
-        int width;
-        int height;
-        Color color;
-        Image();
-        Image(int width, int height, Color color);
-        Image(int width, int height);
-        Image(std::string path);
-        void LoadImage(std::string path);
-        void UnloadImage();
-        void ImageDraw(Image image, Rectangle origin, Rectangle destination, Color tint);
-        void ImageDrawPixel(int posX, int posY, Color color);
+// #define CRECTANGLE(rectangle) CLITERAL(::Rectangle) \
+//     { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
+
+struct Point {
+    UINT16 x;
+    UINT16 y;
+    Point(UINT16 x, UINT16 y): x(x), y(y) {}
+};
+
+struct Size {
+    UINT16 width;
+    UINT16 height;
+    Size(UINT16 width, UINT16 height): width(width), height(height) {}
+};
+
+struct Rectangle {
+    Point point;
+    Size size;
+    Rectangle(Point point, Size size): point(point), size(size) {}
 };
 
 }

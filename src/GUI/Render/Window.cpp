@@ -44,7 +44,7 @@ void Window::ClearBackground(Color color) {
 }
 
 void Window::DrawTexture(Texture texture) {
-    LCDRenderTexture(texture.data);
+    LCDRenderTexture(texture.Data());
 }
 
 }

@@ -18,12 +18,9 @@
 */
 
 #include "PageMap.hpp"
+#include "Area.hpp"
 #include "DataManager.hpp"
 #include "GPSFixData.hpp"
-
-extern "C" {
-    #include "Canvas.h"
-}
 
 namespace PedalGuru {
 
@@ -38,11 +35,10 @@ void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed)
     fixed = gpsFixData.fixQuality > 0;
 }
 
-void PageMap::LoadGridImage() {
-    Image gridImage(512, 512, COLOR_BLUE);
+void PageMap::LoadGridTexture() {
     int latitude, longitude;
-    Rectangle tileRectangle(0, 0, 256, 256);
-    Rectangle gridRectangle(0, 0, 256, 256);
+    Rectangle sourceTile({0, 0}, {256, 256});
+    Point gridTarget({0, 0});
 
     for (int latitude = 0; latitude < 2; latitude++)
     {
@@ -52,17 +48,14 @@ void PageMap::LoadGridImage() {
                 mapGrid_.tiles[latitude][longitude].x,
                 mapGrid_.tiles[latitude][longitude].y,
                 mapGrid_.tiles[latitude][longitude].zoom) + ".png";
-            Image tileImage(imagePath);
-            gridRectangle.x = longitude * 256;
-            gridRectangle.y = latitude * 256;
-            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, COLOR_WHITE);
-            tileImage.UnloadImage();
+            gridTarget.x = longitude * 256;
+            gridTarget.y = latitude * 256;
+            mapTexture_.DrawPngToArea(
+                imagePath,
+                sourceTile,
+                gridTarget);
         }
     }
-
-    mapTexture_.UnloadTexture();
-    mapTexture_.LoadTextureFromImage(gridImage);
-    gridImage.UnloadImage();
 }
 
 void PageMap::DrawPageContents() {
@@ -74,7 +67,7 @@ void PageMap::DrawPageContents() {
         previousLatitude = latitude;
         previousLongitude = longitude;
         mapApi_.MapGridForCoordinate(mapGrid_, latitude, longitude, 16);
-        LoadGridImage();
+        LoadGridTexture();
     }
 
     // mapTexture_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, COLOR_WHITE);
@@ -86,7 +79,7 @@ void PageMap::DrawPageContents() {
 }
 
 void PageMap::PostDrawPageContents() {
-    mapTexture_.UnloadTexture();
+    mapTexture_.Release();
 }
 
 }

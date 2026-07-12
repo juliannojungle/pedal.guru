@@ -20,34 +20,37 @@
 #include "Texture.hpp"
 #include "Canvas.h"
 #include "fonts.h"
+#include <string>
 
-namespace PedalGuru {
-
-void Texture::Allocate() {
-    UINT32 textureSize = this->height * this->width * 2;
-
-    if ((this->data = (UINT16 *)malloc(textureSize)) == NULL) {
-        printf("Failed to allocate memory...\r\n");
-        exit(EXIT_FAILURE);
-    }
-
-    CanvasNewTexture((UINT8 *)this->data, this->width, this->height, ROTATE_0);
+extern "C" {
+    #include "FileSystem.h"
 }
 
-void Texture::LoadTextureFromImage(Image& image) {
-    this->height = image.height;
-    this->width = image.width;
-    Allocate();
-    this->data = image.data;
+namespace PedalGuru {
+UINT8* Texture::Data() {
+    return this->cTexture.Data;
+}
+
+int Texture::Width() {
+    return this->cTexture.Width;
+}
+
+int Texture::Height() {
+    return this->cTexture.Height;
+}
+
+Texture::Texture(int width, int height) {
+    this->cTexture = CanvasNewTexture(width, height);
 }
 
 void Texture::Release() {
-    free(this->data);
-    this->data = NULL;
+    free(this->cTexture.Data);
+    this->cTexture.Data = NULL;
 }
 
 void Texture::DrawCircle(int xCenter, int yCenter, int radius, Color color, int lineWidth, bool fillCircle) {
     CanvasDrawCircle(
+        this->cTexture,
         xCenter,
         yCenter,
         radius,
@@ -56,14 +59,47 @@ void Texture::DrawCircle(int xCenter, int yCenter, int radius, Color color, int 
         (DrawFillStyle)fillCircle);
 }
 
-void Texture::DrawText(std::string text, int x, int y, sFONT* fontSize, Color foregroundColor, Color backgroundColor) {
+sFONT* Texture::GetFont(int fontSize) {
+    switch (fontSize) {
+        case 8: return &Font8; break;
+        case 12: return &Font12; break;
+        case 16: return &Font16; break;
+        case 20: return &Font20; break;
+        case 24: return &Font24; break;
+        default: return &Font8; break;
+    }
+}
+
+void Texture::DrawText(std::string text, int x, int y, int fontSize, Color foregroundColor, Color backgroundColor) {
     CanvasDrawText(
+        this->cTexture,
         x,
         y,
         text.c_str(),
-        fontSize,
+        GetFont(fontSize),
         COLOR_LL(foregroundColor),
         COLOR_LL(backgroundColor));
+}
+
+void Texture::DrawPng(std::string filePath) {
+    FIL file;
+    if (OpenFile(&file, filePath.c_str())) {
+        CanvasDrawPng(cTexture, &file);
+        CloseFile(&file);
+    }
+}
+
+void Texture::DrawPngToArea(std::string filePath, Rectangle source, Point target) {
+    FIL file;
+    if (OpenFile(&file, filePath.c_str())) {
+        CanvasDrawPngToArea(
+            cTexture,
+            &file,
+            source.point.x, source.point.y,
+            source.size.width, source.size.height,
+            target.x, target.y);
+        CloseFile(&file);
+    }
 }
 
 }

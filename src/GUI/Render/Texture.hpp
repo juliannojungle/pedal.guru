@@ -19,28 +19,34 @@
 
 #pragma once
 
-#include "Image.hpp"
+#include <string>
+#include "Area.hpp"
+#include "Color.hpp"
 #include "fonts.h"
 
 extern "C" {
     #include "Types.h"
+    #include "Canvas.h"
 }
+
+using CTexture = ::Texture;
 
 namespace PedalGuru {
 
 class Texture {
     private:
-    void Allocate();
+        CTexture cTexture;
+        sFONT* GetFont(int fontSize);
     public:
-        UINT16 *data;
-        int width;
-        int height;
-        Texture() {}
-        Texture(int width, int height): width(width), height(height) {}
-        void LoadTextureFromImage(Image& image);
+        UINT8* Data();
+        int Width();
+        int Height();
+        Texture(int width, int height);
         void Release();
         void DrawCircle(int xCenter, int yCenter, int radius, Color color, int lineWidth, bool fillCircle);
-        void DrawText(std::string text, int x, int y, sFONT* fontSize, Color foregroundColor, Color backgroundColor);
+        void DrawText(std::string text, int x, int y, int fontSize, Color foregroundColor, Color backgroundColor);
+        void DrawPng(std::string filePath);
+        void DrawPngToArea(std::string filePath, Rectangle source, Point target);
 };
 
 }

@@ -18,6 +18,7 @@
 */
 
 #include "PageMapSync.hpp"
+#include "Color.hpp"
 
 namespace PedalGuru {
 
@@ -36,23 +37,19 @@ void PageMapSync::DrawPageContents() {
         syncedTiles_++;
     }
 
-    char progress[100];
+    char progress[(totalTiles_ * 2) + 3];
     std::sprintf(progress, "%d / %d", syncedTiles_, totalTiles_);
-    window_.DrawText(std::string(progress), 50, 125, 20, COLOR_BLACK);
+    mapTexture_.DrawText(std::string(progress), 50, 125, 20, COLOR_BLACK, COLOR_TRANSPARENT);
 }
 
 void PageMapSync::PostDrawPageContents() {
-    mapTexture_.UnloadTexture();
+    mapTexture_.Release();
 }
 
 void PageMapSync::ShowTile(std::string filePath) {
-    Image mapTile;
-    mapTile.LoadImage(filePath);
-    mapTexture_.UnloadTexture();
-    mapTexture_.LoadTextureFromImage(mapTile);
-    mapTile.UnloadImage();
-    // 256x256 tile on 240x240 display: -8 padding to center the tile.
-    window_.DrawTexture(mapTexture_, -8, -8, COLOR_WHITE);
+    // 256x256 tile on 240x240 display: 8 padding to center the tile.
+    mapTexture_.DrawPngToArea(filePath, {{8, 8}, {240, 240}}, {0, 0});
+    window_.DrawTexture(mapTexture_);
 }
 
 }

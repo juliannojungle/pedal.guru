@@ -19,10 +19,6 @@
 
 #include "GUIDrawer.hpp"
 
-extern "C" {
-    #include "LCDSetup.h"
-}
-
 namespace PedalGuru {
 
 void GUIDrawer::SetPageContentsPreDrawMethod(std::function<void()> method) {
@@ -38,21 +34,17 @@ void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
 };
 
 void GUIDrawer::Execute() {
-    window.Init(LCD.WIDTH, LCD.HEIGHT, std::string("PedalGuru").c_str());
+    window.Init();
 
     if (pageContentsPreDrawCallback_ != nullptr)
         pageContentsPreDrawCallback_->Method();
 
     while (!window.ShouldClose())
     {
-        window.BeginDrawing();
-        {
-            window.ClearBackground(COLOR_WHITE);
+        window.ClearBackground(COLOR_WHITE);
 
-            if (pageContentsDrawCallback_ != nullptr)
-                pageContentsDrawCallback_->Method();
-        }
-        window.EndDrawing();
+        if (pageContentsDrawCallback_ != nullptr)
+            pageContentsDrawCallback_->Method();
     }
 
     if (pageContentsPostDrawCallback_ != nullptr)

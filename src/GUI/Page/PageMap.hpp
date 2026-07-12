@@ -26,11 +26,11 @@ namespace PedalGuru {
 class PageMap : public PedalGuru::BasePage {
     private:
         PedalGuru::OpenStreetMapAPI mapApi_;
-        Texture mapTexture_;
+        Texture mapTexture_ { 240, 240 };
         PedalGuru::MapGrid mapGrid_;
         double previousLatitude, previousLongitude;
         void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
-        void LoadGridImage();
+        void LoadGridTexture();
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
         void PreDrawPageContents() override;

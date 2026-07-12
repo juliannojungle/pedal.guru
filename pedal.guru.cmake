@@ -43,7 +43,6 @@ set(SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Page/PageMapSync.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Page/PageRoute.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Page/PageSummary.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render/Image.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render/Texture.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render/Window.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Helper/FileHelper.cpp"

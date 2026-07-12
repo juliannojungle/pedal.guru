@@ -21,6 +21,7 @@
 
 extern "C" {
     #include "HAL.h"
+    #include "FileSystem.h"
 }
 
 #if !defined(SIMULATOR) && !defined(RP2040) && !defined(ESP32)
@@ -29,6 +30,15 @@ extern "C" {
 
 void app_entry(void) {
     STDIOInitAll();
+
+    if (!MountSdCard()) {
+        exit(EXIT_FAILURE);
+    }
+
+    if (!SelectActiveDrive()) {
+        UnMountSdCard();
+        exit(EXIT_FAILURE);
+    }
 
 #ifdef _DEBUG
     std::cout << "Welcome to Pedal.Guru!\n";
@@ -40,6 +50,8 @@ void app_entry(void) {
 #ifdef _DEBUG
     std::cout << "See you later!\n";
 #endif
+
+    UnMountSdCard();
 }
 
 #ifdef ESP_PLATFORM
