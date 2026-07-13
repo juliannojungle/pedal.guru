@@ -122,7 +122,7 @@ std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::stri
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
 
-    HttpClient_DownloadFile(tileUrl, fileHashPath.c_str());
+    bool downloadOk = HttpClient_DownloadFile(tileUrl, fileHashPath.c_str());
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
@@ -130,7 +130,7 @@ std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::stri
      */
     Time::Delay(500);
 
-    return fileHashPath;
+    return downloadOk ? fileHashPath : "";
 }
 
 int ApplyOperator(int tilePos, int value, int gridPos) {

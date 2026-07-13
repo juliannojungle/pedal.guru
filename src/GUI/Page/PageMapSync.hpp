@@ -32,7 +32,6 @@ class PageMapSync : public PedalGuru::BasePage {
         std::list<PedalGuru::MapTile> mapList_;
         int syncedTiles_, totalTiles_;
         Texture mapTexture_ { 240, 240 };
-        void ShowTile(std::string filePath);
     public:
         using BasePage::BasePage; // nothing to do here, using parent constructor
         void PreDrawPageContents() override;

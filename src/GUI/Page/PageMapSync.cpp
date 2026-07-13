@@ -32,7 +32,8 @@ void PageMapSync::DrawPageContents() {
     if (mapList_.size() > 0) {
         auto tile = mapList_.front();
         auto filePath = mapApi_.DownloadTile(tile, settings_.mapSyncingBaseUrl);
-        ShowTile(filePath);
+        // 256x256 tile on 240x240 display: 8 padding to center the tile.
+        mapTexture_.DrawPngToArea(filePath, {{8, 8}, {240, 240}}, {0, 0});
         mapList_.pop_front();
         syncedTiles_++;
     }
@@ -40,16 +41,11 @@ void PageMapSync::DrawPageContents() {
     char progress[(totalTiles_ * 2) + 3];
     std::sprintf(progress, "%d / %d", syncedTiles_, totalTiles_);
     mapTexture_.DrawText(std::string(progress), 50, 125, 20, COLOR_BLACK, COLOR_TRANSPARENT);
+    window_.DrawTexture(mapTexture_);
 }
 
 void PageMapSync::PostDrawPageContents() {
     mapTexture_.Release();
-}
-
-void PageMapSync::ShowTile(std::string filePath) {
-    // 256x256 tile on 240x240 display: 8 padding to center the tile.
-    mapTexture_.DrawPngToArea(filePath, {{8, 8}, {240, 240}}, {0, 0});
-    window_.DrawTexture(mapTexture_);
 }
 
 }

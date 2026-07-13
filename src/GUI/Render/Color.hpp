@@ -60,7 +60,7 @@ const Color COLOR_BROWN       {127, 106, 79};
 const Color COLOR_DARK_BROWN  {76, 63, 47};
 const Color COLOR_WHITE       {255, 255, 255};
 const Color COLOR_BLACK       {0, 0, 0};
-const Color COLOR_TRANSPARENT {0, 0, 0};
 const Color COLOR_MAGENTA     {255, 0, 255};
+const Color COLOR_TRANSPARENT {255, 0, 255};
 
 }
