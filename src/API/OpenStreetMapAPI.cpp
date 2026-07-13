@@ -18,10 +18,10 @@
 */
 
 #include "OpenStreetMapAPI.hpp"
-// #include "HTTPHelper.hpp"
 
 extern "C" {
     #include "LCDSetup.h"
+    #include "HttpClient.h"
 }
 
 namespace PedalGuru {
@@ -122,7 +122,7 @@ std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::stri
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
 
-    // HTTPHelper::DownloadFile(std::string(tileUrl), fileHashPath);
+    HttpClient_DownloadFile(tileUrl, fileHashPath.c_str());
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/

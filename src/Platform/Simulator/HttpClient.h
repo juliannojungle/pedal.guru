@@ -17,15 +17,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#ifndef __HTTP_CLIENT_H_
+#define __HTTP_CLIENT_H_
 
-#include <string>
+#include <stdbool.h>
 
-namespace PedalGuru {
+/*
+ * Downloads a file from the given URL and saves it to filePath.
+ * Creates intermediate directories as needed via CreatePathDirectories.
+ * Uses POSIX sockets + OpenSSL for HTTPS support.
+ *
+ * Returns true on success, false on failure.
+ */
+bool HttpClient_DownloadFile(const char *url, const char *filePath);
 
-class HTTPHelper {
-    public:
-        static void DownloadFile(std::string url, std::string filePath);
-};
-
-}
+#endif /* __HTTP_CLIENT_H_ */

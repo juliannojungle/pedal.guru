@@ -41,8 +41,6 @@ void GUIDrawer::Execute() {
 
     while (!window.ShouldClose())
     {
-        window.ClearBackground(COLOR_WHITE);
-
         if (pageContentsDrawCallback_ != nullptr)
             pageContentsDrawCallback_->Method();
     }

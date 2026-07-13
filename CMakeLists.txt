@@ -40,8 +40,8 @@ elseif(PLATFORM_NAME STREQUAL "Simulator")
     add_executable(${PROJECT_NAME} ${SOURCES})
     include_directories(${INCLUDE_DIRS})
 
-    find_package(CURL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m CURL::libcurl)
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto)
 
 elseif(PLATFORM_NAME STREQUAL "RP2040")
     set(CMAKE_C_STANDARD 11)
