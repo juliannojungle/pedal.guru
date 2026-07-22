@@ -103,9 +103,12 @@ void GPS::GetData() {
     PedalGuru::GPSFixData gpsFixData;
     gpsFixData.set(serial_rx);
 
-    // normalize coordinates
-    gpsFixData.latitude /= 100;
-    gpsFixData.longitude /= 100;
+    // convert NMEA (DDMM.MMMM) to decimal degrees
+    double latDegrees = (int)(gpsFixData.latitude / 100);
+    gpsFixData.latitude = latDegrees + (gpsFixData.latitude - latDegrees * 100) / 60.0;
+
+    double lonDegrees = (int)(gpsFixData.longitude / 100);
+    gpsFixData.longitude = lonDegrees + (gpsFixData.longitude - lonDegrees * 100) / 60.0;
 
     if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
     if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;

@@ -21,6 +21,7 @@
 #include "Area.hpp"
 #include "DataManager.hpp"
 #include "GPSFixData.hpp"
+#include <algorithm>
 
 namespace PedalGuru {
 
@@ -36,20 +37,33 @@ void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed)
 }
 
 void PageMap::LoadGridTexture() {
-    int latitude, longitude;
     Rectangle sourceTile({0, 0}, {256, 256});
     Point gridTarget({0, 0});
 
-    for (int latitude = 0; latitude < 2; latitude++)
+    for (int row = 0; row < 2; row++)
     {
-        for (int longitude = 0; longitude < 2; longitude++)
+        for (int col = 0; col < 2; col++)
         {
+            // Tile position in the virtual grid
+            int tileX = col * 256;
+            int tileY = row * 256;
+
+            // Intersection of visible area (240x240) with this tile (256x256)
+            sourceTile.point.x = std::max(mapGrid_.offsetX - tileX, 0);
+            sourceTile.point.y = std::max(mapGrid_.offsetY - tileY, 0);
+            sourceTile.size.width = std::min(tileX + 256, mapGrid_.offsetX + 240) - std::max(tileX, mapGrid_.offsetX);
+            sourceTile.size.height = std::min(tileY + 256, mapGrid_.offsetY + 240) - std::max(tileY, mapGrid_.offsetY);
+
+            gridTarget.x = std::max(tileX - mapGrid_.offsetX, 0);
+            gridTarget.y = std::max(tileY - mapGrid_.offsetY, 0);
+
+            if (sourceTile.size.width <= 0 || sourceTile.size.height <= 0) continue;
+
             auto imagePath = mapApi_.XyZoomToHashPath(
-                mapGrid_.tiles[latitude][longitude].x,
-                mapGrid_.tiles[latitude][longitude].y,
-                mapGrid_.tiles[latitude][longitude].zoom) + ".png";
-            gridTarget.x = longitude * 256;
-            gridTarget.y = latitude * 256;
+                mapGrid_.tiles[row][col].x,
+                mapGrid_.tiles[row][col].y,
+                mapGrid_.tiles[row][col].zoom) + ".png";
+
             mapTexture_.DrawPngToArea(
                 imagePath,
                 sourceTile,
@@ -70,7 +84,6 @@ void PageMap::DrawPageContents() {
         LoadGridTexture();
     }
 
-    // mapTexture_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, COLOR_WHITE);
     mapTexture_.DrawCircle(120, 120, 4, (fixed ? COLOR_GREEN : COLOR_ORANGE), 1, false);
     window_.DrawTexture(mapTexture_);
 

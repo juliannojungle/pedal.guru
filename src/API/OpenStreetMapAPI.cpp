@@ -187,8 +187,8 @@ void OpenStreetMapAPI::MapGridForCoordinate(PedalGuru::MapGrid &mapGrid, double 
     auto percentualY = 100.0 - ((pointLatitude * 100.0) / maxLatitude); // inverted: latitude grows up, pixel grows down
     auto pointY = (percentualY * TILE_HEIGHT) / 100.0;
 
-    mapGrid.offsetX = ZERO_CENTER_SCREEN - (indexLongitude * TILE_WIDTH) - pointX;
-    mapGrid.offsetY = ZERO_CENTER_SCREEN - (indexLatitude * TILE_HEIGHT) - pointY;
+    mapGrid.offsetX = -(ZERO_CENTER_SCREEN - (indexLongitude * TILE_WIDTH) - pointX);
+    mapGrid.offsetY = -(ZERO_CENTER_SCREEN - (indexLatitude * TILE_HEIGHT) - pointY);
 }
 
 }
