@@ -20,6 +20,7 @@
 #include "OpenStreetMapAPI.hpp"
 
 extern "C" {
+    #include "FileSystem.h"
     #include "LCDSetup.h"
     #include "HttpClient.h"
 }
@@ -121,6 +122,10 @@ std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::stri
     char tileUrl[1024];
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
+
+    if (PathOrFileExists(fileHashPath.c_str())) {
+        return fileHashPath;
+    }
 
     bool downloadOk = HttpClient_DownloadFile(tileUrl, fileHashPath.c_str());
 
