@@ -18,13 +18,15 @@
 */
 
 #include "Time.hpp"
-#include <chrono>
-#include <thread>
+
+extern "C" {
+    #include "HAL.h"
+}
 
 namespace PedalGuru {
 
 void Time::Delay(unsigned int milliseconds) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+    ::Delay(milliseconds);
 }
 }
 
