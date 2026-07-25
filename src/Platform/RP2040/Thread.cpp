@@ -34,4 +34,8 @@ void Mutex::Release() {
     mutex_exit(&lock_);
 }
 
+void Thread::NewThread(void (*entry)()) {
+    multicore_launch_core1(entry);
+}
+
 }

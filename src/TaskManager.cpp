@@ -28,16 +28,11 @@
 #include "PageSummary.hpp"
 #include "HIDHandler.hpp"
 #include "LocationModule.hpp"
-
-#if defined (RP2040)
-#include "pico/multicore.h"
-#else
-#include <thread>
-#endif
+#include "Thread.hpp"
 
 namespace PedalGuru {
 
-std::list<std::unique_ptr<PedalGuru::Device>> TaskManager::devices_;
+std::list<std::unique_ptr<Device>> TaskManager::devices_;
 bool TaskManager::running_;
 
 void TaskManager::Execute() {
@@ -49,50 +44,45 @@ void TaskManager::Execute() {
      * Start a parallel task to keep reading devices data,
      * while the main core keeps handling HID and GUI.
      */
-#if defined (RP2040)
-    multicore_launch_core1(GetDevicesData);
-#elif defined (SIMULATOR)
-    std::thread t(&GetDevicesData);
-    t.detach();
-#endif
+    Thread::NewThread(GetDevicesData);
 
-    PedalGuru::GUIDrawer drawer;
+    GUIDrawer drawer;
     CreatePages(drawer);
-    PedalGuru::HIDHandler handler;
-    PedalGuru::GUINavigator guiNavigator(handler, pages_);
+    HIDHandler handler;
+    GUINavigator guiNavigator(handler, pages_);
     drawer.Execute();
 }
 
-void TaskManager::CreatePages(PedalGuru::GUIDrawer& drawer) {
+void TaskManager::CreatePages(GUIDrawer& drawer) {
     /*
      * The pages order here is crucial, since it represents the pages cycle order!
      */
     if (settings_.pageMapEnabled) {
-        pages_.push_back(std::make_unique<PedalGuru::PageMap>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageMap>(drawer, settings_));
     }
 
     if (settings_.pageRouteEnabled) {
-        pages_.push_back(std::make_unique<PedalGuru::PageRoute>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageRoute>(drawer, settings_));
     }
 
     if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<PedalGuru::PageHillsGraph>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageHillsGraph>(drawer, settings_));
     }
 
     if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<PedalGuru::PageDistance>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageDistance>(drawer, settings_));
     }
 
     if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<PedalGuru::PageAltimetry>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageAltimetry>(drawer, settings_));
     }
 
     if (settings_.pageSummaryEnabled) {
-        pages_.push_back(std::make_unique<PedalGuru::PageSummary>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageSummary>(drawer, settings_));
     }
 
     // Settings pages aren't optional.
-    pages_.push_back(std::make_unique<PedalGuru::PageMapSync>(drawer, settings_));
+    pages_.push_back(std::make_unique<PageMapSync>(drawer, settings_));
 }
 
 void TaskManager::ReadSettings() {
@@ -108,7 +98,7 @@ void TaskManager::ReadSettings() {
 
 void TaskManager::CreateDevices() {
     //TODO: condition to settings
-    devices_.push_back(std::make_unique<PedalGuru::LocationModule>());
+    devices_.push_back(std::make_unique<LocationModule>());
 }
 
 void TaskManager::ConnectToDevices() {

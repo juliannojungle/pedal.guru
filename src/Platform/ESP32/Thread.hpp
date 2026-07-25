@@ -1,11 +1,12 @@
 #pragma once
 
-namespace PedalGuru {
-
 extern "C" {
     #include <freertos/FreeRTOS.h>
     #include <freertos/semphr.h>
+    #include <freertos/task.h>
 }
+
+namespace PedalGuru {
 
 class Mutex {
 private:
@@ -13,6 +14,11 @@ private:
 public:
     void Lock();
     void Release();
+};
+
+class Thread {
+public:
+    static void NewThread(void (*entry)());
 };
 
 }

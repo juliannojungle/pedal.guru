@@ -31,4 +31,9 @@ void Mutex::Release() {
     pthread_mutex_unlock(&lock_);
 }
 
+void Thread::NewThread(void (*entry)()) {
+    std::thread t(entry);
+    t.detach();
+}
+
 }

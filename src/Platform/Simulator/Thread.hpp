@@ -23,6 +23,8 @@ extern "C" {
     #include <pthread.h>
 }
 
+#include <thread>
+
 namespace PedalGuru {
 
 class Mutex {
@@ -31,6 +33,11 @@ private:
 public:
     void Lock();
     void Release();
+};
+
+class Thread {
+public:
+    static void NewThread(void (*entry)());
 };
 
 }

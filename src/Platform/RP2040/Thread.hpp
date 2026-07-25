@@ -21,6 +21,7 @@
 
 extern "C" {
     #include <pico/mutex.h>
+    #include <pico/multicore.h>
 }
 
 namespace PedalGuru {
@@ -31,6 +32,11 @@ private:
 public:
     void Lock();
     void Release();
+};
+
+class Thread {
+public:
+    static void NewThread(void (*entry)());
 };
 
 }
