@@ -68,6 +68,7 @@ set(INCLUDE_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}"
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor")
 
-include(${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll/gui.ll.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/src/Dependency/fs.ll.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll.cmake)
 
 add_compile_definitions(L96GPS)
