@@ -2,6 +2,7 @@
 build/**
 
 # Dependencies should not be modified here
+src/Dependency/fs.ll
 src/Dependency/gui.ll
 
 .cache
