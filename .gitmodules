@@ -2,9 +2,11 @@
     path = src/Dependency/gui.ll
     url = https://github.com/juliannojungle/gui.ll.git
     shallow = true
+    branch = main
     ignore = all
 [submodule "src/Dependency/fs.ll"]
     path = src/Dependency/fs.ll
     url = https://github.com/juliannojungle/fs.ll.git
     shallow = true
+    branch = main
     ignore = all
