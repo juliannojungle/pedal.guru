@@ -137,12 +137,15 @@ This is a deliberate divergence from gui.ll's Decision 16, which drops sibling l
 optimize for different things (shared checkout vs. visible dependency graph), and pedal.guru, being the
 top-level application rather than a library, chooses visibility.
 
-Consequence to be aware of: pedal.guru **still carries leftover copies** of `src/Dependency/fs.ll.cmake`
-and `src/Dependency/gui.ll.cmake` from the earlier contract-based approach. They are still included by
-`pedal.guru.cmake` and they still work, because each one's default path resolves onto the submodule
-folder that is already populated, so nothing gets downloaded. They are residue of the change of
-approach and the dev will clean them up later — see `TODO-C1`. Do not remove them on your own
-initiative: the build currently depends on them for the source and include lists.
+Because the libraries are checkouts in the tree, their contracts are included **straight from the
+submodules** — `src/Dependency/gui.ll/gui.ll.cmake` — instead of from copies kept here. The copies that
+the earlier contract-based approach required are gone.
+
+That makes pinning `FS_LL_PATH` and `GUI_LL_PATH` mandatory rather than optional. Each contract defaults
+its own path to a folder *next to itself*, so `gui.ll.cmake` read from inside the submodule would default
+`GUI_LL_PATH` to `src/Dependency/gui.ll/gui.ll`, find no sentinel file there, and `git clone` a second
+copy at configure time. Setting both variables before the include is what keeps the build on the
+submodules.
 
 Planned, still living inside pedal.guru and expected to move out (stated by the dev, names not
 final): `net.ll` for networking, something like `thread.ll` for timers and threading, something like
@@ -218,10 +221,8 @@ src/
   Model/                        plain data types (GPSFixData, MapTile, MapGrid, Settings, ...)
   Platform/<Platform>/          the platform seam owned by pedal.guru (§9)
   Dependency/
-    fs.ll/                      submodule
-    gui.ll/                     submodule
-    fs.ll.cmake                 copy of fs.ll's build contract
-    gui.ll.cmake                copy of gui.ll's build contract
+    fs.ll/                      submodule, carries its own fs.ll.cmake contract
+    gui.ll/                     submodule, carries its own gui.ll.cmake contract
     pico_sdk_import.cmake       stock pico-sdk locator
 ```
 
@@ -444,9 +445,9 @@ real.
 Two files, mirroring the pattern the submodules use.
 
 **`pedal.guru.cmake`** declares `PLATFORM_NAME` (cached, `Simulator` by default, one of
-`Simulator`/`RP2040`/`ESP32`), validates it, then **appends** the application's sources and include dirs
-to `SOURCES` / `INCLUDE_DIRS`, and finally sets `FS_LL_PATH` and includes
-`src/Dependency/gui.ll.cmake`.
+`Simulator`/`RP2040`/`ESP32`), then **appends** the application's sources and include dirs to
+`SOURCES` / `INCLUDE_DIRS`, and finally pins `FS_LL_PATH` / `GUI_LL_PATH` to the two submodules and
+includes `${GUI_LL_PATH}/gui.ll.cmake`.
 
 ### Two rules this file must obey
 
@@ -505,13 +506,12 @@ when both contracts simply append to the same lists.
 
 The way out is to not include `fs.ll.cmake` here at all: `gui.ll.cmake` already includes its own
 versioned copy at its very end, which produces exactly the right order (gui.ll's dirs, then fs.ll's).
-pedal.guru only has to point that nested include at the right checkout, by setting `FS_LL_PATH` to the
-`src/Dependency/fs.ll` submodule before the include. Since `FS_LL_PATH` is cached, the nested contract
-reuses it instead of defaulting to a folder next to gui.ll's own copy, so nothing is downloaded and both
-libraries share the one submodule.
+pedal.guru only has to point that nested include at the right checkout by setting `FS_LL_PATH` before
+including gui.ll's contract. Since it is cached, the nested include reuses it, so nothing is downloaded
+and both libraries share the one submodule.
 
-Consequence: `src/Dependency/fs.ll.cmake` is now **dead** — nothing includes it. It is still on disk
-pending `TODO-C1`.
+So the whole dependency stack enters through a single line, `include(${GUI_LL_PATH}/gui.ll.cmake)`,
+preceded only by the two `*_PATH` variables (§2).
 
 There is no `add_library` anywhere in the whole stack: each library appends to the two shared list
 variables and the top-level target consumes them.
@@ -789,7 +789,6 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-C1` | `src/Dependency/fs.ll.cmake` is now **dead code** — nothing includes it since `TODO-A6` was fixed (§10). It can simply be deleted. `src/Dependency/gui.ll.cmake` is still live and is the one entry point into the dependency stack; removing *that* one is the real migration, and it is what §2 discusses. |
 | `TODO-C3` | `src/Model/SensorData.hpp` is an empty struct used by nothing. Fill it in or drop it. |
 | `TODO-C4` | `TaskManager::ReadSettings` hardcodes the settings; no persistence to or from the card yet. |
 | `TODO-C8` | Licence headers are missing in places. All of pedal.guru's `src` is covered now, but the submodules are not, and they need a header **adapted to their own context** (fs.ll and gui.ll are libraries with their own identity, not pedal.guru files). Decide the wording per repository before mass-applying anything. |

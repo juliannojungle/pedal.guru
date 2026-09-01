@@ -73,8 +73,11 @@ set(INCLUDE_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}"
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor")
 
-# Do not include fs.ll.cmake here: gui.ll.cmake includes it last, which is what keeps gui.ll's
-# HAL.h/HALConfig.h (the only ones carrying the LCD_* pins) ahead of fs.ll's on the include path.
 set(FS_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/fs.ll" CACHE PATH "fs.ll root directory" FORCE)
-include(${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll.cmake)
+set(GUI_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll" CACHE PATH "gui.ll root directory" FORCE)
+
+# Only gui.ll's contract is included: it includes fs.ll's last, and that order is what keeps
+# gui.ll's HAL.h/HALConfig.h (the only ones carrying the LCD_* pins) ahead of fs.ll's on the
+# include path.
+include(${GUI_LL_PATH}/gui.ll.cmake)
 
