@@ -21,7 +21,9 @@
 
 namespace PedalGuru {
 
-pthread_mutex_t Mutex::lock_ = PTHREAD_MUTEX_INITIALIZER;
+Mutex::Mutex() {
+    pthread_mutex_init(&lock_, nullptr);
+}
 
 void Mutex::Lock() {
     pthread_mutex_lock(&lock_);

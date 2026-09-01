@@ -28,11 +28,13 @@ void DataManager::Push(PedalGuru::GPSFixData &gpsFixData) {
 }
 
 void DataManager::Pop(PedalGuru::GPSFixData &gpsFixData) {
-    if (this->gpsFixData_.empty()) return;
-
     mutex_.Lock();
-    gpsFixData = *(this->gpsFixData_.cbegin());
-    this->gpsFixData_.pop_front();
+
+    if (!this->gpsFixData_.empty()) {
+        gpsFixData = *(this->gpsFixData_.cbegin());
+        this->gpsFixData_.pop_front();
+    }
+
     mutex_.Release();
 }
 

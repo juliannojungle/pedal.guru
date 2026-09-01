@@ -24,9 +24,6 @@ extern "C" {
     #include "FileSystem.h"
 }
 
-#if !defined(SIMULATOR) && !defined(RP2040) && !defined(ESP32)
-    #error Platform must be informed!
-#endif
 
 void app_entry(void) {
     STDIOInitAll();
@@ -55,7 +52,7 @@ void app_entry(void) {
 }
 
 #ifdef ESP_PLATFORM
-void app_main(void) {
+extern "C" void app_main(void) { // ESP-IDF calls it from C: it must not be name-mangled.
     app_entry();
 }
 #else

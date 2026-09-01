@@ -25,10 +25,14 @@ if(DEFINED DEBUGMSGS) # Optional debug messages: pass -DDEBUGMSGS (no value need
     add_compile_definitions(DEBUGMSGS _DEBUG)
 endif()
 
+set(PLATFORMS "Simulator" "RP2040" "ESP32")
+set(PLATFORM_NAME "Simulator" CACHE STRING "Build platform, one of: ${PLATFORMS}")
+set_property(CACHE PLATFORM_NAME PROPERTY STRINGS ${PLATFORMS})
+
 # Build system per platform
 if(PLATFORM_NAME STREQUAL "ESP32")
     # ESP-IDF orchestrates the build: EXTRA_COMPONENT_DIRS adds our component keeping ESP-IDF built-in components.
-    set(EXTRA_COMPONENT_DIRS "${CMAKE_SOURCE_DIR}/src/lib/Platform/ESP32")
+    set(EXTRA_COMPONENT_DIRS "${CMAKE_SOURCE_DIR}/src/Platform/ESP32")
     include($ENV{IDF_PATH}/tools/cmake/project.cmake)
     project(${PROJECT_NAME})
 
@@ -39,6 +43,7 @@ elseif(PLATFORM_NAME STREQUAL "Simulator")
     set(SOURCES ${SOURCES})
     add_executable(${PROJECT_NAME} ${SOURCES})
     include_directories(${INCLUDE_DIRS})
+    set_source_files_properties(${PEDAL_GURU_SOURCES} PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 
     find_package(OpenSSL REQUIRED)
     target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto)
@@ -59,6 +64,7 @@ elseif(PLATFORM_NAME STREQUAL "RP2040")
     set(SOURCES ${SOURCES})
     add_executable(${PROJECT_NAME} ${SOURCES})
     include_directories(${INCLUDE_DIRS})
+    set_source_files_properties(${PEDAL_GURU_SOURCES} PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 
     target_link_libraries(${PROJECT_NAME} PUBLIC
         pico_stdlib pico_multicore hardware_spi hardware_gpio hardware_pwm hardware_adc hardware_rtc)
@@ -66,4 +72,8 @@ elseif(PLATFORM_NAME STREQUAL "RP2040")
     pico_enable_stdio_usb(${PROJECT_NAME} 1)  # enable usb output
     pico_enable_stdio_uart(${PROJECT_NAME} 0) # disable uart output
     pico_add_extra_outputs(${PROJECT_NAME})   # create map/bin/hex/uf2 files in addition to elf
+
+else()
+    string(REPLACE ";" ", " PLATFORMS_PRETTY "${PLATFORMS}")
+    message(FATAL_ERROR "PLATFORM_NAME must be one of: ${PLATFORMS_PRETTY} (got '${PLATFORM_NAME}')")
 endif()

@@ -21,12 +21,11 @@
 
 namespace PedalGuru {
 
-mutex_t Mutex::lock_ = PTHREAD_MUTEX_INITIALIZER;
+Mutex::Mutex() {
+    mutex_init(&lock_);
+}
 
 void Mutex::Lock() {
-    if (!mutex_is_initialized(&lock_)) {
-        mutex_init(&lock_);
-    }
     mutex_enter_blocking(&lock_);
 }
 

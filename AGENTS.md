@@ -38,7 +38,36 @@ evolve with the code. Everything can be questioned, and **should** be questioned
 incoherent, or out of line with common industry practice. If you see an opportunity for improvement,
 **propose it to the dev** — do not implement it unilaterally, and do not stay quiet about it either.
 
-### 5. Do not write tests
+### 5. Comments only when essential
+
+**The code has to speak for itself.** Prefer clear names and structure over prose. This is a standing
+rule from the dev, in force across pedal.guru, fs.ll and gui.ll — and it is routinely violated by agents,
+so read it as a hard limit, not a preference.
+
+Write a comment only when it carries information the code cannot:
+
+- a non-obvious **why** (a rationale, a subtle invariant, a bug a naive change would reintroduce);
+- a necessary technical note (units, fixed-point format, overflow reasoning, a hardware or spec quirk);
+- a short header stating a module's purpose.
+
+Do **not** write:
+
+- anything that restates what the code already says. If the line sits in the `else()` of a platform
+  branch, "no supported platform matched" adds nothing — that is what `else()` means;
+- step-by-step narration above or inside a function, or per-line annotation;
+- requirement or decision tags (`// Req 3.1`, `// Decision 14`). Traceability belongs in this file, not
+  scattered through the source;
+- multi-paragraph explanations. Keep it to a line or two. If a block needs a paragraph to be understood,
+  extract a well-named helper instead, or put the explanation here in `AGENTS.md` and leave at most a
+  pointer in the code.
+
+Rationale that is long but genuinely valuable belongs in this document, where it is read once, not in a
+header that every reader has to scroll past.
+
+Applies to new code and to edits of existing code. Pre-existing third-party code under `src/Dependency/`
+is left as-is unless touched.
+
+### 6. Do not write tests
 
 **Confirmed by the dev.** Do not add unit tests, property-based tests, test harnesses, mocking or stub
 layers, or any test build system. Do not create or expand a `test/` directory, and do not vendor a
@@ -53,6 +82,9 @@ that happens, treat it as a hard rule. When a spec's task plan lists test tasks,
 and out of scope unless the dev says otherwise for that session.
 
 The same policy is in force in fs.ll and gui.ll.
+
+---
+
 
 ---
 
@@ -249,7 +281,44 @@ app_entry()                         PedalGuru.cpp
 
 `DataManager` is a **singleton** (`GetInstance()`) that centralizes data between the two threads. It
 currently holds one queue, `std::list<GPSFixData>`, with `Push` (sensor thread) and `Pop` (UI thread),
-both guarded by the platform `Mutex` (§9).
+both guarded by the platform `Mutex` (§9). `GetInstance()` takes the same lock, because both threads
+reach it (`GPS::LogGpsData` and `PageMap`) and either could be the first.
+
+### How Mutex is initialized, and why
+
+A mutex has to be set up before first use, and the three platforms differ on how. `pthread` offers a
+compile-time constant; the pico-sdk needs a `mutex_init()` call; FreeRTOS needs
+`xSemaphoreCreateMutex()`, which also allocates. Three options were considered: lazy initialization
+inside `Lock()`, one explicit call before the threads start, or **the constructor**.
+
+**The constructor won**, and the reasoning is worth keeping, because the earlier code tried the other
+two and both were wrong here:
+
+- The queue is **unbounded**, and deliberately so: the GPS emits roughly one fix per second and the UI
+thread consumes at the same rate, so the dev expects it to hold no more than a few items. `GPSFixData` is
+152 bytes on ARM. If growth is ever observed in practice, revisit then — it is not a problem being
+ignored, it is a bound that the data rate already provides.
+
+`Mutex::lock_` is **per instance**, not `static`. It used to be `static`, which quietly made every
+  `Mutex` in the program share a single lock — harmless while `DataManager` owned the only one,
+  misleading the moment a second appeared. Once the lock belongs to the object, the object's constructor
+  is the natural place to prepare it, and there is nothing left for a caller to remember.
+- **Lazy initialization was rejected.** The old RP2040 `Lock()` did
+  `if (!mutex_is_initialized(&lock_)) mutex_init(&lock_);`, and that check-then-init is itself an
+  unprotected race between the two cores: the object meant to prevent a race was created by one.
+- **An explicit `Initialize()` call was tried and then dropped.** It worked, and it mirrored the way the
+  SD card is mounted in `app_entry`, but it left `Lock()` on a fresh `Mutex` as undefined behaviour and
+  put the burden on every future owner.
+
+All three platforms therefore have the same shape: a constructor that prepares `lock_`, plus `Lock()`
+and `Release()`. The Simulator uses `pthread_mutex_init()` rather than the constant it could have used,
+so that no platform is the odd one out — that asymmetry is exactly what produced the original bug, where
+`PTHREAD_MUTEX_INITIALIZER` had been copied onto a pico-sdk type.
+
+Consequence to be aware of on the hardware platforms: `DataManager::mutex_` is a static object, so its
+constructor runs during static initialization, before `main`/`app_main`. On ESP32 that means
+`xSemaphoreCreateMutex()` allocates before `app_main`. Both compile; neither has been **run** on
+hardware (§15). There is no destructor — these mutexes live for the whole program.
 
 **Important, and it corrects an assumption recorded in fs.ll's `AGENTS.md` §12:** `DataManager` does
 **not** centralize SD card access — it only holds in-RAM sensor data. Every card access in pedal.guru
@@ -346,7 +415,7 @@ Each platform folder is expected to expose the same file names:
 
 | file | contract |
 |---|---|
-| `Thread.{cpp,hpp}` | `PedalGuru::Thread::NewThread(void(*)())` and `PedalGuru::Mutex` (`Lock`/`Release`) |
+| `Thread.{cpp,hpp}` | `PedalGuru::Thread::NewThread(void(*)())` and `PedalGuru::Mutex` (constructor, `Lock`, `Release`) |
 | `Time.{cpp,hpp}` | `PedalGuru::Time::Delay(unsigned int milliseconds)` |
 | `HttpClient.{c,h}` | `bool HttpClient_DownloadFile(const char *url, const char *filePath)` |
 | `CMakeLists.txt` | ESP32 only: ESP-IDF component registration |
@@ -356,28 +425,93 @@ What each one does today:
 | | Simulator | RP2040 | ESP32 |
 |---|---|---|---|
 | `NewThread` | `std::thread` + `detach` | `multicore_launch_core1` | `xTaskCreate` |
-| `Mutex` | `pthread_mutex_*` | `pico/mutex.h` `mutex_enter_blocking` | `xSemaphoreTake/Give` |
-| `Delay` | gui.ll's `Delay` (SDL event pump) | `sleep_ms` | — (file is empty) |
-| `HttpClient` | POSIX sockets + OpenSSL, writes through fs.ll's `WriteFile` | — (file is empty) | — (file is empty) |
+| `Mutex` constructor | `pthread_mutex_init` | `mutex_init` | `xSemaphoreCreateMutex` |
+| `Mutex` lock/release | `pthread_mutex_lock/unlock` | `mutex_enter_blocking`/`mutex_exit` | `xSemaphoreTake/Give` |
+| `Delay` | gui.ll's `Delay` (SDL event pump) | `sleep_ms` | `vTaskDelay`, floored at 1 tick |
+| `HttpClient` | POSIX sockets + OpenSSL, writes through fs.ll's `WriteFile` | stub returning `false` | stub returning `false` |
 
-Only the **Simulator** folder is complete and compiling. The RP2040 and ESP32 folders are
-work-in-progress and contain code that does not compile at all — see §14 for the exact state, §16 for
-the specific defects, and group **A** of the TODO list in §17 for the backlog.
+The `HttpClient` stubs are deliberate: they keep the platform contract so the firmware links, and they
+print a message instead of failing silently, so a failed map sync is diagnosable on the device. On the
+RP2040 a real implementation is blocked on hardware — there is no native wireless, it needs the WiFi+BT
+module of the expansion board (§3). On the ESP32-S3 wireless is native, so there it is only pending work
+(`TODO-E1`).
+
+All three folders now compile. `HttpClient` is a stub on the two hardware platforms; everything else is
+real.
 
 ## 10. Build system
 
 Two files, mirroring the pattern the submodules use.
 
 **`pedal.guru.cmake`** declares `PLATFORM_NAME` (cached, `Simulator` by default, one of
-`Simulator`/`RP2040`/`ESP32`), adds the upper-cased platform name as a compile definition (`SIMULATOR`
-/ `RP2040` / `ESP32` — `PedalGuru.cpp` `#error`s if none is set), then **appends** the application's
-sources and include dirs to `SOURCES` / `INCLUDE_DIRS`, and finally includes
-`src/Dependency/fs.ll.cmake` and `src/Dependency/gui.ll.cmake`.
+`Simulator`/`RP2040`/`ESP32`), validates it, then **appends** the application's sources and include dirs
+to `SOURCES` / `INCLUDE_DIRS`, and finally sets `FS_LL_PATH` and includes
+`src/Dependency/gui.ll.cmake`.
 
-The `fs.ll.cmake` include must come **first**, before `gui.ll.cmake` — that is a requirement of
-gui.ll's contract (the last thing `gui.ll.cmake` does is remove fs.ll's `HAL.c` from `SOURCES`, and a
-later include would put it back and break the link with duplicate symbols). See gui.ll's `AGENTS.md`,
-"Build Contract".
+### Two rules this file must obey
+
+Both are the result of ESP-IDF's build model, and breaking either one is silent or confusing.
+
+1. **No directory-scoped or target-scoped commands — variables and messages only.** ESP-IDF evaluates
+   the component `CMakeLists.txt` (and therefore this file) in **script mode** (`cmake -P`, through
+   `component_get_requirements.cmake`) to collect `REQUIRES` before the real configure. Commands such as
+   `add_compile_definitions` do not exist in that mode and abort the ESP32 configure. `fs.ll.cmake` and
+   `gui.ll.cmake` obey this too; that discipline is what makes a `.cmake` contract safe to include from
+   an ESP-IDF component.
+2. **Never clobber a `PLATFORM_NAME` the caller already set.** The cache default is written as
+   `if(NOT PLATFORM_NAME)` + `set(... CACHE ...)`. In script mode there is no cache, so an unguarded
+   `set(... CACHE ...)` is *not* skipped: it would overwrite the `ESP32` the component just set with
+   `Simulator`, and `gui.ll.cmake` would then go looking for SDL2 in the middle of a firmware build.
+
+### There is no platform macro
+
+The platform is selected by the build — the source list and the include path (§9) — and **not** by the
+preprocessor. No `SIMULATOR` / `RP2040` / `ESP32` macro is defined, and code must not test for one.
+Validation lives in CMake instead, in two places, because each entry point needs it:
+
+Both parts of the root check are needed: without the cache default an unset `PLATFORM_NAME` matches no
+branch, and without the `else()` an invalid one configures "successfully" and writes a build system with
+no target at all.
+
+A `#error Platform must be informed!` guard used to live in `PedalGuru.cpp`. It was removed with the
+macros, and it was ineffective anyway: with an unknown platform no source file was ever compiled, so the
+`#error` was never reached.
+
+**The validation lives only where the value can actually be wrong**, which is the root `CMakeLists.txt`:
+`PLATFORM_NAME` comes from the user there, so the platform branch closes with an `else()` that raises
+`FATAL_ERROR`. It is not repeated in `pedal.guru.cmake`, which every platform includes — that would run
+the same check three times for a problem belonging to one entry point.
+
+`src/Platform/ESP32/CMakeLists.txt` deliberately has **no** platform validation. It hardcodes
+`set(PLATFORM_NAME "ESP32")`, so there is no user input to reject; and a wrong `PROJ_ROOT` is already
+handled by the sentinel fallback just above, with the `include()` of `pedal.guru.cmake` failing loudly
+right after if that fallback is also wrong. `pedal.guru.cmake` only defaults `PLATFORM_NAME` when the
+caller left it unset.
+
+### Why only gui.ll.cmake is included, and fs.ll.cmake is not
+
+pedal.guru uses fs.ll directly (`FileSystem.h` in `PedalGuru.cpp`, `Texture.cpp` and the Simulator
+`HttpClient.c`), so the naive wiring is to include both contracts. That does not work, and the reason is
+worth knowing before anyone "restores" it:
+
+Both libraries ship a `HAL.h` and a `HALConfig.h` under their platform folders, and they are not
+interchangeable — only gui.ll's carries the `LCD_*` pins and the SPI/GPIO/PWM helpers that the panel
+driver needs (gui.ll's is a superset; see gui.ll's `AGENTS.md`, "Relationship with fs.ll"). So gui.ll's
+platform include directory has to come **before** fs.ll's on the include path. But `gui.ll.cmake` also
+requires being included **after** `fs.ll.cmake`, because the last thing it does is
+`list(REMOVE_ITEM SOURCES "${FS_LL_PLATFORM_DIR}/HAL.c")`, and a later `fs.ll.cmake` include would put
+that file back and break the link with duplicate symbols. Those two requirements contradict each other
+when both contracts simply append to the same lists.
+
+The way out is to not include `fs.ll.cmake` here at all: `gui.ll.cmake` already includes its own
+versioned copy at its very end, which produces exactly the right order (gui.ll's dirs, then fs.ll's).
+pedal.guru only has to point that nested include at the right checkout, by setting `FS_LL_PATH` to the
+`src/Dependency/fs.ll` submodule before the include. Since `FS_LL_PATH` is cached, the nested contract
+reuses it instead of defaulting to a folder next to gui.ll's own copy, so nothing is downloaded and both
+libraries share the one submodule.
+
+Consequence: `src/Dependency/fs.ll.cmake` is now **dead** — nothing includes it. It is still on disk
+pending `TODO-C1`.
 
 There is no `add_library` anywhere in the whole stack: each library appends to the two shared list
 variables and the top-level target consumes them.
@@ -396,8 +530,9 @@ variables and the top-level target consumes them.
   `pedal.guru.cmake` and calls `idf_component_register`. `EXTRA_COMPONENT_DIRS` currently points at
   `src/lib/Platform/ESP32`, **a path that does not exist in this repository** — see §16.
 
-`-DDEBUGMSGS` (no value needed) defines both `DEBUGMSGS` and `_DEBUG`; the code guards `std::cout`
-traces on `_DEBUG`.
+`-DDEBUGMSGS` (no value needed) defines both `DEBUGMSGS` and `_DEBUG`. `DEBUGMSGS` is the one that
+works: it is gui.ll's mechanism, which turns `SHOWDEBUG(...)` into `printf`. `_DEBUG` guards `std::cout`
+traces in `PedalGuru.cpp` and `GPS.cpp` and is legacy — that path does not compile today (`TODO-C10`).
 
 ## 11. Building and running
 
@@ -464,10 +599,9 @@ them, and do not "modernize" them silently.
 - **Headers use `#pragma once`**, not include guards, in pedal.guru's own C++ code. Deviations exist
   (`GUI/Page/PageMap.hpp` has none at all).
 - **Every file opens with the AGPL-3.0 header block.** New files get it too.
-- **Comments explain *why***, and are used where a decision looks arbitrary (the page cycle order, the
-  OSM rate-limit delay, the 8px padding to centre a 256px tile on a 240px screen). Both submodules
-  carry an explicit "keep comments minimal" policy — prefer clear names and structure over prose, and
-  do not restate what the code already says.
+- **Comments are minimal and explain *why*** — see ground rule 5, which is binding. Existing good
+  examples: the page cycle order, the OSM rate-limit delay, the 8px padding to centre a 256px tile on a
+  240px screen.
 - **Indentation is 4 spaces, ruler at 120 columns** (`.vscode/settings.json`).
 - `TODO` comments are used to mark known-incomplete work. They are load-bearing; do not delete one
   without doing the work or asking.
@@ -491,13 +625,43 @@ and nutrition reminders, cadence guidance by stretch or elapsed time. There is n
 
 ## 14. Current status (verified this session)
 
-- **Simulator** — configures, builds and links clean (`cmake -DPLATFORM_NAME=Simulator`, then
-  `cmake --build`). This is the only platform that builds today. The repository already contains a
-  `build/` configured for Simulator and a `build/pedal.guru` binary.
-- **RP2040** — configures (pico-sdk found, picotool found) but **fails to compile**. The first errors
-  come from `src/Platform/RP2040/Time.hpp`, which is not valid C++ (see §16).
-- **ESP32** — **fails at configure**: `EXTRA_COMPONENT_DIRS` points at
-  `${CMAKE_SOURCE_DIR}/src/lib/Platform/ESP32`, which does not exist (see §16).
+**All three platforms compile and link clean.** Measured this session:
+
+| platform | command | artifact |
+|---|---|---|
+| Simulator | `cmake -B build -DPLATFORM_NAME=Simulator && cmake --build build` | `build/pedal.guru`, ~822 KB |
+| RP2040 | `cmake -B build -DPLATFORM_NAME=RP2040 && cmake --build build` | `build/pedal.guru.uf2`, ~465 KB |
+| ESP32 | `idf.py -DPLATFORM_NAME=ESP32 build` | `build/pedal.guru.bin`, ~386 KB |
+
+The **Simulator has been run by the dev and works correctly**. Neither firmware has been flashed or
+executed (§15).
+
+### Warnings, and why the three platforms disagree
+
+Zero errors everywhere. Warnings, measured:
+
+| platform | total | in our code | in dependencies |
+|---|---|---|---|
+| Simulator | 6 | 6 | 0 |
+| RP2040 | 6 | 6 | 0 |
+| ESP32 | 4 | 2 | 2 |
+
+The six in our code are `TODO-B10` (dead `x`/`y` in `ListTilesForArea`, 2 warnings) and `TODO-B12`
+(4 × `-Wsign-compare` in `TextHelper.cpp` and `GPS.cpp`). Simulator and RP2040 report the identical set,
+same files and lines.
+
+The ESP32 numbers differ for two reasons, and neither means it is more lax or more strict overall:
+
+- **It hides the sign-compare four.** ESP-IDF compiles with `-Wall -Werror=all -Wextra` but then adds
+  `-Wno-sign-compare` and `-Wno-unused-parameter`. So on that axis our Simulator/RP2040 builds are
+  *stricter* than ESP-IDF.
+- **It shows two warnings from gui.ll.** ESP-IDF applies its flags to every source in the component,
+  dependencies included. Our `-Wall -Wextra` is scoped to `PEDAL_GURU_SOURCES` on purpose, so vendored
+  code stays quiet. Those two are `TODO-E4`: a redundant guard in gui.ll's `CanvasDrawPoint`, noted and
+  left alone.
+
+Consequence worth remembering: a clean build on one platform does not mean a clean build on another,
+and that is a property of the toolchains, not of the code.
 - Git branch: `feature/RP2040-migration`.
 - The working tree has **uncommitted changes to `.gitignore` and `.gitmodules`**: they comment out
   `ignore = all` on both submodules and comment both paths out of `.gitignore`. That is the move back
@@ -506,12 +670,14 @@ and nutrition reminders, cadence guidance by stretch or elapsed time. There is n
 
 ## 15. Not verified
 
-- All three build outcomes in §14 were **executed** in isolated build directories this session
-  (Simulator: configure + build + link; RP2040: configure + build; ESP32: `idf.py reconfigure`). The
-  Simulator binary was **not** run, so nothing here confirms runtime behaviour, and no claim in this
-  file about what appears on screen is validated.
+- All three builds in §14 were **executed** in isolated build directories, through to a linked artifact.
+  The **Simulator was also run, by the dev, and behaves correctly.**
+- The RP2040 and ESP32 firmwares have **never been flashed or run**. They compile and link; nothing more
+  than that is established. In particular the `Mutex` constructor running during static initialization,
+  before `main`/`app_main`, is reasoned about and compiles on both, but is unverified at runtime — on
+  ESP32 it allocates via `xSemaphoreCreateMutex()` at that point (§6).
 - Nothing in this file is validated **on hardware**. Statements about the RP2040 and ESP32 platform
-  code come from reading it.
+  code come from reading and compiling it.
 - Everything in §3 about the planned expansion board (microSD slot, two reed switches, GPS, WiFi+BT
   module for the RP2040, single shared design, waterproof case, magnetic ring), and everything in §1
   about the coaching features, is **stated by the dev** and has no counterpart in the code yet. The
@@ -535,23 +701,6 @@ list to work from. Do not fix any of these as a side effect of unrelated work.
 
 **Build-breaking:**
 
-- `TODO-A1` — `CMakeLists.txt` ESP32 branch sets `EXTRA_COMPONENT_DIRS` to `src/lib/Platform/ESP32`.
-  pedal.guru has no `src/lib`; the folder is `src/Platform/ESP32` (which does contain the component
-  `CMakeLists.txt`). The path looks copied from gui.ll's layout. This is the single reason the ESP32
-  configure fails.
-- `TODO-A2` — `src/Platform/RP2040/Time.hpp` declares `void Delay(milliseconds: unsigned int);` —
-  Pascal/Rust-style parameter syntax, not C++. It also puts `extern "C" { #include ... }` *inside*
-  `namespace PedalGuru`, declares `Delay` as an instance method while callers use `Time::Delay(...)`
-  statically, and has no `#pragma once` and no licence header. `Time.cpp` repeats the same invalid
-  signature and also `#include`s its header inside the namespace.
-- `TODO-A3` — `src/Platform/RP2040/Thread.cpp` initializes a pico-sdk `mutex_t` with
-  `PTHREAD_MUTEX_INITIALIZER` (a POSIX macro from a different type). It then lazily calls `mutex_init`
-  inside `Lock()`, which is itself a race between two cores.
-- `TODO-A4` — `src/Platform/ESP32/Thread.cpp` has `Mutex::lock_ = xSemaphoreCreateMutex();` with no type
-  on the definition, and `#include`s its header inside the namespace.
-- `TODO-A5` — `src/Platform/ESP32/Time.hpp` is an empty namespace, no `Time` class at all. `Time.cpp`,
-  `ESP32/HttpClient.{c,h}` and `RP2040/HttpClient.{c,h}` are **0-byte files** that are nonetheless
-  listed in `pedal.guru.cmake`'s `SOURCES`.
 
 **Logic / correctness:**
 
@@ -566,9 +715,6 @@ list to work from. Do not fix any of these as a side effect of unrelated work.
   `device = (device == devices_.end()) ? devices_.begin() : device++;` — the ternary yields the
   *pre*-increment value, so the iterator never actually advances past the first device, and the `end()`
   check happens before the increment rather than after.
-- `TODO-B4` — `GPSFixData::set` stores `data[11]`, `data[14]` and `data[15]` (a local `char[16][16]`)
-  into the `char *` members `geoidalSeparation`, `differentialGPSStationId` and `checksum`. Those
-  pointers dangle as soon as `set` returns.
 - `TODO-B5` — `PageMapSync::DrawPageContents` sizes a VLA as `char progress[(totalTiles_ * 2) + 3]` from
   a runtime value and writes into it with `sprintf`. Beyond the VLA itself, the size formula does not
   follow from the format it writes.
@@ -582,7 +728,9 @@ list to work from. Do not fix any of these as a side effect of unrelated work.
 - `TODO-B9` — `GPS::GetData` loops up to 50 times over `UartGetLine`, which currently returns a
   constant, so with a non-matching constant it would spin 50 times per pass.
 - `TODO-B10` — `OpenStreetMapAPI::ListTilesForArea` declares `int x = 0, y = 0;` and then shadows both
-  in the loop headers. Harmless, but the outer pair is dead.
+  in the loop headers. Harmless, but the outer pair is dead. Now reported by `-Wunused-variable`.
+- `TODO-B12` — four `-Wsign-compare` warnings in `TextHelper.cpp` and `GPS.cpp`: a signed loop counter
+  compared against `size_t` / `std::string::size_type`.
 
 Not a defect, recorded so it is not "fixed" by accident: `COLOR_MAGENTA` and `COLOR_TRANSPARENT` are
 deliberately the same value (`255, 0, 255`), matching gui.ll's colour key. The consequence — magenta
@@ -590,8 +738,6 @@ cannot be used as a real drawable colour — is the accepted cost of colour-key 
 
 **Stale / cosmetic:**
 
-- `TODO-C2` — `pedal.guru.cmake` lists `src/GUI/Interface` in `INCLUDE_DIRS`; that directory does not
-  exist.
 - `TODO-C3` — `src/Model/SensorData.hpp` is an empty struct, referenced by `DIAGRAM.md` but by no code.
 - `TODO-C4` — `TaskManager::ReadSettings` hardcodes the settings with a `TODO`; nothing reads or writes
   settings from the card yet.
@@ -610,13 +756,19 @@ section it came from; when a new one is found, add it here rather than fixing it
 The RP2040 and ESP32 platform folders under `src/Platform` do not compile. Verified in §14. These are
 the items that stand between the project and a three-platform build.
 
-| ID | Item |
-|---|---|
-| `TODO-A1` | ESP32: `EXTRA_COMPONENT_DIRS` points at the non-existent `src/lib/Platform/ESP32` instead of `src/Platform/ESP32`. Blocks the ESP32 configure entirely. |
-| `TODO-A2` | RP2040: `Platform/RP2040/Time.{hpp,cpp}` is not valid C++ (`milliseconds: unsigned int`, `#include` inside the namespace, instance method used statically, no `#pragma once`, no licence header). First error of the RP2040 build. |
-| `TODO-A3` | RP2040: `Platform/RP2040/Thread.cpp` initializes a pico-sdk `mutex_t` with `PTHREAD_MUTEX_INITIALIZER`, and lazily `mutex_init`s inside `Lock()` — a race between the two cores. |
-| `TODO-A4` | ESP32: `Platform/ESP32/Thread.cpp` — `lock_` definition has no type, `#include` inside the namespace. |
-| `TODO-A5` | ESP32/RP2040: `ESP32/Time.hpp` is an empty namespace; `ESP32/Time.cpp`, `ESP32/HttpClient.{c,h}` and `RP2040/HttpClient.{c,h}` are 0-byte files that `pedal.guru.cmake` nevertheless lists in `SOURCES`. Decide whether they get implemented here or go straight into the future `net.ll` / `thread.ll` (`TODO-E1`). |
+Done so far: `TODO-A1` (ESP32 component path), `TODO-A2` (RP2040 `Time`), `TODO-A3` + `TODO-A4` (the
+`Mutex` rework — see §6), `TODO-A5` (the empty `Time`/`HttpClient` files), `TODO-A6` (the fs.ll/gui.ll
+include ordering), `TODO-A7` (the `add_compile_definitions` calls, replaced by CMake-level validation —
+§10), `TODO-B11` (the unguarded read in `DataManager::Pop`) and `TODO-C2` (the non-existent
+`src/GUI/Interface` include dir, which ESP-IDF rejects outright rather than ignoring).
+
+Each round of fixes uncovered the next blocker, because the build never got far enough to reach it.
+Expect that to continue: the list below is what is known now, not necessarily all that remains.
+
+**Group A is empty: all three platforms build.** `TODO-A8` was the last item, and closing it also
+uncovered and fixed `TODO-A9` — `app_main` was defined in a C++ translation unit without `extern "C"`,
+so ESP-IDF could not find it at link time. That one only became visible once the ESP32 build got as far
+as linking, for the first time.
 
 ### B. Bugs and correctness
 
@@ -625,7 +777,7 @@ the items that stand between the project and a three-platform build.
 | `TODO-B1` | `HIDHandler::RegisterEventHandler` returns `list::end()` instead of an iterator to the pushed element; `UnregisterEventHandler` then erases `end()`. Fixing this is what unblocks `GUINavigator::UnregisterEvents()`, currently commented out. |
 | `TODO-B2` | `GUINavigator::GoToNextPage` / `GoToPreviousPage` both dereference `end()` at the ends of the page cycle. |
 | `TODO-B3` | `TaskManager::GetDevicesData`'s iterator never advances past the first device (`device++` inside a ternary). |
-| `TODO-B4` | `GPSFixData::set` leaves three `char *` members pointing at a local buffer that dies with the call. |
+| `TODO-B12` | Four `-Wsign-compare` warnings: `TextHelper.cpp:27,35,60` and `GPS.cpp:69` compare a signed loop counter against `size_t`/`std::string::size_type`. Surfaced by the new `-Wall -Wextra`. |
 | `TODO-B5` | `PageMapSync::DrawPageContents` uses a runtime-sized VLA plus `sprintf`, with a size formula unrelated to what it writes. |
 | `TODO-B6` | `PageMap::previousLatitude` / `previousLongitude` are never initialized. |
 | `TODO-B7` | `COLOR_LL` casts to signed `short`, which breaks gui.ll's colour-key transparency (gui.ll Decision 14 requires `UINT16`). |
@@ -637,10 +789,12 @@ the items that stand between the project and a three-platform build.
 
 | ID | Item |
 |---|---|
-| `TODO-C1` | Remove the leftover `src/Dependency/fs.ll.cmake` and `src/Dependency/gui.ll.cmake` copies, residue of the contract-based approach that submodules replaced (§2). The build currently gets its source and include lists from them, so this is a migration, not a deletion. |
-| `TODO-C2` | `pedal.guru.cmake` lists the non-existent `src/GUI/Interface` in `INCLUDE_DIRS`. |
+| `TODO-C1` | `src/Dependency/fs.ll.cmake` is now **dead code** — nothing includes it since `TODO-A6` was fixed (§10). It can simply be deleted. `src/Dependency/gui.ll.cmake` is still live and is the one entry point into the dependency stack; removing *that* one is the real migration, and it is what §2 discusses. |
 | `TODO-C3` | `src/Model/SensorData.hpp` is an empty struct used by nothing. Fill it in or drop it. |
 | `TODO-C4` | `TaskManager::ReadSettings` hardcodes the settings; no persistence to or from the card yet. |
+| `TODO-C8` | Licence headers are missing in places. All of pedal.guru's `src` is covered now, but the submodules are not, and they need a header **adapted to their own context** (fs.ll and gui.ll are libraries with their own identity, not pedal.guru files). Decide the wording per repository before mass-applying anything. |
+| `TODO-C9` | `src/Platform/Simulator/Time.hpp` has no `#pragma once`, unlike its siblings. |
+| `TODO-C10` | **Legacy debug plumbing, needs review — not urgent.** `DEBUGMSGS` is gui.ll's mechanism (`Helper/Debug.h` turns `SHOWDEBUG` into `printf`), and it works. What is legacy is the pedal.guru side: `CMakeLists.txt` also defines `_DEBUG`, and `PedalGuru.cpp` / `GPS.cpp` guard `std::cout` traces on it. That path does not even compile — `PedalGuru.cpp` uses `std::cout` without including `<iostream>` (pre-existing, verified identical to `HEAD`). Decide later whether pedal.guru gets its own tracing or just adopts `SHOWDEBUG`; fix it when the tracing is actually needed. |
 | `TODO-C5` | `DIAGRAM.md` is stale: links to a `PedalGuru` repo with paths that no longer exist, and a `TaskManager` API that no longer matches. Refresh or drop. |
 | `TODO-C6` | `.vscode/c_cpp_properties.json` is stale: references `src/Target/**` and `src/Dependency/pico-sdk` (neither exists) and defines `TARGET_RP2040` instead of the `RP2040` the build actually sets. The project uses clangd, not the MS C/C++ extension — so this may be droppable outright. |
 | `TODO-C7` | `Device/DIY/wired_reel_speedometer.cpp`: out of the build, `snake_case` name, class declared inside the `.cpp` with no header, does not implement all of `Device`'s pure virtuals. Keep as a placeholder, complete and rename to `WiredReelSpeedometer.{cpp,hpp}`, or remove until the device is really supported. |
@@ -663,3 +817,4 @@ the items that stand between the project and a three-platform build.
 | `TODO-E1` | Extract the remaining infrastructure from `src/Platform` into the dot-ll-collection: `HttpClient` → `net.ll`; `Thread` + `Time` → `thread.ll` (name not final); GPS UART → `serial.ll` (name not final). See §2 and §13. Overlaps `TODO-A5`. |
 | `TODO-E2` | Decide SD card thread safety. fs.ll's `AGENTS.md` §12 leaves it open and says the decision is to be driven from here. Current state, verified: all card access happens on the UI thread and `DataManager` does **not** mediate it, so the card is single-threaded by accident of call placement rather than by design (§6). This needs a decision before anything on the sensor thread starts writing to the card — e.g. ride logging, which `TODO-D4` and `TODO-C4` both imply. |
 | `TODO-E3` | Design the open-hardware expansion board (microSD slot, two reed switches, GPS, optional WiFi+BT for the RP2040) as a single shared board, using only the header pins common to both MCUs (§3). Nothing of this exists in the repository yet. |
+| `TODO-E4` | **In gui.ll, not here. Just noted, no action planned.** `src/lib/GUI/Canvas.c:129` — the `< 0` guard in `CanvasDrawPoint` is always false (`pixelSize` is an enum with unsigned underlying type, so the whole expression is unsigned), and it has no effect: the wrapped value truncates to ~65534 at the `UINT16` parameter and `CanvasSetPixel`'s own bounds check discards it. So the guard is redundant, not harmful. Whoever touches it should note it is a `break`, not a `continue` — a guard that actually fired would abandon the remaining inner-loop pixels, so making it "work" as written would be a regression. |

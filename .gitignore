@@ -1,5 +1,6 @@
 # No need to commit builds
 build/**
+sdkconfig
 
 # Dependencies should not be modified here
 src/Dependency/fs.ll

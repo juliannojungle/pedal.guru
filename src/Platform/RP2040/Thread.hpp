@@ -28,8 +28,9 @@ namespace PedalGuru {
 
 class Mutex {
 private:
-    static mutex_t lock_;
+    mutex_t lock_;
 public:
+    Mutex();
     void Lock();
     void Release();
 };

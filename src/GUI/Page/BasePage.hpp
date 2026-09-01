@@ -32,7 +32,7 @@ class BasePage {
     public:
         virtual ~BasePage() = default; // make it polymorphic
         BasePage(PedalGuru::GUIDrawer& drawer, PedalGuru::SettingsData& settings)
-            : drawer_(drawer), settings_(settings) {}
+            : settings_(settings), drawer_(drawer) {}
         virtual void PreDrawPageContents() = 0;
         virtual void DrawPageContents() = 0;
         virtual void PostDrawPageContents() = 0;

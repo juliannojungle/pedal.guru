@@ -25,8 +25,7 @@ extern "C" {
 
 namespace PedalGuru {
 
-// #define CRECTANGLE(rectangle) CLITERAL(::Rectangle) \
-//     { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
+// #define CRECTANGLE(rectangle) CLITERAL(::Rectangle) { rectangle.x, rectangle.y, rectangle.width, rectangle.height }
 
 struct Point {
     UINT16 x;

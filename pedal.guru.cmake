@@ -18,15 +18,19 @@
 ]]
 
 set(PLATFORMS "Simulator" "RP2040" "ESP32") # Platform definitions
-set(PLATFORM_NAME "Simulator" CACHE STRING "Build platform, one of: ${PLATFORMS}")
-set_property(CACHE PLATFORM_NAME PROPERTY STRINGS ${PLATFORMS})
 
-string(TOUPPER ${PLATFORM_NAME} PLATFORM_NAME_UPPER)
-add_compile_definitions(${PLATFORM_NAME_UPPER})
+# ESP-IDF reads this file in script mode (cmake -P), where there is no cache: an unguarded
+# set(... CACHE ...) is not skipped there and would overwrite the caller's PLATFORM_NAME.
+if(NOT PLATFORM_NAME)
+    set(PLATFORM_NAME "Simulator" CACHE STRING "Build platform, one of: ${PLATFORMS}")
+endif()
+if(DEFINED CACHE{PLATFORM_NAME})
+    set_property(CACHE PLATFORM_NAME PROPERTY STRINGS ${PLATFORMS})
+endif()
 
-# pedal.guru
-set(SOURCES
-    ${SOURCES}
+# Kept as its own list so the build can raise the warning level on our code only, without
+# drowning it in warnings from the vendored dependencies.
+set(PEDAL_GURU_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/DataManager.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/HIDHandler.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/PedalGuru.cpp"
@@ -53,6 +57,8 @@ set(SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor/GPS.cpp"
 )
 
+set(SOURCES ${SOURCES} ${PEDAL_GURU_SOURCES})
+
 set(INCLUDE_DIRS
     ${INCLUDE_DIRS}
     "${CMAKE_CURRENT_LIST_DIR}/src"
@@ -60,7 +66,6 @@ set(INCLUDE_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/src/Device"
     "${CMAKE_CURRENT_LIST_DIR}/src/Device/Generic/LocationModule"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI"
-    "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Interface"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Page"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render"
     "${CMAKE_CURRENT_LIST_DIR}/src/Helper"
@@ -68,7 +73,8 @@ set(INCLUDE_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}"
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor")
 
-include(${CMAKE_CURRENT_LIST_DIR}/src/Dependency/fs.ll.cmake)
+# Do not include fs.ll.cmake here: gui.ll.cmake includes it last, which is what keeps gui.ll's
+# HAL.h/HALConfig.h (the only ones carrying the LCD_* pins) ahead of fs.ll's on the include path.
+set(FS_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/fs.ll" CACHE PATH "fs.ll root directory" FORCE)
 include(${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll.cmake)
 
-add_compile_definitions(L96GPS)
