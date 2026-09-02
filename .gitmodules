@@ -10,3 +10,15 @@
     shallow = true
     branch = main
     ignore = all
+[submodule "src/Dependency/net.ll"]
+	path = src/Dependency/net.ll
+	url = https://github.com/juliannojungle/net.ll.git
+	shallow = true
+	branch = main
+    ignore = all
+[submodule "src/Dependency/hal.ll"]
+	path = src/Dependency/hal.ll
+	url = https://github.com/juliannojungle/hal.ll.git
+	shallow = true
+	branch = main
+    ignore = all

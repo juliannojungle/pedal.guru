@@ -46,7 +46,8 @@ elseif(PLATFORM_NAME STREQUAL "Simulator")
     set_source_files_properties(${PEDAL_GURU_SOURCES} PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 
     find_package(OpenSSL REQUIRED)
-    target_link_libraries(${PROJECT_NAME} PUBLIC ${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto)
+    target_link_libraries(${PROJECT_NAME} PUBLIC
+        ${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto ${PLATFORM_LIBRARIES})
 
 elseif(PLATFORM_NAME STREQUAL "RP2040")
     set(CMAKE_C_STANDARD 11)
@@ -66,8 +67,7 @@ elseif(PLATFORM_NAME STREQUAL "RP2040")
     include_directories(${INCLUDE_DIRS})
     set_source_files_properties(${PEDAL_GURU_SOURCES} PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
 
-    target_link_libraries(${PROJECT_NAME} PUBLIC
-        pico_stdlib pico_multicore hardware_spi hardware_gpio hardware_pwm hardware_adc hardware_rtc)
+    target_link_libraries(${PROJECT_NAME} PUBLIC ${PLATFORM_LIBRARIES})
 
     pico_enable_stdio_usb(${PROJECT_NAME} 1)  # enable usb output
     pico_enable_stdio_uart(${PROJECT_NAME} 0) # disable uart output

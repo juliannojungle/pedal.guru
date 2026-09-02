@@ -31,7 +31,7 @@ include(${PROJ_ROOT}/pedal.guru.cmake)
 idf_component_register(
     SRCS ${SOURCES}
     INCLUDE_DIRS ${INCLUDE_DIRS}
-    REQUIRES driver esp_system)
+    REQUIRES ${PLATFORM_REQUIRES})
 
 # Disable -Werror for third-party dependencies that produce
 # warnings with the xtensa toolchain under ESP-IDF's strict -Werror=all.

@@ -67,7 +67,22 @@ header that every reader has to scroll past.
 Applies to new code and to edits of existing code. Pre-existing third-party code under `src/Dependency/`
 is left as-is unless touched.
 
-### 6. Do not write tests
+### 6. All hardware access goes through hal.ll
+
+**Nothing in pedal.guru touches hardware directly.** No `gpio_*`, `spi_*`, `uart_*`, `sleep_ms`,
+`vTaskDelay` or any other SDK call — everything goes through **hal.ll**, which owns GPIO, SPI, PWM, UART,
+timing, the RTC, threads and mutexes, and the board pinout in `HALConfig.h`. If something is missing
+there, it gets added there rather than worked around here.
+
+This rule holds across the whole dot-ll-collection, so the same paragraph appears in every `AGENTS.md`.
+
+### 7. pedal.guru is the only place C++ belongs
+
+The whole dot-ll-collection is **100% C** — fs.ll, gui.ll, hal.ll and net.ll consume each other, so a C++
+construct in a shared header would break them. C++ stops here, in the application. When pedal.guru wraps
+a library API in a class, the class lives here and the library stays C.
+
+### 8. Do not write tests
 
 **Confirmed by the dev.** Do not add unit tests, property-based tests, test harnesses, mocking or stub
 layers, or any test build system. Do not create or expand a `test/` directory, and do not vendor a
@@ -118,12 +133,16 @@ Existing, consumed by pedal.guru today (declared in `.gitmodules`):
 
 | submodule | path | role | reference |
 |---|---|---|---|
+| **hal.ll** | `src/Dependency/hal.ll` | GPIO, SPI, PWM, UART, timing, RTC, threads, and the board pinout | `src/Dependency/hal.ll/AGENTS.md` |
 | **fs.ll** | `src/Dependency/fs.ll` | file system on the SD card wired to the hardware (wraps FatFs) | `src/Dependency/fs.ll/AGENTS.md` |
 | **gui.ll** | `src/Dependency/gui.ll` | drawing on the LCD panel or on the simulator window | `src/Dependency/gui.ll/AGENTS.md` |
+| **net.ll** | `src/Dependency/net.ll` | networking. **Holds only LICENSE and README so far** — filled in wave 4, see §17 | `src/Dependency/net.ll/AGENTS.md` |
 
-**Read both of those `AGENTS.md` files.** They carry the conventions, the build-contract mechanics,
-the hardware pinout decisions and the known traps that pedal.guru inherits. This file does not repeat
-them.
+**Read those `AGENTS.md` files.** They carry the conventions, the build-contract mechanics, the hardware
+pinout decisions and the known traps that pedal.guru inherits. This file does not repeat them.
+
+hal.ll sits below the other three: fs.ll, gui.ll and net.ll all consume it, and so does pedal.guru
+directly (for sensors). It is the one place where SDK calls are allowed — see ground rule 6.
 
 ### Why git submodules here, and not the `.cmake` contract
 
@@ -141,14 +160,16 @@ Because the libraries are checkouts in the tree, their contracts are included **
 submodules** — `src/Dependency/gui.ll/gui.ll.cmake` — instead of from copies kept here. The copies that
 the earlier contract-based approach required are gone.
 
-That makes pinning `FS_LL_PATH` and `GUI_LL_PATH` mandatory rather than optional. Each contract defaults
-its own path to a folder *next to itself*, so `gui.ll.cmake` read from inside the submodule would default
-`GUI_LL_PATH` to `src/Dependency/gui.ll/gui.ll`, find no sentinel file there, and `git clone` a second
-copy at configure time. Setting both variables before the include is what keeps the build on the
-submodules.
+That makes pinning `HAL_LL_PATH`, `FS_LL_PATH` and `GUI_LL_PATH` mandatory rather than optional. Each
+contract defaults its own path to a folder *next to itself*, so `gui.ll.cmake` read from inside the
+submodule would default `GUI_LL_PATH` to `src/Dependency/gui.ll/gui.ll`, find no sentinel file there, and
+`git clone` a second copy at configure time. Setting all three variables before the include is what keeps
+the build on the submodules — `HAL_LL_PATH` matters twice over, because both gui.ll's and fs.ll's copies of
+`hal.ll.cmake` would otherwise each resolve to a folder inside their own checkout.
 
 Planned, still living inside pedal.guru and expected to move out (stated by the dev, names not
-final): `net.ll` for networking, something like `thread.ll` for timers and threading, something like
+final): `net.ll` for networking, and **hal.ll for threads, timers and UART, which is already done** —
+there is no separate `thread.ll`. A `serial.ll` may still appear, but for protocol rather than
 `serial.ll` for serial I/O. Today those live under `src/Platform` (§9). A good deal of code in
 pedal.guru was written directly here to validate an idea quickly, or predates the submodule idea at
 all, and is therefore a migration candidate — see §13.
@@ -182,7 +203,7 @@ Because the board must work on both MCUs, **only the physical header pins that a
 the two boards may be used**. gui.ll's `AGENTS.md` (Design Decision 7) has the overlay analysis: 9
 overlapping physical pins total, 5 already assigned to SD SPI + card detect, one excluded because it
 lands on an ESP32-S3 strapping pin, leaving 3 fully usable plus 2 with an SWD caveat. Do not invent
-pin assignments — that table and each platform's `HALConfig.h` in gui.ll are the source of truth, and
+pin assignments — that table and each platform's `HALConfig.h` in hal.ll are the source of truth, and
 some values there are hardware-validated.
 
 ### Why no touchscreen, ever
@@ -221,8 +242,10 @@ src/
   Model/                        plain data types (GPSFixData, MapTile, MapGrid, Settings, ...)
   Platform/<Platform>/          the platform seam owned by pedal.guru (§9)
   Dependency/
+    hal.ll/                     submodule, carries its own hal.ll.cmake contract
     fs.ll/                      submodule, carries its own fs.ll.cmake contract
     gui.ll/                     submodule, carries its own gui.ll.cmake contract
+    net.ll/                     submodule, LICENSE and README only until wave 4
     pico_sdk_import.cmake       stock pico-sdk locator
 ```
 
@@ -440,14 +463,22 @@ module of the expansion board (§3). On the ESP32-S3 wireless is native, so ther
 All three folders now compile. `HttpClient` is a stub on the two hardware platforms; everything else is
 real.
 
+**This whole folder is on its way out, and hal.ll already replaces most of it.** hal.ll provides
+`ThreadStart`, `MutexInit/Lock/Release`, `Delay` and `TicksMs` in C, for the same three platforms —
+so `Thread.{cpp,hpp}` and `Time.{cpp,hpp}` here are duplicated work, kept only until wave 5 wires
+pedal.guru to hal.ll. When that happens they either become a thin C++ wrapper over the C API or
+disappear. `HttpClient` goes to net.ll in wave 4. See §13 and §17.
+
+Do not add anything new to `src/Platform`: new platform code belongs in hal.ll (ground rule 6).
+
 ## 10. Build system
 
 Two files, mirroring the pattern the submodules use.
 
 **`pedal.guru.cmake`** declares `PLATFORM_NAME` (cached, `Simulator` by default, one of
 `Simulator`/`RP2040`/`ESP32`), then **appends** the application's sources and include dirs to
-`SOURCES` / `INCLUDE_DIRS`, and finally pins `FS_LL_PATH` / `GUI_LL_PATH` to the two submodules and
-includes `${GUI_LL_PATH}/gui.ll.cmake`.
+`SOURCES` / `INCLUDE_DIRS`, and finally pins `HAL_LL_PATH` / `FS_LL_PATH` / `GUI_LL_PATH` to the three
+submodules and includes `${GUI_LL_PATH}/gui.ll.cmake`.
 
 ### Two rules this file must obey
 
@@ -495,23 +526,24 @@ pedal.guru uses fs.ll directly (`FileSystem.h` in `PedalGuru.cpp`, `Texture.cpp`
 `HttpClient.c`), so the naive wiring is to include both contracts. That does not work, and the reason is
 worth knowing before anyone "restores" it:
 
-Both libraries ship a `HAL.h` and a `HALConfig.h` under their platform folders, and they are not
-interchangeable — only gui.ll's carries the `LCD_*` pins and the SPI/GPIO/PWM helpers that the panel
-driver needs (gui.ll's is a superset; see gui.ll's `AGENTS.md`, "Relationship with fs.ll"). So gui.ll's
-platform include directory has to come **before** fs.ll's on the include path. But `gui.ll.cmake` also
-requires being included **after** `fs.ll.cmake`, because the last thing it does is
-`list(REMOVE_ITEM SOURCES "${FS_LL_PLATFORM_DIR}/HAL.c")`, and a later `fs.ll.cmake` include would put
-that file back and break the link with duplicate symbols. Those two requirements contradict each other
-when both contracts simply append to the same lists.
+`gui.ll.cmake` already includes its own versioned copies of `hal.ll.cmake` and `fs.ll.cmake` at its very
+end, so including `fs.ll.cmake` here as well would only add a second path to the same file. pedal.guru
+just points those nested includes at the right checkouts by setting the `*_PATH` variables first. Since
+they are cached, the nested includes reuse them, so nothing is downloaded and every library shares the
+one submodule.
 
-The way out is to not include `fs.ll.cmake` here at all: `gui.ll.cmake` already includes its own
-versioned copy at its very end, which produces exactly the right order (gui.ll's dirs, then fs.ll's).
-pedal.guru only has to point that nested include at the right checkout by setting `FS_LL_PATH` before
-including gui.ll's contract. Since it is cached, the nested include reuses it, so nothing is downloaded
-and both libraries share the one submodule.
+**Include order between the sibling contracts no longer matters, and that is the whole point of wave 3.**
+Until then it did, in a way that could not be satisfied: both libraries shipped a `HAL.h` and a
+`HALConfig.h` under their platform folders, only gui.ll's carried the `LCD_*` pins, so gui.ll's platform
+include directory had to come **before** fs.ll's — while `gui.ll.cmake` simultaneously had to come
+**after** `fs.ll.cmake`, because it ended with
+`list(REMOVE_ITEM SOURCES "${FS_LL_PLATFORM_DIR}/HAL.c")` and a later include would put that file back
+and break the link with duplicate symbols. Two contradictory requirements propping up one duplication.
+With the HAL in hal.ll there is a single `HAL.h` and a single `HALConfig.h` in the tree, the
+`REMOVE_ITEM` line is gone, and the contracts compose in any order.
 
 So the whole dependency stack enters through a single line, `include(${GUI_LL_PATH}/gui.ll.cmake)`,
-preceded only by the two `*_PATH` variables (§2).
+preceded only by the three `*_PATH` variables (§2).
 
 There is no `add_library` anywhere in the whole stack: each library appends to the two shared list
 variables and the top-level target consumes them.
@@ -519,11 +551,13 @@ variables and the top-level target consumes them.
 **`CMakeLists.txt`** branches on `PLATFORM_NAME`:
 
 - `Simulator` — plain `project()`, include `pedal.guru.cmake`, `add_executable`, then
-  `find_package(OpenSSL)` and link `${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto`. OpenSSL is
+  `find_package(OpenSSL)` and link `${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto`
+  `${PLATFORM_LIBRARIES}`. OpenSSL is
   needed by the Simulator `HttpClient`; SDL2 is located by `gui.ll.cmake`.
 - `RP2040` — defaults `PICO_SDK_PATH` to `~/pico-sdk`, `pico_sdk_init()`, include
   `pedal.guru.cmake`, `add_executable`, link
-  `pico_stdlib pico_multicore hardware_spi hardware_gpio hardware_pwm hardware_adc hardware_rtc`,
+  `${PLATFORM_LIBRARIES}` (hal.ll publishes the pico-sdk target list; the hardcoded one it replaced
+  named `hardware_adc`, which nothing uses, and omitted `hardware_uart`, which hal.ll needs),
   stdio over USB (UART off), `pico_add_extra_outputs`.
 - `ESP32` — does **not** include `pedal.guru.cmake` itself. It points `EXTRA_COMPONENT_DIRS` at a
   platform folder and hands the build to ESP-IDF; that folder's `CMakeLists.txt` includes
@@ -611,27 +645,52 @@ them, and do not "modernize" them silently.
 pedal.guru is meant to be pure application logic. It is not there yet. Known material that is either
 platform-specific or infrastructure, and is a candidate to become (or move into) a submodule:
 
-- **`src/Platform/*/HttpClient.*`** → the future `net.ll`. The Simulator implementation is a full
+- **`src/Platform/*/HttpClient.*`** → **net.ll**, in wave 4 (§17). The Simulator implementation is a full
   socket + OpenSSL HTTP client; that does not belong in an application layer.
-- **`src/Platform/*/Thread.*`** and **`src/Platform/*/Time.*`** → the future `thread.ll` (or whatever
-  the dev names it): threads, mutexes, timers, delays.
-- **GPS UART access** (`src/Sensor/GPS.cpp`, currently commented out) → the future `serial.ll`.
+- **`src/Platform/*/Thread.*`** and **`src/Platform/*/Time.*`** → **hal.ll**, which already provides
+  `ThreadStart`, `MutexInit/Lock/Release`, `Delay` and `TicksMs`. There is **no `thread.ll`**: the dev
+  folded threading into hal.ll because it is MCU abstraction of the same nature as GPIO and timers. What
+  stays here is at most a thin C++ wrapper over that C API — pedal.guru is the only place C++ belongs.
+- **GPS UART access** (`src/Sensor/GPS.cpp`, currently commented out) → **hal.ll**, which already has
+  `UARTInit/Deinit/IsEnabled/IsReadable/GetChar/Puts`. A `serial.ll` would only make sense for
+  *protocol* on top (NMEA, the `$PMTK` commands), not for the peripheral. Not decided.
 
 Tracked as `TODO-E1`. Absence of something from this list does not mean it stays here. Ask the dev.
+
+### What wave 4 already decided about net.ll
+
+Settled with the dev, so a fresh session does not reopen it:
+
+- **The `HttpClient` moves as it is.** `HttpClient_DownloadFile(url, filePath)` keeps its signature and
+  keeps streaming the body straight to the card. The single call site is
+  `OpenStreetMapAPI.cpp:130`.
+- **net.ll depends on fs.ll**, and carries a copy of `fs.ll.cmake` in its own `src/Dependency/`, the same
+  way gui.ll does. fs.ll stays a submodule of pedal.guru too, because the application needs the card
+  directly for settings and ride logging.
+- **No in-memory download.** It was considered and rejected: the hardware has little RAM, so holding only
+  the transfer buffer and streaming to disk is the right shape. If some other feature needs a buffer
+  variant later, it gets added then.
+- **Include order will matter again** once net.ll also includes `fs.ll.cmake` — but without conflict,
+  because after wave 3 there is only one `HAL.h` in the tree. See §17.
 
 Not implemented at all yet, from §1's product goal: the whole **"guru" coaching side** — hydration
 and nutrition reminders, cadence guidance by stretch or elapsed time. There is no module for it
 (`TODO-D4`).
 
-## 14. Current status (verified this session)
+## 14. Current status
 
-**All three platforms compile and link clean.** Measured this session:
+**All three platforms compiled and linked clean, after wave 3.** Measured in isolated build directories
+(ESP32 with its own `sdkconfig`, target `esp32s3`, so the repository's `sdkconfig` stayed untouched):
 
 | platform | command | artifact |
 |---|---|---|
-| Simulator | `cmake -B build -DPLATFORM_NAME=Simulator && cmake --build build` | `build/pedal.guru`, ~822 KB |
-| RP2040 | `cmake -B build -DPLATFORM_NAME=RP2040 && cmake --build build` | `build/pedal.guru.uf2`, ~465 KB |
-| ESP32 | `idf.py -DPLATFORM_NAME=ESP32 build` | `build/pedal.guru.bin`, ~386 KB |
+| Simulator | `cmake -B build -DPLATFORM_NAME=Simulator && cmake --build build` | `build/pedal.guru`, ~823 KB |
+| RP2040 | `cmake -B build -DPLATFORM_NAME=RP2040 && cmake --build build` | `build/pedal.guru.uf2`, ~464 KB |
+| ESP32 | `idf.py -DPLATFORM_NAME=ESP32 build` | `build/pedal.guru.bin`, ~422 KB |
+
+The ESP32 image grew from the ~386 KB recorded before the migration. Not investigated; the plausible
+cause is hal.ll pulling in the UART, RTC and thread code that the old split HAL did not carry. Worth a
+look if size ever matters, but nothing points at a defect.
 
 The **Simulator has been run by the dev and works correctly**. Neither firmware has been flashed or
 executed (§15).
@@ -664,14 +723,20 @@ Consequence worth remembering: a clean build on one platform does not mean a cle
 and that is a property of the toolchains, not of the code.
 - Git branch: `feature/RP2040-migration`.
 - The working tree has **uncommitted changes to `.gitignore` and `.gitmodules`**: they comment out
-  `ignore = all` on both submodules and comment both paths out of `.gitignore`. That is the move back
-  to real submodules described in §2 — expected, not a leftover to revert. Do not commit or revert them
-  on your own initiative.
+  `ignore = all` on the fs.ll and gui.ll submodules and comment both paths out of `.gitignore`, and they
+  add `hal.ll` and `net.ll` as submodules. That is the move back to real submodules described in §2 —
+  expected, not a leftover to revert. Do not commit or revert them on your own initiative.
+- Wave 3's edits live **inside the gui.ll submodule** and are uncommitted there too, so `git status` here
+  shows gui.ll as modified. They have to be committed and pushed in gui.ll's own repository before the
+  submodule pointer here can be bumped.
 
 ## 15. Not verified
 
 - All three builds in §14 were **executed** in isolated build directories, through to a linked artifact.
-  The **Simulator was also run, by the dev, and behaves correctly.**
+  The **Simulator was run by the dev and behaved correctly before wave 3**; after wave 3 it has only been
+  *built*, not visually checked. gui.ll's own Simulator sample was started post-wave-3 and ran without
+  crashing or printing an error, which says the SDL window comes up and nothing aborts — it says nothing
+  about what is on screen. **A visual pass on both is still owed.**
 - The RP2040 and ESP32 firmwares have **never been flashed or run**. They compile and link; nothing more
   than that is established. In particular the `Mutex` constructor running during static initialization,
   before `main`/`app_main`, is reasoned about and compiles on both, but is unverified at runtime — on
@@ -681,7 +746,7 @@ and that is a property of the toolchains, not of the code.
 - Everything in §3 about the planned expansion board (microSD slot, two reed switches, GPS, WiFi+BT
   module for the RP2040, single shared design, waterproof case, magnetic ring), and everything in §1
   about the coaching features, is **stated by the dev** and has no counterpart in the code yet. The
-  parts that *are* in code are the SD card and card-detect wiring, which live in gui.ll's
+  parts that *are* in code are the SD card and card-detect wiring, which live in hal.ll's
   `HALConfig.h`.
 - `DIAGRAM.md` is **stale**: it links to a `PedalGuru` repository under old paths
   (`src/task_manager.cpp`, `src/gui/pages/`, `src/PedalGuru.hpp`) that no longer exist, and describes
@@ -696,7 +761,7 @@ and that is a property of the toolchains, not of the code.
 ## 16. Traps and sharp edges
 
 Known, unfixed, and easy to trip over. They are recorded so that changing them is a **deliberate
-decision by the dev**, not a drive-by fix. **Every item here has a `TODO-*` entry in §17** — that is the
+decision by the dev**, not a drive-by fix. **Every item here has a `TODO-*` entry in §18** — that is the
 list to work from. Do not fix any of these as a side effect of unrelated work.
 
 **Build-breaking:**
@@ -742,7 +807,79 @@ cannot be used as a real drawable colour — is the accepted cost of colour-key 
 - `TODO-C4` — `TaskManager::ReadSettings` hardcodes the settings with a `TODO`; nothing reads or writes
   settings from the card yet.
 
-## 17. TODO list
+## 17. In progress: extracting the HAL into hal.ll
+
+A five-wave migration agreed with the dev. **Read this before touching any `.cmake` file or any
+platform code**, because between waves the tree is deliberately inconsistent.
+
+| wave | what | state |
+|---|---|---|
+| 1 | create hal.ll | **done, pushed** |
+| 2 | migrate fs.ll onto hal.ll | **done, pushed** |
+| 3 | migrate gui.ll onto hal.ll | **done, not pushed yet** |
+| 4 | create net.ll (move `HttpClient` out of pedal.guru) | **next** |
+| 5 | migrate pedal.guru onto net.ll | pending |
+
+**pedal.guru builds again on all three platforms** — that was wave 3's exit criterion, and §14 has the
+measured numbers. The breakage wave 3 cleared was in gui.ll's versioned copy of `fs.ll.cmake`: it was the
+pre-wave-2 version, still listing `HAL.c` and `RTC.c`, files fs.ll no longer has, so any configure died
+with `Cannot find source file: fs.ll/src/lib/Platform/Simulator/RTC.c`. It could not be patched in
+isolation, because refreshing that copy alone would have put hal.ll's `HAL.c` *and* gui.ll's own `HAL.c`
+in `SOURCES` and broken the link with duplicate symbols.
+
+### Why the HAL was extracted
+
+fs.ll and gui.ll each shipped their own `HAL.h`, `HAL.c` and `HALConfig.h`, with the same filenames
+**and the same include guards**. Only one was ever textually included; the build made gui.ll's win by
+include-path precedence and then deleted fs.ll's `HAL.c` from the source list so `Delay` and
+`STDIOInitAll` would not collide at link time. Two invisible, order-dependent hacks holding up a
+duplication. Measured: those were the only two colliding filenames in the whole tree, so moving them to
+one place removes the ordering rule entirely — the contracts compose in any order afterwards.
+
+### What wave 3 did
+
+The nine planned items, all applied to gui.ll:
+
+1. **Deleted** `src/lib/Platform/<P>/HAL.{c,h}`, `HALConfig.h` and `src/lib/Types.h`. All of it comes from
+   hal.ll now, `Types.h` included (it carries `UINT8/16/32` and `DateTime`). Checked before deleting:
+   hal.ll's `HAL.h` and `HALConfig.h` are strict supersets, and every pin value is identical.
+2. **Consumes hal.ll**: `hal.ll.cmake` copied into `src/Dependency/` and included from `gui.ll.cmake`,
+   with `src/Dependency/hal.ll` added to `.gitignore` (resolved through `HAL_LL_PATH`, not a submodule).
+3. **Refreshed gui.ll's stale copy** of `src/Dependency/fs.ll.cmake` from fs.ll's current one.
+4. **Dropped the `list(REMOVE_ITEM SOURCES "${FS_LL_PLATFORM_DIR}/HAL.c")` line.**
+5. **SPI calls gained their bus argument** in `src/lib/Driver/GC9A01/Driver.c` and
+   `src/lib/LCD/1in28/LCDRenderer.c`.
+6. **`DateTime` left `Canvas.h`.** `CanvasDrawTime` keeps its signature.
+7. **Early script-mode `return()` in `gui.ll.cmake`**, which includes `hal.ll.cmake` before returning so
+   `PLATFORM_REQUIRES` still reaches ESP-IDF. The old partial guard on the clone is gone, and so is the
+   `if(NOT CMAKE_SCRIPT_MODE_FILE)` around `configure_file` — unreachable in script mode now, and leaving
+   it would imply otherwise.
+8. **Uses the contract's link lists**: `${PLATFORM_LIBRARIES}` in `target_link_libraries`,
+   `${PLATFORM_REQUIRES}` in `idf_component_register`'s `REQUIRES`.
+9. **The Simulator `Delay` stayed plain in hal.ll.** hal.ll's `AGENTS.md` §9 preserves the original
+   SDL-aware implementation and a sketch for bringing it back.
+
+Three things came up that the plan did not anticipate:
+
+- **`src/Sample.c` still included `RTC.h`**, which fs.ll deleted back in wave 2. `RTCInitialize` is in
+  hal.ll's `HAL.h`, already included on the line above, so the include was simply removed.
+- **`GUI_LL_PLATFORM_DIR` and gui.ll's platform-folder check are gone**, and the now-empty `Simulator`
+  and `RP2040` folders under `src/lib/Platform` were deleted with them. With the HAL out, the only file
+  left there is the ESP32 component's `CMakeLists.txt`; git cannot version an empty directory, so the
+  existence check would have failed on a fresh clone anyway. An unsupported `PLATFORM_NAME` is rejected
+  by hal.ll's contract instead. **Approved by the dev.**
+- **`src/lib/Helper/Debug.h` was deleted too**, for the same reason as `HAL.h`: it duplicated hal.ll's
+  with the same filename *and* the same `DEBUG_H` guard, gui.ll's winning by include-path precedence. The
+  preprocessor-visible content was character-identical (the file differed only by hal.ll's licence header
+  and by being CRLF), so `SHOWDEBUG` now comes from hal.ll and nothing changed behaviourally — verified
+  with a `-DDEBUGMSGS` build, and every artifact came out byte-identical in size. `src/lib/Helper` keeps
+  `Trigonometry.{c,h}`, so it stays on the include path. **Approved by the dev.**
+
+Verified before declaring the wave done: gui.ll standalone on all three platforms, gui.ll standalone with
+**nothing** pinned (which cloned hal.ll and fs.ll itself and still built clean), and pedal.guru on all
+three platforms. Numbers in §14.
+
+## 18. TODO list
 
 The working backlog. When the dev asks what there is to do, **this is the list to return**.
 
@@ -813,7 +950,7 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-E1` | Extract the remaining infrastructure from `src/Platform` into the dot-ll-collection: `HttpClient` → `net.ll`; `Thread` + `Time` → `thread.ll` (name not final); GPS UART → `serial.ll` (name not final). See §2 and §13. Overlaps `TODO-A5`. |
+| `TODO-E1` | Empty `src/Platform` out into the collection: `HttpClient` → net.ll (wave 4); `Thread` + `Time` → hal.ll, which already has `ThreadStart`, the `Mutex*` calls, `Delay` and `TicksMs`, so what remains here is at most a thin C++ wrapper; GPS UART → hal.ll's `UART*` calls. **No `thread.ll` and no `serial.ll` for the peripherals** — that was folded into hal.ll. See §13 and §17. |
 | `TODO-E2` | Decide SD card thread safety. fs.ll's `AGENTS.md` §12 leaves it open and says the decision is to be driven from here. Current state, verified: all card access happens on the UI thread and `DataManager` does **not** mediate it, so the card is single-threaded by accident of call placement rather than by design (§6). This needs a decision before anything on the sensor thread starts writing to the card — e.g. ride logging, which `TODO-D4` and `TODO-C4` both imply. |
 | `TODO-E3` | Design the open-hardware expansion board (microSD slot, two reed switches, GPS, optional WiFi+BT for the RP2040) as a single shared board, using only the header pins common to both MCUs (§3). Nothing of this exists in the repository yet. |
 | `TODO-E4` | **In gui.ll, not here. Just noted, no action planned.** `src/lib/GUI/Canvas.c:129` — the `< 0` guard in `CanvasDrawPoint` is always false (`pixelSize` is an enum with unsigned underlying type, so the whole expression is unsigned), and it has no effect: the wrapped value truncates to ~65534 at the `UINT16` parameter and `CanvasSetPixel`'s own bounds check discards it. So the guard is redundant, not harmful. Whoever touches it should note it is a `break`, not a `continue` — a guard that actually fired would abandon the remaining inner-loop pixels, so making it "work" as written would be a regression. |
