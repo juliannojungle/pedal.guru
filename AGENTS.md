@@ -467,7 +467,8 @@ real.
 `ThreadStart`, `MutexInit/Lock/Release`, `Delay` and `TicksMs` in C, for the same three platforms —
 so `Thread.{cpp,hpp}` and `Time.{cpp,hpp}` here are duplicated work, kept only until wave 5 wires
 pedal.guru to hal.ll. When that happens they either become a thin C++ wrapper over the C API or
-disappear. `HttpClient` goes to net.ll in wave 4. See §13 and §17.
+disappear. `HttpClient` is copied into net.ll in wave 4 and only **leaves here** in wave 5 — wave 4 does
+not touch this folder at all. See §13 and §17.
 
 Do not add anything new to `src/Platform`: new platform code belongs in hal.ll (ground rule 6).
 
@@ -645,8 +646,11 @@ them, and do not "modernize" them silently.
 pedal.guru is meant to be pure application logic. It is not there yet. Known material that is either
 platform-specific or infrastructure, and is a candidate to become (or move into) a submodule:
 
-- **`src/Platform/*/HttpClient.*`** → **net.ll**, in wave 4 (§17). The Simulator implementation is a full
-  socket + OpenSSL HTTP client; that does not belong in an application layer.
+- **`src/Platform/*/HttpClient.*`** → **net.ll**: copied there in wave 4, deleted from here in wave 5
+  (§17). The Simulator implementation is a full socket + OpenSSL HTTP client — 327 lines, 13 `static`
+  helpers covering URL parsing, TLS, request building and a streaming read to file; that does not belong
+  in an application layer. The RP2040 and ESP32 sides are 29-line stubs that print a message and return
+  `false`.
 - **`src/Platform/*/Thread.*`** and **`src/Platform/*/Time.*`** → **hal.ll**, which already provides
   `ThreadStart`, `MutexInit/Lock/Release`, `Delay` and `TicksMs`. There is **no `thread.ll`**: the dev
   folded threading into hal.ll because it is MCU abstraction of the same nature as GPIO and timers. What
@@ -661,17 +665,48 @@ Tracked as `TODO-E1`. Absence of something from this list does not mean it stays
 
 Settled with the dev, so a fresh session does not reopen it:
 
-- **The `HttpClient` moves as it is.** `HttpClient_DownloadFile(url, filePath)` keeps its signature and
-  keeps streaming the body straight to the card. The single call site is
-  `OpenStreetMapAPI.cpp:130`.
+- **Wave 4 only builds net.ll. pedal.guru is not touched at all.** The `HttpClient` is **copied**, not
+  moved — `src/Platform/*/HttpClient.*` stays exactly where it is and keeps being compiled, so the
+  application goes on building and running throughout the wave. Deleting it here, and rewiring the call
+  site, is wave 5's job. The earlier wording said "move", which blurred the two waves into each other.
+- **The API keeps its shape, but loses the underscore.** `HttpClient_DownloadFile(url, filePath)` keeps
+  its parameters and keeps streaming the body straight to the card; the underscore is legacy and the dev
+  cleared it for removal, so the public name follows the collection's convention (PascalCase with a module
+  prefix, as in `GPIOInit`, `MountSdCard`, `CanvasDrawPng`). The exact new spelling is not fixed yet —
+  agree it with the dev when the header is written.
 - **net.ll depends on fs.ll**, and carries a copy of `fs.ll.cmake` in its own `src/Dependency/`, the same
   way gui.ll does. fs.ll stays a submodule of pedal.guru too, because the application needs the card
-  directly for settings and ride logging.
+  directly for settings and ride logging. Verified in the code: the Simulator implementation calls exactly
+  four fs.ll functions — `CreatePathDirectories`, `OpenFile`, `WriteFile`, `CloseFile`.
 - **No in-memory download.** It was considered and rejected: the hardware has little RAM, so holding only
   the transfer buffer and streaming to disk is the right shape. If some other feature needs a buffer
   variant later, it gets added then.
+- **The OSM rate-limit delay stays in pedal.guru.** The `Time::Delay(500)` in
+  `OpenStreetMapAPI::DownloadTile` is a rule of the tile API, not of HTTP, so it belongs to the
+  application and does not follow the client into net.ll.
 - **Include order will matter again** once net.ll also includes `fs.ll.cmake` — but without conflict,
   because after wave 3 there is only one `HAL.h` in the tree. See §17.
+
+#### Still open: does net.ll depend on hal.ll?
+
+**Undecided. Do not settle it on your own — it needs research first, then the dev.**
+
+What is established: the Simulator implementation touches **nothing** from hal.ll (verified — it is plain
+POSIX sockets plus OpenSSL), so on that platform the answer is clearly no. The question is the hardware
+platforms.
+
+The dev's reasoning, recorded as stated: the RP2040 chip has no wireless of its own, but the **Pico W**
+does, and the pico-sdk covers it. That wireless part is a **separate module** bolted next to the chip —
+the dev has bought one on its own for future tests — so the supposition is that reaching it means going
+through some bus (UART, I2C, SPI), which would put it behind hal.ll. **This is a supposition, not a
+finding.** What has to be checked first is how the Pico W's wireless is actually driven from the pico-sdk:
+if the SDK hands over a whole TCP/IP stack rather than a bus, net.ll on RP2040 would sit on top of that
+and never ask hal.ll for anything, and the same likely holds for the ESP32's native wireless.
+
+The consequence either way is concrete, which is why it cannot be left vague: if net.ll does **not**
+include `hal.ll.cmake`, it has to publish its own additions to `PLATFORM_REQUIRES` instead of inheriting
+hal.ll's list. And whichever way it goes, WiFi bring-up and where the credentials live are still
+unassigned.
 
 Not implemented at all yet, from §1's product goal: the whole **"guru" coaching side** — hydration
 and nutrition reminders, cadence guidance by stretch or elapsed time. There is no module for it
@@ -817,8 +852,15 @@ platform code**, because between waves the tree is deliberately inconsistent.
 | 1 | create hal.ll | **done, pushed** |
 | 2 | migrate fs.ll onto hal.ll | **done, pushed** |
 | 3 | migrate gui.ll onto hal.ll | **done, not pushed yet** |
-| 4 | create net.ll (move `HttpClient` out of pedal.guru) | **next** |
-| 5 | migrate pedal.guru onto net.ll | pending |
+| 4 | create net.ll (**copy** the `HttpClient` into it; pedal.guru untouched) | **next** |
+| 5 | migrate pedal.guru onto net.ll, and empty `src/Platform` | pending |
+
+**The wave 4/5 boundary is deliberate**, and it is the one place the earlier plan was ambiguous. Wave 4
+ends with net.ll standing on its own — its contract, its `Sample.c`, its three platforms, its `AGENTS.md`
+— and with pedal.guru **byte-identical** to how wave 3 left it, still compiling its own
+`src/Platform/*/HttpClient.*`. Only wave 5 deletes that folder, rewires `OpenStreetMapAPI.cpp` and takes
+on the rest of `TODO-E1` (`Thread` and `Time` onto hal.ll, the GPS UART). Keeping the application working
+through wave 4 is the point of the split.
 
 **pedal.guru builds again on all three platforms** — that was wave 3's exit criterion, and §14 has the
 measured numbers. The breakage wave 3 cleared was in gui.ll's versioned copy of `fs.ll.cmake`: it was the
@@ -950,7 +992,7 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-E1` | Empty `src/Platform` out into the collection: `HttpClient` → net.ll (wave 4); `Thread` + `Time` → hal.ll, which already has `ThreadStart`, the `Mutex*` calls, `Delay` and `TicksMs`, so what remains here is at most a thin C++ wrapper; GPS UART → hal.ll's `UART*` calls. **No `thread.ll` and no `serial.ll` for the peripherals** — that was folded into hal.ll. See §13 and §17. |
+| `TODO-E1` | Empty `src/Platform` out into the collection — all of it in **wave 5**, since wave 4 only copies into net.ll and leaves this folder alone: `HttpClient` → net.ll; `Thread` + `Time` → hal.ll, which already has `ThreadStart`, the `Mutex*` calls, `Delay` and `TicksMs`, so what remains here is at most a thin C++ wrapper; GPS UART → hal.ll's `UART*` calls. **No `thread.ll` and no `serial.ll` for the peripherals** — that was folded into hal.ll. See §13 and §17. |
 | `TODO-E2` | Decide SD card thread safety. fs.ll's `AGENTS.md` §12 leaves it open and says the decision is to be driven from here. Current state, verified: all card access happens on the UI thread and `DataManager` does **not** mediate it, so the card is single-threaded by accident of call placement rather than by design (§6). This needs a decision before anything on the sensor thread starts writing to the card — e.g. ride logging, which `TODO-D4` and `TODO-C4` both imply. |
 | `TODO-E3` | Design the open-hardware expansion board (microSD slot, two reed switches, GPS, optional WiFi+BT for the RP2040) as a single shared board, using only the header pins common to both MCUs (§3). Nothing of this exists in the repository yet. |
 | `TODO-E4` | **In gui.ll, not here. Just noted, no action planned.** `src/lib/GUI/Canvas.c:129` — the `< 0` guard in `CanvasDrawPoint` is always false (`pixelSize` is an enum with unsigned underlying type, so the whole expression is unsigned), and it has no effect: the wrapped value truncates to ~65534 at the `UINT16` parameter and `CanvasSetPixel`'s own bounds check discards it. So the guard is redundant, not harmful. Whoever touches it should note it is a `break`, not a `continue` — a guard that actually fired would abandon the remaining inner-loop pixels, so making it "work" as written would be a regression. |
