@@ -136,7 +136,7 @@ Existing, consumed by pedal.guru today (declared in `.gitmodules`):
 | **hal.ll** | `src/Dependency/hal.ll` | GPIO, SPI, PWM, UART, timing, RTC, threads, and the board pinout | `src/Dependency/hal.ll/AGENTS.md` |
 | **fs.ll** | `src/Dependency/fs.ll` | file system on the SD card wired to the hardware (wraps FatFs) | `src/Dependency/fs.ll/AGENTS.md` |
 | **gui.ll** | `src/Dependency/gui.ll` | drawing on the LCD panel or on the simulator window | `src/Dependency/gui.ll/AGENTS.md` |
-| **net.ll** | `src/Dependency/net.ll` | networking. **Holds only LICENSE and README so far** — filled in wave 4, see §17 | `src/Dependency/net.ll/AGENTS.md` |
+| **net.ll** | `src/Dependency/net.ll` | WiFi scan and HTTP/HTTPS download to storage. **Built in wave 4, but pedal.guru does not consume it yet** — that is wave 5 | `src/Dependency/net.ll/AGENTS.md` |
 
 **Read those `AGENTS.md` files.** They carry the conventions, the build-contract mechanics, the hardware
 pinout decisions and the known traps that pedal.guru inherits. This file does not repeat them.
@@ -245,7 +245,7 @@ src/
     hal.ll/                     submodule, carries its own hal.ll.cmake contract
     fs.ll/                      submodule, carries its own fs.ll.cmake contract
     gui.ll/                     submodule, carries its own gui.ll.cmake contract
-    net.ll/                     submodule, LICENSE and README only until wave 4
+    net.ll/                     submodule, carries its own net.ll.cmake contract; not consumed yet
     pico_sdk_import.cmake       stock pico-sdk locator
 ```
 
@@ -661,52 +661,43 @@ platform-specific or infrastructure, and is a candidate to become (or move into)
 
 Tracked as `TODO-E1`. Absence of something from this list does not mean it stays here. Ask the dev.
 
-### What wave 4 already decided about net.ll
+### Wave 4 and net.ll: the decisions now live in net.ll's own AGENTS.md
 
-Settled with the dev, so a fresh session does not reopen it:
+Wave 4 is done, and everything it settled — the API shape, the Simulator's `netsh` route, poll mode,
+`CYW43_LWIP=0`, the mocked fields, the traps — is documented in
+`src/Dependency/net.ll/AGENTS.md`, which is where it belongs now that the library exists. **Read that
+file before touching net.ll.** Only what pedal.guru itself has to know is kept here:
 
-- **Wave 4 only builds net.ll. pedal.guru is not touched at all.** The `HttpClient` is **copied**, not
-  moved — `src/Platform/*/HttpClient.*` stays exactly where it is and keeps being compiled, so the
-  application goes on building and running throughout the wave. Deleting it here, and rewiring the call
-  site, is wave 5's job. The earlier wording said "move", which blurred the two waves into each other.
-- **The API keeps its shape, but loses the underscore.** `HttpClient_DownloadFile(url, filePath)` keeps
-  its parameters and keeps streaming the body straight to the card; the underscore is legacy and the dev
-  cleared it for removal, so the public name follows the collection's convention (PascalCase with a module
-  prefix, as in `GPIOInit`, `MountSdCard`, `CanvasDrawPng`). The exact new spelling is not fixed yet —
-  agree it with the dev when the header is written.
-- **net.ll depends on fs.ll**, and carries a copy of `fs.ll.cmake` in its own `src/Dependency/`, the same
-  way gui.ll does. fs.ll stays a submodule of pedal.guru too, because the application needs the card
-  directly for settings and ride logging. Verified in the code: the Simulator implementation calls exactly
-  four fs.ll functions — `CreatePathDirectories`, `OpenFile`, `WriteFile`, `CloseFile`.
-- **No in-memory download.** It was considered and rejected: the hardware has little RAM, so holding only
-  the transfer buffer and streaming to disk is the right shape. If some other feature needs a buffer
-  variant later, it gets added then.
-- **The OSM rate-limit delay stays in pedal.guru.** The `Time::Delay(500)` in
-  `OpenStreetMapAPI::DownloadTile` is a rule of the tile API, not of HTTP, so it belongs to the
-  application and does not follow the client into net.ll.
-- **Include order will matter again** once net.ll also includes `fs.ll.cmake` — but without conflict,
-  because after wave 3 there is only one `HAL.h` in the tree. See §17.
+- **net.ll offers a WiFi scan and a download.** `WiFiInitialize` / `WiFiDeinitialize` /
+  `WiFiScan(networks, maxNetworks, &found)`, filling an array the caller owns, and
+  `HttpDownloadFile(url, filePath)` streaming the body straight to the card.
+- **The download function lost its underscore.** `HttpClient_DownloadFile` became `HttpDownloadFile`; the
+  old name was legacy. Parameters and behaviour are unchanged. Wave 5 has to update the single call site,
+  `OpenStreetMapAPI.cpp:130`.
+- **`HttpDownloadFile` is a stub on RP2040 and ESP32**, exactly as pedal.guru's own copy is today, so
+  moving onto net.ll changes nothing about what works on hardware. Implementing it needs hardware to test
+  on, and on the RP2040 also lwIP, which net.ll deliberately leaves off for now.
+- **Connect is not implemented, on purpose**, so pedal.guru cannot join a network through net.ll yet. The
+  intended flow — show the scanned networks, let the **user** pick, move on if joining fails — is
+  recorded, not built.
+- **Credentials are pedal.guru's problem, and only pedal.guru's.** net.ll asks for none, and no submodule
+  may know `SettingsData` or pedal.guru exist. The dev has plans here; nothing is written down yet.
+- **The OSM rate-limit delay stays here.** The `Time::Delay(500)` in `OpenStreetMapAPI::DownloadTile` is a
+  rule of the tile API, not of HTTP, so it does not follow the client into net.ll.
+- **Every network operation is synchronous and net.ll starts no thread.** That matches what pedal.guru
+  already does — `HttpDownloadFile` blocks, and `PageMapSync` downloads one tile per draw pass on the UI
+  thread (§6). One nuance: ESP-IDF's WiFi driver keeps internal tasks of its own once the radio is up.
+  net.ll creates none; the SDK's cannot be switched off.
+- **net.ll does not reach hal.ll**, because every platform hands over a whole stack rather than a bus. It
+  depends on fs.ll, which is what brings hal.ll into the build.
+- **net.ll's contract publishes a third list, `PLATFORM_DEFINITIONS`**, which hal.ll and fs.ll do not.
+  Wave 5 has to apply it in the RP2040 branch, at directory scope, or the RP2040 build will demand an
+  `lwipopts.h`.
 
-#### Still open: does net.ll depend on hal.ll?
-
-**Undecided. Do not settle it on your own — it needs research first, then the dev.**
-
-What is established: the Simulator implementation touches **nothing** from hal.ll (verified — it is plain
-POSIX sockets plus OpenSSL), so on that platform the answer is clearly no. The question is the hardware
-platforms.
-
-The dev's reasoning, recorded as stated: the RP2040 chip has no wireless of its own, but the **Pico W**
-does, and the pico-sdk covers it. That wireless part is a **separate module** bolted next to the chip —
-the dev has bought one on its own for future tests — so the supposition is that reaching it means going
-through some bus (UART, I2C, SPI), which would put it behind hal.ll. **This is a supposition, not a
-finding.** What has to be checked first is how the Pico W's wireless is actually driven from the pico-sdk:
-if the SDK hands over a whole TCP/IP stack rather than a bus, net.ll on RP2040 would sit on top of that
-and never ask hal.ll for anything, and the same likely holds for the ESP32's native wireless.
-
-The consequence either way is concrete, which is why it cannot be left vague: if net.ll does **not**
-include `hal.ll.cmake`, it has to publish its own additions to `PLATFORM_REQUIRES` instead of inheriting
-hal.ll's list. And whichever way it goes, WiFi bring-up and where the credentials live are still
-unassigned.
+Two things about the boards, because they are easy to conflate: pedal.guru's RP2040 target is the
+**Waveshare RP2040-LCD-1.28**, which has **no radio at all** — so wireless there waits on the expansion
+board (`TODO-E3`) carrying Raspberry Pi's RM2. net.ll's RP2040 build therefore defaults to
+`PICO_BOARD=pico_w`, a development vehicle, not this project's board. The ESP32-S3 has its radio natively.
 
 Not implemented at all yet, from §1's product goal: the whole **"guru" coaching side** — hydration
 and nutrition reminders, cadence guidance by stretch or elapsed time. There is no module for it
@@ -851,16 +842,33 @@ platform code**, because between waves the tree is deliberately inconsistent.
 |---|---|---|
 | 1 | create hal.ll | **done, pushed** |
 | 2 | migrate fs.ll onto hal.ll | **done, pushed** |
-| 3 | migrate gui.ll onto hal.ll | **done, not pushed yet** |
-| 4 | create net.ll (**copy** the `HttpClient` into it; pedal.guru untouched) | **next** |
-| 5 | migrate pedal.guru onto net.ll, and empty `src/Platform` | pending |
+| 3 | migrate gui.ll onto hal.ll | **done, pushed** |
+| 4 | create net.ll (**copy** the `HttpClient` into it; pedal.guru untouched) | **done, not pushed yet** |
+| 5 | migrate pedal.guru onto net.ll, and empty `src/Platform` | **next** |
 
-**The wave 4/5 boundary is deliberate**, and it is the one place the earlier plan was ambiguous. Wave 4
-ends with net.ll standing on its own — its contract, its `Sample.c`, its three platforms, its `AGENTS.md`
-— and with pedal.guru **byte-identical** to how wave 3 left it, still compiling its own
-`src/Platform/*/HttpClient.*`. Only wave 5 deletes that folder, rewires `OpenStreetMapAPI.cpp` and takes
-on the rest of `TODO-E1` (`Thread` and `Time` onto hal.ll, the GPS UART). Keeping the application working
-through wave 4 is the point of the split.
+**The wave 4/5 boundary was deliberate**, and it is the one place the earlier plan was ambiguous. Wave 4
+ended with net.ll standing on its own — its contract, its `Sample.c`, its three platforms, its
+`AGENTS.md` — and with pedal.guru untouched, still compiling its own `src/Platform/*/HttpClient.*`. That
+was checked rather than assumed: `git diff` on `src/Platform` came back empty, the old
+`HttpClient_DownloadFile` name is still in place here, and all three artifacts rebuilt **byte-identical**
+to wave 3's (823064 / 464384 / 421904 bytes, same 6/6/4 warnings).
+
+Only wave 5 deletes that folder, rewires `OpenStreetMapAPI.cpp:130` to `HttpDownloadFile`, applies net.ll's
+`PLATFORM_DEFINITIONS` in the RP2040 branch, and takes on the rest of `TODO-E1` (`Thread` and `Time` onto
+hal.ll, the GPS UART). Keeping the application working through wave 4 was the point of the split.
+
+What wave 4 established, and what it did not: net.ll configures, compiles and links on all three platforms
+with **zero warnings**, and its sample **ran on the Simulator**, listing the real networks in range through
+`netsh.exe` — including a hidden one, and showing the scan's non-repeatability across calls. An external
+consumer with nothing pinned also cloned fs.ll and hal.ll by itself and built clean. But **neither firmware
+was flashed**, so net.ll's RP2040 and ESP32 `WiFi.c` is new code that has never executed, and
+`HttpDownloadFile` has only ever run on the Simulator. net.ll's `AGENTS.md` §10 is the authoritative list.
+
+Two bugs surfaced while implementing it, both worth knowing because they are the kind that compile
+silently: net.ll's own auth-mode enum values collided with ESP-IDF's `wifi_auth_mode_t` (C enum values
+share one scope), and the RP2040's scan `auth_mode` turned out **not** to be a `CYW43_AUTH_*` constant
+despite the driver's own comment — those are 32-bit connect values, while the scan field is a `uint8_t`
+bitmask built from beacon information elements. Details in net.ll's `AGENTS.md` §6.
 
 **pedal.guru builds again on all three platforms** — that was wave 3's exit criterion, and §14 has the
 measured numbers. The breakage wave 3 cleared was in gui.ll's versioned copy of `fs.ll.cmake`: it was the
