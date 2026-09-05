@@ -19,17 +19,14 @@
 
 set(PLATFORMS "Simulator" "RP2040" "ESP32") # Platform definitions
 
-# ESP-IDF reads this file in script mode (cmake -P), where there is no cache: an unguarded
-# set(... CACHE ...) is not skipped there and would overwrite the caller's PLATFORM_NAME.
 if(NOT PLATFORM_NAME)
     set(PLATFORM_NAME "Simulator" CACHE STRING "Build platform, one of: ${PLATFORMS}")
 endif()
+
 if(DEFINED CACHE{PLATFORM_NAME})
     set_property(CACHE PLATFORM_NAME PROPERTY STRINGS ${PLATFORMS})
 endif()
 
-# Kept as its own list so the build can raise the warning level on our code only, without
-# drowning it in warnings from the vendored dependencies.
 set(PEDAL_GURU_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/DataManager.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/HIDHandler.cpp"
@@ -82,4 +79,3 @@ include(${HAL_LL_PATH}/hal.ll.cmake)
 include(${FS_LL_PATH}/fs.ll.cmake)
 include(${GUI_LL_PATH}/gui.ll.cmake)
 include(${NET_LL_PATH}/net.ll.cmake)
-
