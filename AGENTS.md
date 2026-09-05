@@ -136,7 +136,7 @@ Existing, consumed by pedal.guru today (declared in `.gitmodules`):
 | **hal.ll** | `src/Dependency/hal.ll` | GPIO, SPI, PWM, UART, timing, RTC, threads, and the board pinout | `src/Dependency/hal.ll/AGENTS.md` |
 | **fs.ll** | `src/Dependency/fs.ll` | file system on the SD card wired to the hardware (wraps FatFs) | `src/Dependency/fs.ll/AGENTS.md` |
 | **gui.ll** | `src/Dependency/gui.ll` | drawing on the LCD panel or on the simulator window | `src/Dependency/gui.ll/AGENTS.md` |
-| **net.ll** | `src/Dependency/net.ll` | WiFi scan and HTTP/HTTPS download to storage. **Built in wave 4, but pedal.guru does not consume it yet** — that is wave 5 | `src/Dependency/net.ll/AGENTS.md` |
+| **net.ll** | `src/Dependency/net.ll` | WiFi scan and HTTP/HTTPS download to storage. Consumed by pedal.guru since wave 5 | `src/Dependency/net.ll/AGENTS.md` |
 
 **Read those `AGENTS.md` files.** They carry the conventions, the build-contract mechanics, the hardware
 pinout decisions and the known traps that pedal.guru inherits. This file does not repeat them.
@@ -200,11 +200,145 @@ by both MCUs, carrying:
   is one single design for both; the wireless module is simply populated or not.
 
 Because the board must work on both MCUs, **only the physical header pins that are equivalent between
-the two boards may be used**. gui.ll's `AGENTS.md` (Design Decision 7) has the overlay analysis: 9
-overlapping physical pins total, 5 already assigned to SD SPI + card detect, one excluded because it
-lands on an ESP32-S3 strapping pin, leaving 3 fully usable plus 2 with an SWD caveat. Do not invent
-pin assignments — that table and each platform's `HALConfig.h` in hal.ll are the source of truth, and
-some values there are hardware-validated.
+the two boards may be used** — with one deliberate exception, the radio, explained below.
+
+**Three sources, and they answer different questions.** Confusing them is how a wrong pinout gets
+written down:
+
+- **This repository's `README.md`, the "🔌 Wiring" table** — what is *actually wired* today, in the form
+  of the connector/shield that swaps between the two devices. gui.ll's README carries the same table;
+  prefer this one, since the peripherals below belong to the product, not to the drawing library.
+- **gui.ll's `AGENTS.md`, Design Decision 7** — which pins are *free and shared* between the two
+  boards, derived by overlaying the two pinouts. **Two traps in that document:** the summary line under
+  its tables says "3 fully usable", which contradicts the tables themselves — the tables are right, and
+  there are 5. And its "H1 Pin 17 / 19" entries are *header positions*, not GPIO numbers: those
+  positions carry `SWCLK`/`SWDIO`, which on the RP2040 are dedicated pads outside the 30 GPIOs. GPIO 17
+  and GPIO 19 are ordinary free GPIOs with nothing to do with that caveat.
+- **`Documentation/Image/RP2040_LCD_1_28.png`** — the board's own onboard functions, which rule pins out
+  entirely, plus the header positions, which tell you whether a block of pins is physically contiguous.
+
+Do not invent pin assignments. Those three plus each platform's `HALConfig.h` in hal.ll are the source
+of truth, and some values there are hardware-validated.
+
+#### The RP2040 pin map
+
+Consolidated here because it spans peripherals that no single submodule owns: gui.ll knows the LCD and
+the card but not the GPS, the switches or the radio.
+
+**Taken by the Waveshare board itself** — internal traces, not negotiable:
+
+| GPIO | function |
+|---|---|
+| 6, 7 | IMU I2C (SDA, SCL) |
+| 8, 9, 10, 11, 12 | LCD DC, CS, CLK, DIN/MOSI, RST |
+| 23, 24 | QMI8658C IMU interrupts 1 and 2 |
+| 25 | LCD backlight |
+| 29 | battery voltage ADC |
+
+**Assigned by pedal.guru on the shared expansion board** — every one of these lands on a header
+position that exists on the ESP32-S3 board too:
+
+| GPIO | header | function | ESP32-S3 GPIO |
+|---|---|---|---|
+| 0, 1, 2, 3 | — | SD card MISO, CS, SCK, MOSI | 46, 45, 42, 41 |
+| 5 | H1-12 | SD card detect | 39 |
+| 16 | H2-2 | GPS UART TX | 13 |
+| 13 | H1-11 | GPS UART RX | 18 |
+| 14 | H1-13 | navigation switch A | 17 |
+| 15 | H1-15 | navigation switch B | 16 |
+
+`GP16`/`GP13` is the **only** usable TX/RX pair among the shared pins: of the five, only those two carry
+a UART data function. `GP14` and `GP15` are UART0 CTS/RTS and `GP27` is UART1 RTS, none of which carries
+data; and UART1's data pins, `GP20`/`GP21`, belong to the radio. Verified against the mux table in the
+pico-sdk's `io_bank0.h`. On the ESP32-S3 the GPIO matrix routes a UART to any pin, so only the RP2040
+constrains this.
+
+**Assigned to the radio — RP2040 only**, see below:
+
+| GPIO | header | signal |
+|---|---|---|
+| 19 | H2-8 | `WL_REG_ON` |
+| 20 | H2-10 | `WL_DATA` (bidirectional, also host wake) |
+| 21 | H2-12 | `WL_CLOCK` |
+| 22 | H2-14 | `WL_CS` |
+
+**Still free: `GP27`** (H2-7, ESP32-S3 GP2) is the last shared pin available, plus the two SWD-caveat
+positions (H1-17, H1-19) as a last resort. On the RP2040 alone, 4, 17, 18, 26 and 28 remain.
+
+The **SD card pins are hardware-validated** — the card was read on the RP2040-LCD-1.28 with this exact
+wiring. The commented second number beside each one in `HALConfig.h` is the pin used on an older plain
+Pico driving an external round LCD, also tested there; it is a record of the two boards, not a menu.
+None of the GPS, switch or radio assignments is validated yet — `TODO-D1`, `TODO-D2`, `TODO-E3`.
+
+#### The radio is allowed non-shared pins
+
+**Decided by the dev.** The WiFi+BT module is RP2040-only by nature — the ESP32-S3 has its radio
+built in — so it does not have to fit the shared budget. It uses pins that are free only on the
+RP2040, and a board destined for the ESP32-S3 leaves that footprint unpopulated. One board design
+still serves both.
+
+That frees the 5 shared pins for the GPS (TX + RX) and the two reed/hall switches, which is 4 of the 5.
+
+The radio needs **four** pins, because three of the CYW43's functions share one wire:
+
+| signal | function | speed |
+|---|---|---|
+| `WL_REG_ON` | plain GPIO output; enables the module's regulator | static, set once at bring-up |
+| `WL_DATA` | the single **bidirectional** data line, PIO-driven; also the module's host-wake interrupt | fast |
+| `WL_CLOCK` | gSPI clock, a PIO side-set pin | fast |
+| `WL_CS` | plain GPIO output, chip select | slow |
+
+**No pin has a special-function requirement.** The bus is not the hardware SPI peripheral — it is a PIO
+program (`cyw43_bus_pio_spi.pio`), because the CYW43's gSPI is half-duplex and one wire carries both
+the outgoing command and the reply, which the SPI peripheral cannot do. PIO can drive any GPIO, and the
+driver configures each of the three PIO pins individually (`sm_config_set_out_pins(..., 1)`,
+`sm_config_set_in_pins`, `sm_config_set_sideset_pins`), so **there is no adjacency requirement**. The
+`static_assert` in that file constrains only the RP2350B, which has two GPIO banks.
+
+Cost to be aware of: one of the RP2040's 8 PIO state machines plus 2 DMA channels. Nothing else in the
+project uses PIO, so there is no contention today.
+
+**Decided by the dev:** GPIO 19, 20, 21, 22 — header H2 positions 8, 10, 12 and 14, four contiguous
+positions in one column, which suits a module footprint. `WL_REG_ON` on 19, `WL_DATA` on 20, `WL_CLOCK`
+on 21, `WL_CS` on 22.
+
+Only DATA and CLOCK have critical timing, hence keeping them neighbours; it also holds the GPIO range the
+PIO reserves to 2 pins instead of 4. REG_ON is static and CS is slow, so they take the outer positions.
+The module also needs 3V3 and GND, but **no** extra RP2040 pin for power-save or VBUS sense: those live
+on the module's own three GPIOs, which is where the Pico W's onboard LED sits.
+
+Signal names here come from the SDK macros and the Pico W schematic nets (`WL_ON`, `WL_D`, `WL_CLK`,
+`WL_CS`); confirm the labels against the RM2 datasheet before wiring.
+
+#### Where the radio pins are declared, and why not in `HALConfig.h`
+
+The radio's four pins live in **`src/Platform/RP2040/Boards/WaveshareRP2040LCD1In28Extended.h`**, a
+pico-sdk *board header*, selected with `PICO_BOARD` and found through `PICO_BOARD_HEADER_DIRS` (§10).
+Every other pin on the device stays in hal.ll's `HALConfig.h`.
+
+The dividing line is **who reads the number**. The radio's pins are read by third-party code — the
+cyw43 driver inside the pico-sdk — and that code only looks at its own `CYW43_DEFAULT_PIN_WL_*` macros.
+It is the one case in this project where a pin number is consumed from outside, so it has to be declared
+where the outsider looks. Everything else is read by our own code, which reads `HALConfig.h`.
+
+That header does two jobs, not one: it declares `PICO_CYW43_SUPPORTED` so the radio code can compile at
+all, **and** it tells the driver where the module is wired. It also `#include`s
+`boards/waveshare_rp2040_lcd_1.28.h` last, so the base board's own definitions (flash size, default
+UART, platform) are inherited while every `#ifndef`-guarded value above wins over it. The pico-sdk
+follows that include when scraping cmake directives, so composing headers this way is supported rather
+than a trick. **No pico-sdk file is modified.**
+
+Verified through the preprocessor after the build: `REG_ON 19u`, `DATA 20u`, `HOST_WAKE 20u`,
+`CLOCK 21u`, `CS 22u`, with `PICO_FLASH_SIZE_BYTES` and `PICO_DEFAULT_UART` arriving from the base
+board header.
+
+#### Distributing the firmware is unaffected by PIO
+
+Worth stating because it is a natural worry: the PIO program needs **nothing** shipped alongside the
+`.uf2`. `pioasm` assembles `cyw43_bus_pio_spi.pio` at build time into a C header holding the program as
+a five-entry `uint16_t` array, that array is linked into the firmware like any other constant, and
+`pio_add_program()` copies it into the PIO block's instruction memory at every boot. PIO is not separate
+persistent storage. One file to flash, exactly as before.
 
 ### Why no touchscreen, ever
 
@@ -347,7 +481,7 @@ hardware (§15). There is no destructor — these mutexes live for the whole pro
 **Important, and it corrects an assumption recorded in fs.ll's `AGENTS.md` §12:** `DataManager` does
 **not** centralize SD card access — it only holds in-RAM sensor data. Every card access in pedal.guru
 today happens on the **UI thread**: `Texture::DrawPng` / `DrawPngToArea` (`GUI/Render/Texture.cpp`),
-and `OpenStreetMapAPI::DownloadTile` → `HttpClient_DownloadFile` (both reached from page callbacks).
+and `OpenStreetMapAPI::DownloadTile` → `HttpDownloadFile` from net.ll (both reached from page callbacks).
 The sensor thread never touches the file system: `GPS::LogGpsData` only pushes into `DataManager`.
 Mount and unmount happen in `app_entry`, before the sensor thread starts and after it is asked to
 stop — which is what FatFs requires (`f_mount` is never thread-safe). So the card is single-threaded
@@ -406,8 +540,8 @@ Recorded, not fixed — `TODO-D1` and `TODO-B1`.
 - **Cache path** — `XyZoomToHashPath` reproduces OpenStreetMap `mod_tile`'s hashed storage layout
   (`zoom/h4/h3/h2/h1/h0`), which clusters a 16×16 square of tiles into one directory so no directory
   ends up with too many files. The reference is in the comment above the function.
-- **Download** — `DownloadTile` checks the cache with `PathOrFileExists` first, then calls the platform
-  `HttpClient_DownloadFile`, then sleeps 500 ms. That delay is deliberate: the
+- **Download** — `DownloadTile` checks the cache with `PathOrFileExists` first, then calls
+  `HttpDownloadFile` from net.ll, then sleeps 500 ms. That delay is deliberate: the
   [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/) caps requests. Keep it.
 
 `PageMapSync` walks a tile list and downloads it one tile per draw pass, showing progress.
@@ -421,54 +555,50 @@ orange otherwise).
 NMEA `DDMM.MMMM` to decimal degrees, applies the N/S and E/W sign, and pushes the result into
 `DataManager`. `GPSFixData::set` splits the sentence with `TextHelper::Tokenize`.
 
-**The UART is not wired up yet.** Every `uart_*` call in `GPS.cpp` is commented out and
-`UartGetLine` returns a hard-coded sentence, so the GPS is a stub feeding fixed coordinates. The
-`L96GPS` compile definition (set unconditionally at the end of `pedal.guru.cmake`) guards the
-commented-out `$PMTK` configuration commands for the Quectel L96. Serial I/O is one of the layers
-planned to become a submodule (§2, §13) — `TODO-D2` and `TODO-E1`.
+**The UART is wired up in code but not in hardware.** `GPS.cpp` now calls `UARTInit`, `UARTIsEnabled`,
+`UARTIsReadable` and `UARTGetChar` through hal.ll — the Linux `std::ifstream` layer and the old
+pico-sdk `uart_*` calls are both gone. On the Simulator, `UARTIsEnabled` always returns `false`, so
+`GetData` returns immediately without touching any data — the GPS is effectively silent until hardware
+is connected. The `L96GPS` compile definition (set unconditionally at the end of `pedal.guru.cmake`)
+guards the `$PMTK` configuration commands for the Quectel L96, which are now expressed as
+`UARTPuts(GPS_UART, ...)` calls; the strings themselves are unchanged and hardware-validated.
+Serial I/O now goes through hal.ll as the ground rules require — `TODO-D2` (wire up the hardware
+and confirm the pin assignments) is the remaining open item.
 
 ## 9. Platform abstraction owned by pedal.guru
 
-`src/Platform/<PLATFORM_NAME>/` holds the pieces of platform-specific code that have not been split
-into a submodule yet. `pedal.guru.cmake` interpolates `${PLATFORM_NAME}` into both the source list and
-the include path, so the application includes `"Thread.hpp"` / `"Time.hpp"` / `"HttpClient.h"` with no
-`#ifdef` and gets the right implementation. Same mechanism as fs.ll and gui.ll use for their own
-platform folders.
+`src/Platform/<PLATFORM_NAME>/` now contains only the thin C++ wrappers that pedal.guru needs over
+hal.ll's C API. `pedal.guru.cmake` interpolates `${PLATFORM_NAME}` into both the source list and the
+include path, so the application includes `"Thread.hpp"` / `"Time.hpp"` with no `#ifdef` and gets the
+right file — which is the same file on every platform, since all wrappers are now identical. Same
+mechanism as fs.ll and gui.ll use for their own platform folders.
 
-Each platform folder is expected to expose the same file names:
+Each platform folder exposes:
 
 | file | contract |
 |---|---|
 | `Thread.{cpp,hpp}` | `PedalGuru::Thread::NewThread(void(*)())` and `PedalGuru::Mutex` (constructor, `Lock`, `Release`) |
 | `Time.{cpp,hpp}` | `PedalGuru::Time::Delay(unsigned int milliseconds)` |
-| `HttpClient.{c,h}` | `bool HttpClient_DownloadFile(const char *url, const char *filePath)` |
 | `CMakeLists.txt` | ESP32 only: ESP-IDF component registration |
 
-What each one does today:
+All three platforms now share **identical** `.hpp` and `.cpp` files — the platform-specific logic lives
+entirely in hal.ll. The headers include `HAL.h` in an `extern "C"` block, `Mutex` holds a `HALMutex`,
+and the implementations call `MutexInit/Lock/Release` and `ThreadStart`. `Time.Delay` calls `::Delay`.
+No platform SDK headers appear here anymore.
 
-| | Simulator | RP2040 | ESP32 |
-|---|---|---|---|
-| `NewThread` | `std::thread` + `detach` | `multicore_launch_core1` | `xTaskCreate` |
-| `Mutex` constructor | `pthread_mutex_init` | `mutex_init` | `xSemaphoreCreateMutex` |
-| `Mutex` lock/release | `pthread_mutex_lock/unlock` | `mutex_enter_blocking`/`mutex_exit` | `xSemaphoreTake/Give` |
-| `Delay` | gui.ll's `Delay` (SDL event pump) | `sleep_ms` | `vTaskDelay`, floored at 1 tick |
-| `HttpClient` | POSIX sockets + OpenSSL, writes through fs.ll's `WriteFile` | stub returning `false` | stub returning `false` |
+`HttpClient` left `src/Platform` in wave 5, moving to net.ll where it belongs. The single call site,
+`OpenStreetMapAPI::DownloadTile`, now calls `HttpDownloadFile` from net.ll's `HttpClient.h`.
 
-The `HttpClient` stubs are deliberate: they keep the platform contract so the firmware links, and they
-print a message instead of failing silently, so a failed map sync is diagnosable on the device. On the
-RP2040 a real implementation is blocked on hardware — there is no native wireless, it needs the WiFi+BT
-module of the expansion board (§3). On the ESP32-S3 wireless is native, so there it is only pending work
-(`TODO-E1`).
+`HttpDownloadFile` is a stub on the two hardware platforms: it prints a message and returns `false`,
+keeping the firmware linkable and a failed map sync diagnosable. On the RP2040 a real implementation
+is blocked on hardware — no native wireless, needs the expansion board's radio module (§3). On the
+ESP32-S3 it is pending work (`TODO-E1`). On the Simulator it is the same full POSIX + OpenSSL
+implementation that always worked.
 
-All three folders now compile. `HttpClient` is a stub on the two hardware platforms; everything else is
-real.
-
-**This whole folder is on its way out, and hal.ll already replaces most of it.** hal.ll provides
-`ThreadStart`, `MutexInit/Lock/Release`, `Delay` and `TicksMs` in C, for the same three platforms —
-so `Thread.{cpp,hpp}` and `Time.{cpp,hpp}` here are duplicated work, kept only until wave 5 wires
-pedal.guru to hal.ll. When that happens they either become a thin C++ wrapper over the C API or
-disappear. `HttpClient` is copied into net.ll in wave 4 and only **leaves here** in wave 5 — wave 4 does
-not touch this folder at all. See §13 and §17.
+net.ll's `WiFi.c` **is** compiled into pedal.guru on all three platforms, and net.ll's radio libraries
+are linked through the normal `PLATFORM_LIBRARIES` / `PLATFORM_REQUIRES` lists. The application needs
+the radio — that is how map tiles get downloaded — so nothing about it is filtered out of the build.
+On the RP2040 that requires `PICO_BOARD` to name a board declaring `PICO_CYW43_SUPPORTED`; see §10.
 
 Do not add anything new to `src/Platform`: new platform code belongs in hal.ll (ground rule 6).
 
@@ -555,15 +685,41 @@ variables and the top-level target consumes them.
   `find_package(OpenSSL)` and link `${SDL2_LIBRARIES} m OpenSSL::SSL OpenSSL::Crypto`
   `${PLATFORM_LIBRARIES}`. OpenSSL is
   needed by the Simulator `HttpClient`; SDL2 is located by `gui.ll.cmake`.
-- `RP2040` — defaults `PICO_SDK_PATH` to `~/pico-sdk`, `pico_sdk_init()`, include
-  `pedal.guru.cmake`, `add_executable`, link
+- `RP2040` — defaults `PICO_BOARD` to `pico_w` (see below) and `PICO_SDK_PATH` to `~/pico-sdk`,
+  `pico_sdk_init()`, include `pedal.guru.cmake`, `add_executable`, link
   `${PLATFORM_LIBRARIES}` (hal.ll publishes the pico-sdk target list; the hardcoded one it replaced
   named `hardware_adc`, which nothing uses, and omitted `hardware_uart`, which hal.ll needs),
-  stdio over USB (UART off), `pico_add_extra_outputs`.
+  `add_compile_definitions(${PLATFORM_DEFINITIONS})` from net.ll, stdio over USB (UART off),
+  `pico_add_extra_outputs`.
 - `ESP32` — does **not** include `pedal.guru.cmake` itself. It points `EXTRA_COMPONENT_DIRS` at a
   platform folder and hands the build to ESP-IDF; that folder's `CMakeLists.txt` includes
   `pedal.guru.cmake` and calls `idf_component_register`. `EXTRA_COMPONENT_DIRS` currently points at
   `src/lib/Platform/ESP32`, **a path that does not exist in this repository** — see §16.
+
+### The RP2040 build uses its own board header
+
+```cmake
+set(PICO_BOARD_HEADER_DIRS "${CMAKE_SOURCE_DIR}/src/Platform/RP2040/Boards")
+set(PICO_BOARD WaveshareRP2040LCD1In28Extended)
+```
+
+The application needs the radio — that is how map tiles are downloaded — so net.ll's WiFi code is part
+of the build, and on the RP2040 that only compiles when the pico-sdk exposes `pico/cyw43_arch.h`.
+
+That header is gated on `PICO_CYW43_SUPPORTED`, which is declared **by the board header**. The plain
+`pico` header, which this build used implicitly for a long time, does not mention CYW43 at all, so the
+whole `pico_cyw43_arch*` target family is never created. Two things are worth remembering:
+
+- **The failure is misleading.** `target_link_libraries` with a name that is not a target passes it to
+  the linker as a plain library name, so configure succeeds and the build dies later on a missing
+  header. The error points nowhere near the cause.
+- **The stock `waveshare_rp2040_lcd_1.28` header does not solve it.** The pico-sdk ships one for the
+  actual base board, and it correctly does *not* declare CYW43 support, because the bare board has no
+  radio. Ours includes it and adds the radio on top — see §3 for the contents and the reasoning.
+
+`PICO_BOARD_HEADER_DIRS` is searched before the SDK's own board directory, and the SDK ends up including
+the file by absolute path, so the folder can follow this project's PascalCase convention rather than
+being named `boards`.
 
 `-DDEBUGMSGS` (no value needed) defines both `DEBUGMSGS` and `_DEBUG`. `DEBUGMSGS` is the one that
 works: it is gui.ll's mechanism, which turns `SHOWDEBUG(...)` into `printf`. `_DEBUG` guards `std::cout`
@@ -646,20 +802,19 @@ them, and do not "modernize" them silently.
 pedal.guru is meant to be pure application logic. It is not there yet. Known material that is either
 platform-specific or infrastructure, and is a candidate to become (or move into) a submodule:
 
-- **`src/Platform/*/HttpClient.*`** → **net.ll**: copied there in wave 4, deleted from here in wave 5
-  (§17). The Simulator implementation is a full socket + OpenSSL HTTP client — 327 lines, 13 `static`
-  helpers covering URL parsing, TLS, request building and a streaming read to file; that does not belong
-  in an application layer. The RP2040 and ESP32 sides are 29-line stubs that print a message and return
-  `false`.
-- **`src/Platform/*/Thread.*`** and **`src/Platform/*/Time.*`** → **hal.ll**, which already provides
-  `ThreadStart`, `MutexInit/Lock/Release`, `Delay` and `TicksMs`. There is **no `thread.ll`**: the dev
-  folded threading into hal.ll because it is MCU abstraction of the same nature as GPIO and timers. What
-  stays here is at most a thin C++ wrapper over that C API — pedal.guru is the only place C++ belongs.
-- **GPS UART access** (`src/Sensor/GPS.cpp`, currently commented out) → **hal.ll**, which already has
-  `UARTInit/Deinit/IsEnabled/IsReadable/GetChar/Puts`. A `serial.ll` would only make sense for
-  *protocol* on top (NMEA, the `$PMTK` commands), not for the peripheral. Not decided.
+- **`src/Platform/*/HttpClient.*`** → **net.ll**: done in wave 5. `HttpDownloadFile` is the new name.
+  The Simulator implementation is the same full POSIX + OpenSSL HTTP client; on the two hardware
+  platforms it is a stub returning `false`.
+- **`src/Platform/*/Thread.*`** and **`src/Platform/*/Time.*`** → **hal.ll**: done in wave 5. The three
+  platform folders now hold identical thin C++ wrappers. There is **no `thread.ll`**: threading was
+  folded into hal.ll because it is MCU abstraction of the same nature as GPIO and timers.
+- **GPS UART access** (`src/Sensor/GPS.cpp`) → **hal.ll**: done in wave 5. The old Linux
+  `std::ifstream` layer and the pico-sdk `uart_*` calls are replaced by `UARTInit/Deinit/IsEnabled/
+  IsReadable/GetChar/UARTPuts`. The pins are `PLACEHOLDER` in `HALConfig.h` until the hardware is
+  confirmed — `TODO-D2`. A `serial.ll` would only make sense for *protocol* on top (NMEA, the `$PMTK`
+  commands), not for the peripheral. Not decided.
 
-Tracked as `TODO-E1`. Absence of something from this list does not mean it stays here. Ask the dev.
+`TODO-E1` is closed.
 
 ### Wave 4 and net.ll: the decisions now live in net.ll's own AGENTS.md
 
@@ -672,11 +827,9 @@ file before touching net.ll.** Only what pedal.guru itself has to know is kept h
   `WiFiScan(networks, maxNetworks, &found)`, filling an array the caller owns, and
   `HttpDownloadFile(url, filePath)` streaming the body straight to the card.
 - **The download function lost its underscore.** `HttpClient_DownloadFile` became `HttpDownloadFile`; the
-  old name was legacy. Parameters and behaviour are unchanged. Wave 5 has to update the single call site,
-  `OpenStreetMapAPI.cpp:130`.
-- **`HttpDownloadFile` is a stub on RP2040 and ESP32**, exactly as pedal.guru's own copy is today, so
-  moving onto net.ll changes nothing about what works on hardware. Implementing it needs hardware to test
-  on, and on the RP2040 also lwIP, which net.ll deliberately leaves off for now.
+  old name was legacy. Parameters and behaviour are unchanged. Done in wave 5.
+- **`HttpDownloadFile` is a stub on RP2040 and ESP32**, so the move to net.ll changed nothing about what
+  works on hardware. Implementing it needs hardware to test on, and on the RP2040 also lwIP.
 - **Connect is not implemented, on purpose**, so pedal.guru cannot join a network through net.ll yet. The
   intended flow — show the scanned networks, let the **user** pick, move on if joining fails — is
   recorded, not built.
@@ -691,8 +844,8 @@ file before touching net.ll.** Only what pedal.guru itself has to know is kept h
 - **net.ll does not reach hal.ll**, because every platform hands over a whole stack rather than a bus. It
   depends on fs.ll, which is what brings hal.ll into the build.
 - **net.ll's contract publishes a third list, `PLATFORM_DEFINITIONS`**, which hal.ll and fs.ll do not.
-  Wave 5 has to apply it in the RP2040 branch, at directory scope, or the RP2040 build will demand an
-  `lwipopts.h`.
+- **`net.ll`'s contract publishes a third list, `PLATFORM_DEFINITIONS`.** Done in wave 5: applied in
+  `CMakeLists.txt`'s RP2040 branch at directory scope.
 
 Two things about the boards, because they are easy to conflate: pedal.guru's RP2040 target is the
 **Waveshare RP2040-LCD-1.28**, which has **no radio at all** — so wireless there waits on the expansion
@@ -705,18 +858,17 @@ and nutrition reminders, cadence guidance by stretch or elapsed time. There is n
 
 ## 14. Current status
 
-**All three platforms compiled and linked clean, after wave 3.** Measured in isolated build directories
-(ESP32 with its own `sdkconfig`, target `esp32s3`, so the repository's `sdkconfig` stayed untouched):
+**All three platforms compiled and linked clean, after wave 5.** Warning counts match exactly:
 
-| platform | command | artifact |
-|---|---|---|
-| Simulator | `cmake -B build -DPLATFORM_NAME=Simulator && cmake --build build` | `build/pedal.guru`, ~823 KB |
-| RP2040 | `cmake -B build -DPLATFORM_NAME=RP2040 && cmake --build build` | `build/pedal.guru.uf2`, ~464 KB |
-| ESP32 | `idf.py -DPLATFORM_NAME=ESP32 build` | `build/pedal.guru.bin`, ~422 KB |
+| platform | command | artifact | warnings |
+|---|---|---|---|
+| Simulator | `cmake -B build -DPLATFORM_NAME=Simulator && cmake --build build` | `build/pedal.guru`, ~818 KB | 6 (pre-existing) |
+| RP2040 | `cmake -B build -DPLATFORM_NAME=RP2040 && cmake --build build` | `build/pedal.guru.uf2`, ~459 KB | 6 (pre-existing) |
+| ESP32 | `idf.py -DPLATFORM_NAME=ESP32 build` | `build/pedal.guru.bin`, ~438 KB | 4 (pre-existing) |
 
-The ESP32 image grew from the ~386 KB recorded before the migration. Not investigated; the plausible
-cause is hal.ll pulling in the UART, RTC and thread code that the old split HAL did not carry. Worth a
-look if size ever matters, but nothing points at a defect.
+All three now compile net.ll's WiFi code and link its radio libraries. The warning counts are unchanged
+from wave 3, and every warning is one of the pre-existing `TODO-B10` / `TODO-B12` items — wave 5 added
+none. The ESP32 binary grew from the ~422 KB wave 3 baseline, which is where the radio code landed.
 
 The **Simulator has been run by the dev and works correctly**. Neither firmware has been flashed or
 executed (§15).
@@ -844,7 +996,13 @@ platform code**, because between waves the tree is deliberately inconsistent.
 | 2 | migrate fs.ll onto hal.ll | **done, pushed** |
 | 3 | migrate gui.ll onto hal.ll | **done, pushed** |
 | 4 | create net.ll (**copy** the `HttpClient` into it; pedal.guru untouched) | **done, not pushed yet** |
-| 5 | migrate pedal.guru onto net.ll, and empty `src/Platform` | **next** |
+| 5 | migrate pedal.guru onto net.ll, and empty `src/Platform` | **done, not pushed yet** |
+
+**Wave 5 is done.** Everything in `src/Platform` is now a thin wrapper or the ESP32 CMake component:
+`HttpClient` moved to net.ll (`HttpDownloadFile`), `Thread`/`Time` wrap hal.ll's C API, and `GPS.cpp`
+calls hal.ll's UART functions. The three platform folders are as thin as they can be without disappearing
+altogether — they hold the C++ wrappers pedal.guru needs because it is C++, which is exactly what
+pedal.guru is and the submodules are not. Details and measured numbers are in §14.
 
 **The wave 4/5 boundary was deliberate**, and it is the one place the earlier plan was ambiguous. Wave 4
 ended with net.ll standing on its own — its contract, its `Sample.c`, its three platforms, its
@@ -853,9 +1011,38 @@ was checked rather than assumed: `git diff` on `src/Platform` came back empty, t
 `HttpClient_DownloadFile` name is still in place here, and all three artifacts rebuilt **byte-identical**
 to wave 3's (823064 / 464384 / 421904 bytes, same 6/6/4 warnings).
 
-Only wave 5 deletes that folder, rewires `OpenStreetMapAPI.cpp:130` to `HttpDownloadFile`, applies net.ll's
-`PLATFORM_DEFINITIONS` in the RP2040 branch, and takes on the rest of `TODO-E1` (`Thread` and `Time` onto
+Only wave 5 deleted that folder, rewired `OpenStreetMapAPI.cpp:130` to `HttpDownloadFile`, applied net.ll's
+`PLATFORM_DEFINITIONS` in the RP2040 branch, and took on the rest of `TODO-E1` (`Thread` and `Time` onto
 hal.ll, the GPS UART). Keeping the application working through wave 4 was the point of the split.
+
+### What wave 5 did
+
+- **`OpenStreetMapAPI.cpp:130`** rewired to `HttpDownloadFile`. The old `HttpClient_DownloadFile` name
+  was legacy and the underscore is gone.
+- **`src/Platform/*/HttpClient.{c,h}`** deleted. net.ll's `HttpClient.h` now resolves through the
+  `src/lib` include path that `net.ll.cmake` appended.
+- **`pedal.guru.cmake`**: `NET_LL_PATH` pinned; `net.ll.cmake` included after gui.ll's, with no filtering
+  — net.ll's sources, include dirs and radio libraries all enter the build normally.
+- **`CMakeLists.txt` RP2040 branch**: `PICO_BOARD` defaults to `pico_w`. This is required, not cosmetic:
+  `PICO_CYW43_SUPPORTED` is declared by the *board header*, and without it the pico-sdk never creates the
+  `pico_cyw43_arch*` targets, so net.ll's `WiFi.c` cannot find `pico/cyw43_arch.h`. The plain `pico`
+  header has no CYW43 mention at all. Note the failure mode: `target_link_libraries` with a name that is
+  not a target is passed through to the linker as a plain library name, so the configure step succeeds
+  and only compilation fails — the error points at a missing header, not at the real cause.
+- **`CMakeLists.txt` RP2040 branch**: `add_compile_definitions(${PLATFORM_DEFINITIONS})` added at
+  directory scope, because `CYW43_LWIP=0` has to reach pico-sdk's own cyw43 sources.
+- **`src/Platform/*/Thread.{cpp,hpp}`**: all six files are now identical. `.hpp` has `#pragma once`,
+  `extern "C" { #include "HAL.h" }`, and `Mutex` using `HALMutex`. `.cpp` calls `MutexInit/Lock/Release`
+  and `ThreadStart`. No platform SDK headers remain in the headers — the old `pthread.h`,
+  `pico/mutex.h`, `freertos/semphr.h`, and the lambda+`xTaskCreate` in the ESP32 `.cpp` are gone.
+- **`src/Platform/*/Time.{cpp,hpp}`**: same treatment. `.hpp` is now uniform across all three (fixing
+  `TODO-C9` — the Simulator header was missing `#pragma once`). `.cpp` calls `::Delay`.
+- **`src/Sensor/GPS.cpp`**: Linux `std::ifstream` layer and pico-sdk `uart_*` calls removed. Now calls
+  `UARTInit(GPS_UART, GPS_UART_BAUDRATE, GPS_UART_TX_PIN, GPS_UART_RX_PIN)` in `Enable`, `UARTDeinit`
+  in `Disable`, and `UARTIsEnabled`/`UARTIsReadable`/`UARTGetChar` in the read path. `GetData` guards
+  with `UARTIsEnabled` — on the Simulator that always returns `false`, so the GPS is silent until
+  hardware is connected. The `#ifdef L96GPS` block is intact; only the function name changed from
+  `uart_puts(uart0,` to `UARTPuts(GPS_UART,`.
 
 What wave 4 established, and what it did not: net.ll configures, compiles and links on all three platforms
 with **zero warnings**, and its sample **ran on the Simulator**, listing the real networks in range through
@@ -979,7 +1166,7 @@ as linking, for the first time.
 | `TODO-C3` | `src/Model/SensorData.hpp` is an empty struct used by nothing. Fill it in or drop it. |
 | `TODO-C4` | `TaskManager::ReadSettings` hardcodes the settings; no persistence to or from the card yet. |
 | `TODO-C8` | Licence headers are missing in places. All of pedal.guru's `src` is covered now, but the submodules are not, and they need a header **adapted to their own context** (fs.ll and gui.ll are libraries with their own identity, not pedal.guru files). Decide the wording per repository before mass-applying anything. |
-| `TODO-C9` | `src/Platform/Simulator/Time.hpp` has no `#pragma once`, unlike its siblings. |
+| `TODO-C9` | ~~`src/Platform/Simulator/Time.hpp` has no `#pragma once`, unlike its siblings.~~ Fixed in wave 5. |
 | `TODO-C10` | **Legacy debug plumbing, needs review — not urgent.** `DEBUGMSGS` is gui.ll's mechanism (`Helper/Debug.h` turns `SHOWDEBUG` into `printf`), and it works. What is legacy is the pedal.guru side: `CMakeLists.txt` also defines `_DEBUG`, and `PedalGuru.cpp` / `GPS.cpp` guard `std::cout` traces on it. That path does not even compile — `PedalGuru.cpp` uses `std::cout` without including `<iostream>` (pre-existing, verified identical to `HEAD`). Decide later whether pedal.guru gets its own tracing or just adopts `SHOWDEBUG`; fix it when the tracing is actually needed. |
 | `TODO-C5` | `DIAGRAM.md` is stale: links to a `PedalGuru` repo with paths that no longer exist, and a `TaskManager` API that no longer matches. Refresh or drop. |
 | `TODO-C6` | `.vscode/c_cpp_properties.json` is stale: references `src/Target/**` and `src/Dependency/pico-sdk` (neither exists) and defines `TARGET_RP2040` instead of the `RP2040` the build actually sets. The project uses clangd, not the MS C/C++ extension — so this may be droppable outright. |
@@ -989,8 +1176,8 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-D1` | Wire the HID events to real hardware: the `HIDHandler` firing functions (`EnterDown`, `ExitPressed`, …) are private and nothing calls them. They are meant to become GPIO interrupt callbacks for the two reed switches (§3, §6). Until then there is no user input at all. |
-| `TODO-D2` | Wire up the GPS UART. Every `uart_*` call in `GPS.cpp` is commented out and `UartGetLine` returns a hard-coded NMEA sentence (§8). |
+| `TODO-D1` | Wire the HID events to real hardware: the `HIDHandler` firing functions (`EnterDown`, `ExitPressed`, …) are private and nothing calls them. They are meant to become GPIO interrupt callbacks for the two navigation switches (§3, §6) — reed versus hall sensor is still the dev's open choice. Their pins also need reassigning, see `TODO-D2`. Until then there is no user input at all. |
+| `TODO-D2` | Wire up the GPS hardware and validate the read loop with a module attached. `GPS.cpp` calls hal.ll's UART API since wave 5, and the pins are assigned (§3), but nothing has been tested against a real GPS. Three things are deliberately left for that moment, because they need observed behaviour rather than reasoning: **(a)** `UARTGetChar` blocks on both hardware platforms, and `UartGetLine` relies on `UARTIsReadable` to avoid hanging when the module goes quiet — the cost is that a line can come back truncated if the buffer drains mid-sentence, with no way for the caller to tell. Returning a `bool` for "reached end of line", so a partial read is discarded instead of parsed, is the agreed shape when this is picked up. **(b)** The loop breaks on `\n` but keeps the `\r`, and NMEA ends in CRLF, so the trailing `\r` lands in the last token — today that is `checksum` in `GPSFixData`, which is stored and never verified, so it is harmless until someone verifies it. **(c)** `\0` is treated as a valid line terminator, which is the behaviour that worked on the RP2040; it is not obviously right for NMEA and should be re-examined against real data. On the Simulator `UARTIsEnabled` always returns `false`, so the GPS is silent there until a mock is designed. |
 | `TODO-D3` | Implement the stub pages: `PageAltimetry`, `PageDistance`, `PageHillsGraph`, `PageRoute`, `PageSummary`. Only `PageMap` and `PageMapSync` do anything today. |
 | `TODO-D4` | Implement the whole **"guru"** side — the coaching features from §1: hydration and nutrition reminders, cadence guidance by road stretch or elapsed training time. No module exists for it yet. |
 | `TODO-D5` | Support multi-sensor devices, e.g. the same device measuring cadence on the pedal or speed on the wheel depending on configuration (§5). The `Device`/`Sensor` split already allows it; nothing exercises it. |
@@ -1000,7 +1187,7 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-E1` | Empty `src/Platform` out into the collection — all of it in **wave 5**, since wave 4 only copies into net.ll and leaves this folder alone: `HttpClient` → net.ll; `Thread` + `Time` → hal.ll, which already has `ThreadStart`, the `Mutex*` calls, `Delay` and `TicksMs`, so what remains here is at most a thin C++ wrapper; GPS UART → hal.ll's `UART*` calls. **No `thread.ll` and no `serial.ll` for the peripherals** — that was folded into hal.ll. See §13 and §17. |
+| `TODO-E1` | ~~Empty `src/Platform` out into the collection.~~ Done in wave 5 — `HttpClient` → net.ll, `Thread`+`Time` → hal.ll wrappers, GPS UART → hal.ll. What remains is `TODO-D2` (connect hardware and confirm GPS pin assignments) and the WiFi connect path in net.ll. |
 | `TODO-E2` | Decide SD card thread safety. fs.ll's `AGENTS.md` §12 leaves it open and says the decision is to be driven from here. Current state, verified: all card access happens on the UI thread and `DataManager` does **not** mediate it, so the card is single-threaded by accident of call placement rather than by design (§6). This needs a decision before anything on the sensor thread starts writing to the card — e.g. ride logging, which `TODO-D4` and `TODO-C4` both imply. |
-| `TODO-E3` | Design the open-hardware expansion board (microSD slot, two reed switches, GPS, optional WiFi+BT for the RP2040) as a single shared board, using only the header pins common to both MCUs (§3). Nothing of this exists in the repository yet. |
+| `TODO-E3` | Design the open-hardware expansion board (microSD slot, two reed/hall switches, GPS, WiFi+BT module for the RP2040) as a single shared board. **The radio is the exception to the shared-pin rule**, decided by the dev: it is an RP2040-only module, so it may use pins that exist only there, and a board destined for the ESP32-S3 simply leaves that footprint unpopulated. See §3 for the pin budget and the mapping decided so far. |
 | `TODO-E4` | **In gui.ll, not here. Just noted, no action planned.** `src/lib/GUI/Canvas.c:129` — the `< 0` guard in `CanvasDrawPoint` is always false (`pixelSize` is an enum with unsigned underlying type, so the whole expression is unsigned), and it has no effect: the wrapped value truncates to ~65534 at the `UINT16` parameter and `CanvasSetPixel`'s own bounds check discards it. So the guard is redundant, not harmful. Whoever touches it should note it is a `break`, not a `continue` — a guard that actually fired would abandon the remaining inner-loop pixels, so making it "work" as written would be a regression. |
