@@ -1,6 +1,6 @@
 #[[
     Pedal.guru is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -54,6 +54,10 @@ elseif(PLATFORM_NAME STREQUAL "RP2040")
     set(CMAKE_CXX_STANDARD 14)
     set(PICO_TOOLCHAIN_PATH /usr/bin)
 
+    # Custom board definition: Waveshare RP2040-LCD-1.28 + expansion board (with cyw43 radio).
+    set(PICO_BOARD_HEADER_DIRS "${CMAKE_SOURCE_DIR}/src/Platform/RP2040/Boards")
+    set(PICO_BOARD WaveshareRP2040LCD1In28Extended)
+
     if(NOT DEFINED PICO_SDK_PATH)
         set(PICO_SDK_PATH ~/pico-sdk)
     endif()
@@ -66,6 +70,10 @@ elseif(PLATFORM_NAME STREQUAL "RP2040")
     add_executable(${PROJECT_NAME} ${SOURCES})
     include_directories(${INCLUDE_DIRS})
     set_source_files_properties(${PEDAL_GURU_SOURCES} PROPERTIES COMPILE_OPTIONS "-Wall;-Wextra")
+
+    if(PLATFORM_DEFINITIONS)
+        add_compile_definitions(${PLATFORM_DEFINITIONS})
+    endif()
 
     target_link_libraries(${PROJECT_NAME} PUBLIC ${PLATFORM_LIBRARIES})
 

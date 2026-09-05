@@ -1,6 +1,6 @@
 /*
     Pedal.guru is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ namespace PedalGuru {
 class GPS : public Sensor {
     private:
         const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA.
-        const int startingPos = 3;
+        const std::string::size_type startingPos = 3;
         bool IsGpsFixInfo(std::string &info);
         void UartGetLine(std::string &line);
         void LogGpsData(PedalGuru::GPSFixData &gpsFixData);

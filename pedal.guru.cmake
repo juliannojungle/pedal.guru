@@ -1,6 +1,6 @@
 #[[
     Pedal.guru is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -51,7 +51,6 @@ set(PEDAL_GURU_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render/Window.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Helper/TextHelper.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Model/GPSFixData.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}/HttpClient.c"
     "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}/Thread.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}/Time.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor/GPS.cpp"
@@ -73,13 +72,14 @@ set(INCLUDE_DIRS
     "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}"
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor")
 
-# Each contract defaults its path to a folder next to itself, so all three have to be pinned
-# here or the nested includes would clone second copies instead of using the submodules.
+# setting paths here to prevent additional cloning
 set(HAL_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/hal.ll" CACHE PATH "hal.ll root directory" FORCE)
 set(FS_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/fs.ll" CACHE PATH "fs.ll root directory" FORCE)
 set(GUI_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll" CACHE PATH "gui.ll root directory" FORCE)
+set(NET_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/net.ll" CACHE PATH "net.ll root directory" FORCE)
 
-# Only gui.ll's contract is included: it pulls in hal.ll's and fs.ll's itself, so the whole
-# dependency stack enters through this single line.
+include(${HAL_LL_PATH}/hal.ll.cmake)
+include(${FS_LL_PATH}/fs.ll.cmake)
 include(${GUI_LL_PATH}/gui.ll.cmake)
+include(${NET_LL_PATH}/net.ll.cmake)
 

@@ -1,6 +1,6 @@
 /*
     Pedal.guru is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,7 @@
 extern "C" {
     #include "FileSystem.h"
     #include "LCDSetup.h"
-    #include "HttpClient.h"
+    #include "HttpClient.h" /* net.ll: HttpDownloadFile */
 }
 
 namespace PedalGuru {
@@ -104,7 +104,6 @@ void OpenStreetMapAPI::ListTilesForArea(std::list<PedalGuru::MapTile> &mapList,
     auto tileYMax = LatitudeToTileY(latitudeMax, zoom);
     auto tileXMin = LongitudeToTileX(longitudeMin, zoom);
     auto tileXMax = LongitudeToTileX(longitudeMax, zoom);
-    int x = 0, y = 0;
 
     if (tileYMin > tileYMax) Swap(tileYMin, tileYMax);
     if (tileXMin > tileXMax) Swap(tileXMin, tileXMax);
@@ -127,7 +126,7 @@ std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::stri
         return fileHashPath;
     }
 
-    bool downloadOk = HttpClient_DownloadFile(tileUrl, fileHashPath.c_str());
+    bool downloadOk = HttpDownloadFile(tileUrl, fileHashPath.c_str());
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/

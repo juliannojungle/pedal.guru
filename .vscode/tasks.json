@@ -7,7 +7,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "cd ~/pedal.guru && rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 && make"
+                "rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 && make"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -34,7 +34,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "source ~/esp-idf/export.sh && cd ~/pedal.guru && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 build"
+                "source ~/esp-idf/export.sh && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 build"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -61,7 +61,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "cd ~/pedal.guru/build && if [ -f build.ninja ]; then source ~/esp-idf/export.sh 2>/dev/null && ninja; else make; fi"
+                "if [ ! -d build ]; then echo \"No build/ directory: run a Full build task first.\"; exit 1; fi; cd build; [ -f build.ninja ] && source ~/esp-idf/export.sh >/dev/null 2>&1; cmake --build ."
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
@@ -88,7 +88,7 @@
             "command": "bash",
             "args": [
                 "-c",
-                "cd ~/pedal.guru && if [ -d build ] && grep -q 'Simulator' build/CMakeCache.txt 2>/dev/null; then cd build && make; else rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator -DCMAKE_BUILD_TYPE=Debug && make; fi"
+                "if grep -qx PLATFORM_NAME:STRING=Simulator build/CMakeCache.txt 2>/dev/null; then cd build && cmake --build .; else rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator -DCMAKE_BUILD_TYPE=Debug && cmake --build .; fi"
             ],
             "options": {
                 "cwd": "${workspaceFolder}"

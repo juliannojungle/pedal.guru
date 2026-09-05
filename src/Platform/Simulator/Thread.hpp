@@ -1,6 +1,6 @@
 /*
     Pedal.guru is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -20,16 +20,14 @@
 #pragma once
 
 extern "C" {
-    #include <pthread.h>
+    #include "HAL.h"
 }
-
-#include <thread>
 
 namespace PedalGuru {
 
 class Mutex {
 private:
-    pthread_mutex_t lock_;
+    HALMutex lock_;
 public:
     Mutex();
     void Lock();

@@ -1,6 +1,6 @@
 /*
     Pedal.guru is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -19,45 +19,29 @@
 
 #include "GPS.hpp"
 #include "DataManager.hpp"
-// #include <fstream> // file stream
-// #include "hardware/gpio.h"
-// #include "hardware/uart.h"
-
-#ifdef _DEBUG
-    #include <iostream> // cout
-#endif
+extern "C" {
+    #include "HAL.h"
+}
 
 namespace PedalGuru {
 
 void GPS::Enable() {
-    // std::ifstream uart;
-    // std::ios_base::iostate exceptionMask = uart.exceptions() | std::ios::failbit;
-    // uart.exceptions(exceptionMask);
-
-    // try {
-    //     uart.open("/dev/serial0", std::ifstream::in);
-    // } catch (std::ios_base::failure &error) {
-    //     std::cout << error.what();
-    //     this->enabled_ = false;
-    // }
-
-    // uart_init(uart0, 9600);
-    // gpio_set_function(0, GPIO_FUNC_UART); // GPIO pin 0 is UART0 TX
-    // gpio_set_function(1, GPIO_FUNC_UART); // GPIO pin 1 is UART0 RX
+    UARTInit(GPS_UART, GPS_UART_BAUDRATE, GPS_UART_TX_PIN, GPS_UART_RX_PIN);
 
 #ifdef L96GPS
-    // uart_puts(uart0, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
-    // uart_puts(uart0, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
-    // uart_puts(uart0, "$PMTK886,1*29\0"); // enable fitness mode.
-    //#uart_puts(uart0, "$PMTK886,0*28\0"); // enable normal mode.
+    // Real configuration commands for the Quectel L96 module, validated on RP2040.
+    // The strings must not change; only the API to send them was updated.
+    // UARTPuts(GPS_UART, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
+    // UARTPuts(GPS_UART, "$PMTK869,1,1*35\0");        // enable AGPS (EASY function).
+    // UARTPuts(GPS_UART, "$PMTK886,1*29\0");           // enable fitness mode.
+    //#UARTPuts(GPS_UART, "$PMTK886,0*28\0");           // enable normal mode.
 #endif
 
     this->enabled_ = true;
 }
 
 void GPS::Disable() {
-    // uart.close();
-    // uart_deinit(uart0);
+    UARTDeinit(GPS_UART);
     this->enabled_ = false;
 }
 
@@ -70,22 +54,20 @@ bool GPS::IsGpsFixInfo(std::string &info) {
 }
 
 void GPS::UartGetLine(std::string &line) {
-    // return std::getline(uart, line);
     char singleChar = '\0';
     line = "";
 
-    while (true) {
-        // singleChar = uart_getc(uart0);
+    while (UARTIsReadable(GPS_UART)) {
+        singleChar = UARTGetChar(GPS_UART);
 
-        if (singleChar == 0 || singleChar == '\0' || singleChar == '\n') break;
+        if (singleChar == '\0' || singleChar == '\n') break;
 
         line += singleChar;
     }
 }
 
 void GPS::GetData() {
-    // && uart.is_open()
-    // if (!enabled_ || !uart_is_enabled(uart0)) return;
+    if (!enabled_ || !UARTIsEnabled(GPS_UART)) return;
 
     std::string serial_rx = "";
     int attempts = 0;
@@ -93,9 +75,6 @@ void GPS::GetData() {
     while (!IsGpsFixInfo(serial_rx) && (attempts < 50)) {
         attempts++;
         UartGetLine(serial_rx);
-#ifdef _DEBUG
-    std::cout << std::to_string(attempts) << " - GPS: " << serial_rx << std::endl;
-#endif
     }
 
     if (!IsGpsFixInfo(serial_rx)) return;
