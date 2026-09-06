@@ -29,12 +29,11 @@ void GPS::Enable() {
     UARTInit(GPS_UART, GPS_UART_BAUDRATE, GPS_UART_TX_PIN, GPS_UART_RX_PIN);
 
 #ifdef L96GPS
-    // Real configuration commands for the Quectel L96 module, validated on RP2040.
-    // The strings must not change; only the API to send them was updated.
+    /* Configuration commands for the Quectel L96 module. */
     // UARTPuts(GPS_UART, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
-    // UARTPuts(GPS_UART, "$PMTK869,1,1*35\0");        // enable AGPS (EASY function).
-    // UARTPuts(GPS_UART, "$PMTK886,1*29\0");           // enable fitness mode.
-    //#UARTPuts(GPS_UART, "$PMTK886,0*28\0");           // enable normal mode.
+    // UARTPuts(GPS_UART, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
+    // UARTPuts(GPS_UART, "$PMTK886,1*29\0"); // enable fitness mode.
+    //// UARTPuts(GPS_UART, "$PMTK886,0*28\0"); // enable normal mode.
 #endif
 
     this->enabled_ = true;
