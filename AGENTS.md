@@ -41,8 +41,24 @@ incoherent, or out of line with common industry practice. If you see an opportun
 ### 5. Comments only when essential
 
 **The code has to speak for itself.** Prefer clear names and structure over prose. This is a standing
-rule from the dev, in force across pedal.guru, fs.ll and gui.ll — and it is routinely violated by agents,
-so read it as a hard limit, not a preference.
+rule from the dev, in force across pedal.guru, fs.ll and gui.ll — and it is violated by agents in almost
+every session, so read it as an **absolute limit, not a preference**.
+
+**The rule, stated as a rule:** a comment is written **only** to justify something the code cannot
+justify by itself. **Never** to explain what the code does. If a reader who knows the language can get
+the answer by reading the line, the comment must not exist. When in doubt, do not write it — an absent
+comment costs nothing, and a redundant one is a defect the dev has to ask to have removed.
+
+**This applies while editing, not only while writing.** Do not add a comment on top of a change you just
+made to narrate the change, and do not annotate a line to point at the mechanism it already shows. A
+diff that adds a comment for every added line is a diff that will be rejected. Two concrete cases from
+real sessions, both wrong: a line above `#include "X.h" // IWYU pragma: keep` explaining what the pragma
+suppresses (the pragma says it), and a comment above a helper restating what its return value means (the
+name and signature say it).
+
+**Prefer no comment over a short one, and no comment over a pointer.** A pointer into this document
+(`see AGENTS.md §10`) earns its place only where a reader would otherwise have no way to find the
+rationale at all.
 
 Write a comment only when it carries information the code cannot:
 
@@ -557,9 +573,9 @@ NMEA `DDMM.MMMM` to decimal degrees, applies the N/S and E/W sign, and pushes th
 
 **The UART is wired up in code but not in hardware.** `GPS.cpp` now calls `UARTInit`, `UARTIsEnabled`,
 `UARTIsReadable` and `UARTGetChar` through hal.ll — the Linux `std::ifstream` layer and the old
-pico-sdk `uart_*` calls are both gone. On the Simulator, `UARTIsEnabled` always returns `false`, so
-`GetData` returns immediately without touching any data — the GPS is effectively silent until hardware
-is connected. The `L96GPS` compile definition (set unconditionally at the end of `pedal.guru.cmake`)
+pico-sdk `uart_*` calls are both gone. **On the Simulator the GPS now answers a mocked NMEA sentence**
+(§9): hal.ll's Simulator `UARTIsEnabled` reports true for a bus the application mocked, so `GetData`
+runs its full parse path on the desktop instead of returning immediately. The `L96GPS` compile definition (set unconditionally at the end of `pedal.guru.cmake`)
 guards the `$PMTK` configuration commands for the Quectel L96, which are now expressed as
 `UARTPuts(GPS_UART, ...)` calls; the strings themselves are unchanged and hardware-validated.
 Serial I/O now goes through hal.ll as the ground rules require — `TODO-D2` (wire up the hardware
@@ -600,7 +616,26 @@ are linked through the normal `PLATFORM_LIBRARIES` / `PLATFORM_REQUIRES` lists. 
 the radio — that is how map tiles get downloaded — so nothing about it is filtered out of the build.
 On the RP2040 that requires `PICO_BOARD` to name a board declaring `PICO_CYW43_SUPPORTED`; see §10.
 
-Do not add anything new to `src/Platform`: new platform code belongs in hal.ll (ground rule 6).
+Do not add anything new to `src/Platform`: new platform code belongs in hal.ll (ground rule 6). The one
+addition since that rule was written is not platform code but build input for hal.ll, described next.
+
+### `HalMock.h`: what the hardware answers on the Simulator
+
+`src/Platform/Simulator/HalMock.h` is included by hal.ll's Simulator `HAL.c` and tells it what each read
+should return where no hardware exists. The mechanism, the table format and the two mock types are
+documented in hal.ll's `AGENTS.md` §10; what matters here is the application side of it:
+
+- **It is C, not C++**, because a C library includes it. No namespace, no class, no `nullptr`.
+- **It lives in `src/Platform/${PLATFORM_NAME}`**, so it only exists on the Simulator and the RP2040 and
+  ESP32 builds never see it. That folder is already on the include path ahead of hal.ll's, so
+  `pedal.guru.cmake` needed no change at all — and hal.ll deliberately does not publish its own empty copy,
+  so there is nothing to shadow.
+- **Today it mocks one thing**: `MOCK_UART_READ` for `GPS_UART`, a `GGA` fix at the entrance to
+  Teresópolis/RJ. The trailing `\n` is load-bearing — `GPS::UartGetLine` only closes a line on `'\n'` or
+  `'\0'`. Verified running: the sensor thread parses it once per second, `DataManager` receives the fixes,
+  and `PageMap` draws the green marker instead of the orange one.
+- **The next sensor declares its own entry** in the same file: a pin in `MOCK_DIGITAL_READ`, a bus in
+  `MOCK_SPI_READ`, either answering a cyclic string or calling a function. Nothing in hal.ll changes for it.
 
 ## 10. Build system
 
@@ -1176,8 +1211,8 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-D1` | Wire the HID events to real hardware: the `HIDHandler` firing functions (`EnterDown`, `ExitPressed`, …) are private and nothing calls them. They are meant to become GPIO interrupt callbacks for the two navigation switches (§3, §6) — reed versus hall sensor is still the dev's open choice. Their pins also need reassigning, see `TODO-D2`. Until then there is no user input at all. |
-| `TODO-D2` | Wire up the GPS hardware and validate the read loop with a module attached. `GPS.cpp` calls hal.ll's UART API since wave 5, and the pins are assigned (§3), but nothing has been tested against a real GPS. Three things are deliberately left for that moment, because they need observed behaviour rather than reasoning: **(a)** `UARTGetChar` blocks on both hardware platforms, and `UartGetLine` relies on `UARTIsReadable` to avoid hanging when the module goes quiet — the cost is that a line can come back truncated if the buffer drains mid-sentence, with no way for the caller to tell. Returning a `bool` for "reached end of line", so a partial read is discarded instead of parsed, is the agreed shape when this is picked up. **(b)** The loop breaks on `\n` but keeps the `\r`, and NMEA ends in CRLF, so the trailing `\r` lands in the last token — today that is `checksum` in `GPSFixData`, which is stored and never verified, so it is harmless until someone verifies it. **(c)** `\0` is treated as a valid line terminator, which is the behaviour that worked on the RP2040; it is not obviously right for NMEA and should be re-examined against real data. On the Simulator `UARTIsEnabled` always returns `false`, so the GPS is silent there until a mock is designed. |
+| `TODO-D1` | Wire the HID events to real hardware: the `HIDHandler` firing functions (`EnterDown`, `ExitPressed`, …) are private and nothing calls them. They are meant to become GPIO interrupt callbacks for the two navigation switches (§3, §6) — reed versus hall sensor is still the dev's open choice. Their pins also need reassigning, see `TODO-D2`. Until then there is no user input at all. **On the Simulator the switches can be mocked** through `MOCK_DIGITAL_READ` with a `HAL_MOCK_CALLBACK` (§9), and the intended source is the keyboard arrows — but that part is deliberately not written yet, and the reason is worth keeping: distinguishing `PRESSED` from `PRESSED_2_SECONDS` needs "is the key **currently held**", not "a key was typed". Raw stdin/termios cannot express it (escape sequences, no key-release, auto-repeat cadence is a user setting, and it needs terminal focus rather than window focus); `/dev/input/event*` can, but needs `input`-group access and captures globally, whatever window has focus; `XQueryKeymap` works but is X11-only. `SDL_GetKeyboardState` is the simplest correct route, since the SDL window already has focus semantics — the open question is only how the state reaches the callback, and the likely shape is gui.ll exposing something like `LCDKeyPressed(key)` rather than the application talking to SDL directly. Not decided. |
+| `TODO-D2` | Wire up the GPS hardware and validate the read loop with a module attached. `GPS.cpp` calls hal.ll's UART API since wave 5, and the pins are assigned (§3), but nothing has been tested against a real GPS. Three things are deliberately left for that moment, because they need observed behaviour rather than reasoning: **(a)** `UARTGetChar` blocks on both hardware platforms, and `UartGetLine` relies on `UARTIsReadable` to avoid hanging when the module goes quiet — the cost is that a line can come back truncated if the buffer drains mid-sentence, with no way for the caller to tell. Returning a `bool` for "reached end of line", so a partial read is discarded instead of parsed, is the agreed shape when this is picked up. **(b)** The loop breaks on `\n` but keeps the `\r`, and NMEA ends in CRLF, so the trailing `\r` lands in the last token — today that is `checksum` in `GPSFixData`, which is stored and never verified, so it is harmless until someone verifies it. **(c)** `\0` is treated as a valid line terminator, which is the behaviour that worked on the RP2040; it is not obviously right for NMEA and should be re-examined against real data. The Simulator is no longer blind to any of this: the GPS answers a mocked NMEA sentence there (§9), so the parse path runs on the desktop — but a cyclic mock never truncates a line and never goes quiet, which is exactly what (a) and (c) are about, so it does not stand in for hardware on those two points. |
 | `TODO-D3` | Implement the stub pages: `PageAltimetry`, `PageDistance`, `PageHillsGraph`, `PageRoute`, `PageSummary`. Only `PageMap` and `PageMapSync` do anything today. |
 | `TODO-D4` | Implement the whole **"guru"** side — the coaching features from §1: hydration and nutrition reminders, cadence guidance by road stretch or elapsed training time. No module exists for it yet. |
 | `TODO-D5` | Support multi-sensor devices, e.g. the same device measuring cadence on the pedal or speed on the wheel depending on configuration (§5). The `Device`/`Sensor` split already allows it; nothing exercises it. |
