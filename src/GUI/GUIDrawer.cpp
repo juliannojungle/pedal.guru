@@ -33,13 +33,17 @@ void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
     pageContentsPostDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };
 
+void GUIDrawer::RequestClose() {
+    closeRequested_ = true;
+};
+
 void GUIDrawer::Execute() {
     window.Init();
 
     if (pageContentsPreDrawCallback_ != nullptr)
         pageContentsPreDrawCallback_->Method();
 
-    while (!window.ShouldClose())
+    while (!window.ShouldClose() && !closeRequested_)
     {
         if (pageContentsDrawCallback_ != nullptr)
             pageContentsDrawCallback_->Method();

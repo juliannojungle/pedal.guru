@@ -1009,6 +1009,12 @@ list to work from. Do not fix any of these as a side effect of unrelated work.
   in the loop headers. Harmless, but the outer pair is dead. Now reported by `-Wunused-variable`.
 - `TODO-B12` — four `-Wsign-compare` warnings in `TextHelper.cpp` and `GPS.cpp`: a signed loop counter
   compared against `size_t` / `std::string::size_type`.
+- `TODO-B13` — fs.ll's `OpenFile` calls `f_unmount(SD_DRIVE)` when `f_open` fails, so a single failed
+  file open tears the whole volume down and every later card access fails until something mounts again.
+  Documented as known API behaviour in fs.ll's `AGENTS.md` §4, but it is wrong for pedal.guru: an
+  `OpenFile` miss on one tile or log file should not unmount the card. The fix belongs on the fs.ll side
+  (the submodule is read-only from here, §2), and the decision has to be driven from this application
+  since it is the consumer — ask the dev before touching fs.ll. Recorded here, not fixed.
 
 Not a defect, recorded so it is not "fixed" by accident: `COLOR_MAGENTA` and `COLOR_TRANSPARENT` are
 deliberately the same value (`255, 0, 255`), matching gui.ll's colour key. The consequence — magenta

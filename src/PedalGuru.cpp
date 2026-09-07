@@ -18,6 +18,7 @@
 */
 
 #include "TaskManager.hpp"
+#include "DataManager.hpp"
 
 extern "C" {
     #include "HAL.h"
@@ -49,6 +50,10 @@ void app_entry(void) {
 #endif
 
     UnMountSdCard();
+
+    if (PedalGuru::DataManager::GetInstance()->GetRestartRequested()) {
+        DeviceRestart();
+    }
 }
 
 #ifdef ESP_PLATFORM

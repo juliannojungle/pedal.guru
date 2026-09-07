@@ -28,4 +28,8 @@ void Time::Delay(unsigned int milliseconds) {
     ::Delay(milliseconds);
 }
 
+unsigned int Time::TicksMs() {
+    return ::TicksMs();
+}
+
 }

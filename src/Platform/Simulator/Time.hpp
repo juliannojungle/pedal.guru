@@ -24,6 +24,7 @@ namespace PedalGuru {
 class Time {
 public:
     static void Delay(unsigned int milliseconds);
+    static unsigned int TicksMs();
 };
 
 }

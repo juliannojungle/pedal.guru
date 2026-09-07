@@ -19,32 +19,19 @@
 
 #pragma once
 
-#include <memory>
-#include <list>
-#include "Device.hpp"
-#include "GUIDrawer.hpp"
-#include "BasePage.hpp"
-#include "SettingsData.hpp"
-#include "CredentialData.hpp"
+#include <map>
+#include <string>
 
 namespace PedalGuru {
 
-class TaskManager {
+class FormBody {
     private:
-        PedalGuru::SettingsData settings_;
-        PedalGuru::CredentialData credentials_;
-        bool provisioned_ {false};
-        static std::list<std::unique_ptr<PedalGuru::Device>> devices_;
-        std::list<std::unique_ptr<PedalGuru::BasePage>> pages_;
-        static bool running_;
-        void ReadSettings();
-        void CreateDevices();
-        void ConnectToDevices();
-        static void GetDevicesData();
-        void CreatePages(PedalGuru::GUIDrawer& drawer);
+        std::map<std::string, std::string> fields_;
+        static std::string PercentDecode(const std::string &text);
     public:
-        ~TaskManager();
-        void Execute();
+        explicit FormBody(const std::string &body);
+        bool Has(const std::string &name) const;
+        std::string Value(const std::string &name) const;
 };
 
 }

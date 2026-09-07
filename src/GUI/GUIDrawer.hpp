@@ -32,8 +32,10 @@ class GUIDrawer {
         std::shared_ptr<PedalGuru::Callback> pageContentsPreDrawCallback_;
         std::shared_ptr<PedalGuru::Callback> pageContentsDrawCallback_;
         std::shared_ptr<PedalGuru::Callback> pageContentsPostDrawCallback_;
+        bool closeRequested_ {false};
     public:
         void Execute();
+        void RequestClose();
         void SetPageContentsPreDrawMethod(std::function<void()> method);
         void SetPageContentsDrawMethod(std::function<void()> method);
         void SetPageContentsPostDrawMethod(std::function<void()> method);

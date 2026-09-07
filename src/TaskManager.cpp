@@ -18,12 +18,14 @@
 */
 
 #include "TaskManager.hpp"
+#include "DataManager.hpp"
 #include "GUINavigator.hpp"
 #include "PageAltimetry.hpp"
 #include "PageDistance.hpp"
 #include "PageHillsGraph.hpp"
 #include "PageMap.hpp"
 #include "PageMapSync.hpp"
+#include "PageProvisioning.hpp"
 #include "PageRoute.hpp"
 #include "PageSummary.hpp"
 #include "HIDHandler.hpp"
@@ -37,6 +39,8 @@ bool TaskManager::running_;
 
 void TaskManager::Execute() {
     ReadSettings();
+    provisioned_ = DataManager::GetInstance()->ReadCredentials(credentials_);
+
     CreateDevices();
     ConnectToDevices();
 
@@ -47,7 +51,13 @@ void TaskManager::Execute() {
     Thread::NewThread(GetDevicesData);
 
     GUIDrawer drawer;
-    CreatePages(drawer);
+
+    if (provisioned_) {
+        CreatePages(drawer);
+    } else {
+        pages_.push_back(std::make_unique<PageProvisioning>(drawer, settings_));
+    }
+
     HIDHandler handler;
     GUINavigator guiNavigator(handler, pages_);
     drawer.Execute();

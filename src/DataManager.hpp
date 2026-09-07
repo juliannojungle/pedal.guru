@@ -21,7 +21,10 @@
 
 #include "Thread.hpp"
 #include <list>
+#include <string>
 #include "GPSFixData.hpp"
+#include "SettingsEntry.hpp"
+#include "CredentialData.hpp"
 
 namespace PedalGuru {
 
@@ -41,6 +44,9 @@ private:
     DataManager() {}
     ~DataManager() {}
     std::list<PedalGuru::GPSFixData> gpsFixData_;
+    bool restartRequested_{false};
+    bool ReadSettingsFile(PedalGuru::SettingsFileData &fileData);
+    bool WriteSettingsFile(const PedalGuru::SettingsFileData &fileData);
 
 public:
     /** Singletons should not be cloneable. */
@@ -51,6 +57,10 @@ public:
 
     void Push(PedalGuru::GPSFixData &gpsFixData);
     void Pop(PedalGuru::GPSFixData &gpsFixData);
+    bool ReadCredentials(PedalGuru::CredentialData &credentials);
+    bool WriteCredentials(const std::string &ssid, const std::string &password);
+    void SetRestartRequested();
+    bool GetRestartRequested();
 
     /**
      * This is the static method that controls the access to the singleton

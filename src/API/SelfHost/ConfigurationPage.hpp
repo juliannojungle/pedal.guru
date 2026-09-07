@@ -19,32 +19,23 @@
 
 #pragma once
 
-#include <memory>
+#include <cstddef>
 #include <list>
-#include "Device.hpp"
-#include "GUIDrawer.hpp"
-#include "BasePage.hpp"
-#include "SettingsData.hpp"
-#include "CredentialData.hpp"
+#include <string>
+
+extern "C" {
+#include "WiFi.h"
+}
 
 namespace PedalGuru {
 
-class TaskManager {
-    private:
-        PedalGuru::SettingsData settings_;
-        PedalGuru::CredentialData credentials_;
-        bool provisioned_ {false};
-        static std::list<std::unique_ptr<PedalGuru::Device>> devices_;
-        std::list<std::unique_ptr<PedalGuru::BasePage>> pages_;
-        static bool running_;
-        void ReadSettings();
-        void CreateDevices();
-        void ConnectToDevices();
-        static void GetDevicesData();
-        void CreatePages(PedalGuru::GUIDrawer& drawer);
+class ConfigurationPage {
     public:
-        ~TaskManager();
-        void Execute();
+        std::string Render(const std::list<WiFiNetwork> &networks) const;
+        std::string RenderNetworkOptions(const std::list<WiFiNetwork> &networks) const;
+        std::string RenderNetworkJson(const std::list<WiFiNetwork> &networks) const;
+        const char *Template() const;
+        std::size_t TemplateLength() const;
 };
 
 }

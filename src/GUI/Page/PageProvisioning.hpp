@@ -19,32 +19,27 @@
 
 #pragma once
 
-#include <memory>
 #include <list>
-#include "Device.hpp"
-#include "GUIDrawer.hpp"
+
 #include "BasePage.hpp"
-#include "SettingsData.hpp"
-#include "CredentialData.hpp"
+#include "ProvisioningState.hpp"
+#include "Server.hpp"
 
 namespace PedalGuru {
 
-class TaskManager {
+class PageProvisioning : public PedalGuru::BasePage {
     private:
-        PedalGuru::SettingsData settings_;
-        PedalGuru::CredentialData credentials_;
-        bool provisioned_ {false};
-        static std::list<std::unique_ptr<PedalGuru::Device>> devices_;
-        std::list<std::unique_ptr<PedalGuru::BasePage>> pages_;
-        static bool running_;
-        void ReadSettings();
-        void CreateDevices();
-        void ConnectToDevices();
-        static void GetDevicesData();
-        void CreatePages(PedalGuru::GUIDrawer& drawer);
+        Server server_;
+        std::list<WiFiNetwork> networks_;
+        Texture screenTexture_ { 240, 240 };
+        ProvisioningState state_ {ProvisioningState::SERVING};
+        unsigned int confirmationStart_ {0};
+        void DrawScreen();
     public:
-        ~TaskManager();
-        void Execute();
+        using BasePage::BasePage; // nothing to do here, using parent constructor
+        void PreDrawPageContents() override;
+        void DrawPageContents() override;
+        void PostDrawPageContents() override;
 };
 
 }
