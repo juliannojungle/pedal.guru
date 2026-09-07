@@ -42,7 +42,7 @@ void ServeSave(const HttpRequest *request, HttpResponse *response, void *context
 
 namespace PedalGuru {
 
-static const uint16_t SERVER_PORT {80};
+static const uint16_t SERVER_PORT {3333};
 static const uint16_t SCAN_MAX_NETWORKS {20};
 static const std::size_t SSID_MAX_LENGTH {WIFI_SSID_MAX_LENGTH};
 static const std::size_t PASSWORD_MIN_LENGTH {8};

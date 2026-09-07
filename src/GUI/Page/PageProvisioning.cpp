@@ -26,7 +26,7 @@
 namespace PedalGuru {
 
 static const char ACCESS_POINT_SSID[] = "pedal.guru";
-static const char CONFIGURATION_URL[] = "http://" WIFI_ACCESS_POINT_ADDRESS "/";
+static const char CONFIGURATION_URL[] = "http://" WIFI_ACCESS_POINT_ADDRESS ":3333/";
 static const unsigned int SERVER_POLL_MILLISECONDS = 100;
 static const unsigned int CONFIRMATION_HOLD_MILLISECONDS = 5000;
 static const uint16_t SCAN_MAX_NETWORKS = 32;
@@ -86,7 +86,7 @@ void PageProvisioning::DrawScreen() {
             screenTexture_.DrawText("Connect to", 65, 75, 16, COLOR_BLACK, COLOR_WHITE);
             screenTexture_.DrawText(ACCESS_POINT_SSID, 65, 100, 16, COLOR_BLUE, COLOR_WHITE);
             screenTexture_.DrawText("then open", 70, 125, 16, COLOR_BLACK, COLOR_WHITE);
-            screenTexture_.DrawText(CONFIGURATION_URL, 10, 150, 16, COLOR_BLUE, COLOR_WHITE);
+            screenTexture_.DrawText(CONFIGURATION_URL, 35, 150, 12, COLOR_BLUE, COLOR_WHITE);
             break;
         case ProvisioningState::CONFIGURED:
             screenTexture_.DrawText("Network saved", 55, 100, 16, COLOR_DARK_GREEN, COLOR_WHITE);
