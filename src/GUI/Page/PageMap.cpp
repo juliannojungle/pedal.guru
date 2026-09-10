@@ -84,7 +84,7 @@ void PageMap::DrawPageContents() {
         LoadGridTexture();
     }
 
-    mapTexture_.DrawCircle(120, 120, 4, (fixed ? COLOR_GREEN : COLOR_ORANGE), 1, false);
+    mapTexture_.DrawCircle({120, 120}, 4, (fixed ? COLOR_GREEN : COLOR_ORANGE), 1, false);
     window_.DrawTexture(mapTexture_);
 
     // We only get gps readings once per second.

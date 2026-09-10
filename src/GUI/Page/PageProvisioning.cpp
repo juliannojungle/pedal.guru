@@ -19,6 +19,7 @@
 
 #include "PageProvisioning.hpp"
 
+#include "Canvas.h"
 #include "Color.hpp"
 #include "DataManager.hpp"
 #include "Time.hpp"
@@ -79,26 +80,32 @@ void PageProvisioning::DrawPageContents() {
 }
 
 void PageProvisioning::DrawScreen() {
-    screenTexture_.DrawCircle(120, 120, 120, COLOR_WHITE, 1, true);
+    screenTexture_.DrawCircle({120, 120}, 120, COLOR_WHITE, 1, true);
 
     switch (state_) {
         case ProvisioningState::SERVING:
-            screenTexture_.DrawText("Connect to", 65, 75, 16, COLOR_BLACK, COLOR_WHITE);
-            screenTexture_.DrawText(ACCESS_POINT_SSID, 65, 100, 16, COLOR_BLUE, COLOR_WHITE);
-            screenTexture_.DrawText("then open", 70, 125, 16, COLOR_BLACK, COLOR_WHITE);
-            screenTexture_.DrawText(CONFIGURATION_URL, 35, 150, 12, COLOR_BLUE, COLOR_WHITE);
+            screenTexture_.DrawCurvedText(
+                std::string("Connect to ") + ACCESS_POINT_SSID + " wi-fi then scan the QR code",
+                { 120, 120},
+                105,
+                125,
+                TEXT_ORIENTATION_INWARDS,
+                16,
+                COLOR_BLUE,
+                COLOR_WHITE);
+            screenTexture_.DrawQRCode(CONFIGURATION_URL, {55, 55});
             break;
         case ProvisioningState::CONFIGURED:
-            screenTexture_.DrawText("Network saved", 55, 100, 16, COLOR_DARK_GREEN, COLOR_WHITE);
-            screenTexture_.DrawText("Restarting", 65, 125, 16, COLOR_BLACK, COLOR_WHITE);
+            screenTexture_.DrawText("Network saved", {55, 100}, 16, COLOR_DARK_GREEN, COLOR_WHITE);
+            screenTexture_.DrawText("Restarting", {65, 125}, 16, COLOR_BLACK, COLOR_WHITE);
             break;
         case ProvisioningState::STORE_FAILED:
-            screenTexture_.DrawText("Could not save", 50, 100, 16, COLOR_RED, COLOR_WHITE);
-            screenTexture_.DrawText("Check the card", 50, 125, 16, COLOR_BLACK, COLOR_WHITE);
+            screenTexture_.DrawText("Could not save", {50, 100}, 16, COLOR_RED, COLOR_WHITE);
+            screenTexture_.DrawText("Check the card", {50, 125}, 16, COLOR_BLACK, COLOR_WHITE);
             break;
         case ProvisioningState::UNAVAILABLE:
-            screenTexture_.DrawText("Cannot be", 70, 100, 16, COLOR_RED, COLOR_WHITE);
-            screenTexture_.DrawText("configured", 65, 125, 16, COLOR_RED, COLOR_WHITE);
+            screenTexture_.DrawText("Cannot be", {70, 100}, 16, COLOR_RED, COLOR_WHITE);
+            screenTexture_.DrawText("configured", {65, 125}, 16, COLOR_RED, COLOR_WHITE);
             break;
     }
 

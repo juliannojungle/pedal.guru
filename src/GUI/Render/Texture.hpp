@@ -43,10 +43,13 @@ class Texture {
         int Height();
         Texture(int width, int height);
         void Release();
-        void DrawCircle(int xCenter, int yCenter, int radius, Color color, int lineWidth, bool fillCircle);
-        void DrawText(std::string text, int x, int y, int fontSize, Color foregroundColor, Color backgroundColor);
+        void DrawCircle(Point centerPoint, int radius, Color color, int lineWidth, bool fillCircle);
+        void DrawText(std::string text, Point target, int fontSize, Color foregroundColor, Color backgroundColor);
+        void DrawCurvedText(std::string text, Point centerPoint, int radius, int startAngle,
+            TextOrientation orientation, int fontSize, Color foregroundColor, Color backgroundColor);
         void DrawPng(std::string filePath);
         void DrawPngToArea(std::string filePath, Rectangle source, Point target);
+        void DrawQRCode(std::string url, Point target);
 };
 
 }

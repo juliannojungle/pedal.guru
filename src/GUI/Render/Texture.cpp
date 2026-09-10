@@ -18,6 +18,7 @@
 */
 
 #include "Texture.hpp"
+#include "Area.hpp"
 #include "Canvas.h"
 #include "fonts.h"
 #include <string>
@@ -48,11 +49,11 @@ void Texture::Release() {
     this->cTexture.Data = NULL;
 }
 
-void Texture::DrawCircle(int xCenter, int yCenter, int radius, Color color, int lineWidth, bool fillCircle) {
+void Texture::DrawCircle(Point centerPoint, int radius, Color color, int lineWidth, bool fillCircle) {
     CanvasDrawCircle(
         this->cTexture,
-        xCenter,
-        yCenter,
+        centerPoint.x,
+        centerPoint.y,
         radius,
         COLOR_LL(color),
         (PixelSize)lineWidth,
@@ -70,11 +71,11 @@ sFONT* Texture::GetFont(int fontSize) {
     }
 }
 
-void Texture::DrawText(std::string text, int x, int y, int fontSize, Color foregroundColor, Color backgroundColor) {
+void Texture::DrawText(std::string text, Point target, int fontSize, Color foregroundColor, Color backgroundColor) {
     CanvasDrawText(
         this->cTexture,
-        x,
-        y,
+        target.x,
+        target.y,
         text.c_str(),
         GetFont(fontSize),
         COLOR_LL(foregroundColor),
@@ -100,6 +101,29 @@ void Texture::DrawPngToArea(std::string filePath, Rectangle source, Point target
             target.x, target.y);
         CloseFile(&file);
     }
+}
+
+void Texture::DrawQRCode(std::string url, Point target) {
+    CanvasDrawQRCode(
+        cTexture,
+        target.x,
+        target.y,
+        url.c_str());
+}
+
+void Texture::DrawCurvedText(std::string text, Point centerPoint, int radius, int startAngle,
+    TextOrientation orientation, int fontSize, Color foregroundColor, Color backgroundColor) {
+    CanvasDrawCurvedText(
+        cTexture,
+        text.c_str(),
+        centerPoint.x,
+        centerPoint.y,
+        radius,
+        startAngle,
+        orientation,
+        GetFont(fontSize),
+        COLOR_LL(foregroundColor),
+        COLOR_LL(backgroundColor));
 }
 
 }

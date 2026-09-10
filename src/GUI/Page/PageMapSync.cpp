@@ -40,7 +40,7 @@ void PageMapSync::DrawPageContents() {
 
     char progress[(totalTiles_ * 2) + 3];
     std::sprintf(progress, "%d / %d", syncedTiles_, totalTiles_);
-    mapTexture_.DrawText(std::string(progress), 50, 125, 20, COLOR_BLACK, COLOR_TRANSPARENT);
+    mapTexture_.DrawText(std::string(progress), {50, 125}, 20, COLOR_BLACK, COLOR_TRANSPARENT);
     window_.DrawTexture(mapTexture_);
 }
 
