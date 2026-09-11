@@ -1,10 +1,11 @@
 # Pedal Guru
 
-> ⚠️ This project is under active develpment. The documentation is growing along the project as it's a work-in-progress. If interested, please check the [development board](https://github.com/users/juliannojungle/projects/1) and the [reference diagram](DIAGRAM.md).
+> ⚠️ **This project is under active development. The documentation is growing along the project as it's a work-in-progress.** If interested, please check the [development board](https://github.com/users/juliannojungle/projects/1) and the [reference diagram](DIAGRAM.md).
 
 An open-source DIY project to bring useful resources that are appreciated by cyclists to easy-to-work platforms like RP2040 (Raspberry Pi Pico) and ESP32-S3, in a more organized manner than usual. The intention is to include integration with some popular services.
 
-Currently supports **RP2040** (Raspberry Pi Pico) and **ESP32** from a single codebase.
+
+> Currently supports **RP2040** (Raspberry Pi Pico), **ESP32** and desktop simulator (Windows+WSL) from a single codebase. 🦖 **Provided by [dot-ll-collection](https://github.com/topics/dot-ll-collection)**
 
 ---
 
@@ -29,7 +30,7 @@ Currently supports **RP2040** (Raspberry Pi Pico) and **ESP32** from a single co
 * Some nice wires (30 AWG recommended)
 * 2 x 10K resistors (for pull-up)
 * 1 x 10uF capacitor (for decoupling)
-* *(Optional)* 2 x [1.27mm 2x20Pin header](https://ae01.alicdn.com/kf/H874df6c6359144e497abad3f5e2a03c6b.jpg_220x220.jpg) (for connecting SD to target device)
+* *(Optional)* 2 x [1.27mm 2x10Pin header](https://ae01.alicdn.com/kf/H874df6c6359144e497abad3f5e2a03c6b.jpg_220x220.jpg) (for connecting SD to target device)
 
 ---
 
@@ -110,8 +111,6 @@ Alternatively, trigger the default build task directly with `Ctrl+Shift+B` (runs
 ## 📄 License
 
 See [LICENSE](LICENSE).
-
-🎨 This software utilizes [gui.ll](https://github.com/juliannojungle/gui.ll) as a platform agnostic backend graphics interface.
 
 ---
 <sup>[@juliannojungle](https://github.com/juliannojungle), 2022</sup>
