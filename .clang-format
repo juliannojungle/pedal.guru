@@ -68,20 +68,20 @@ AlignConsecutiveTableGenDefinitionColons:
 AlignEscapedNewlines: Right
 AlignOperands:   Align
 AlignTrailingComments:
-  Kind:            Always
+  Kind:            Never
   OverEmptyLines:  0
 AllowAllArgumentsOnNextLine: true
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowBreakBeforeNoexceptSpecifier: Never
-AllowShortBlocksOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseExpressionOnASingleLine: true
-AllowShortCaseLabelsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
 AllowShortCompoundRequirementOnASingleLine: true
 AllowShortEnumsOnASingleLine: true
 AllowShortFunctionsOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
 AllowShortLambdasOnASingleLine: All
-AllowShortLoopsOnASingleLine: false
+AllowShortLoopsOnASingleLine: true
 AllowShortNamespacesOnASingleLine: false
 AlwaysBreakAfterDefinitionReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
@@ -90,7 +90,7 @@ AttributeMacros:
 BinPackArguments: true
 BinPackLongBracedList: true
 BinPackParameters: true
-BitFieldColonSpacing: Both
+BitFieldColonSpacing: After
 BracedInitializerIndentWidth: -1
 BraceWrapping:
   AfterCaseLabel:  false
@@ -114,7 +114,7 @@ BraceWrapping:
 BreakAdjacentStringLiterals: true
 BreakAfterAttributes: Leave
 BreakAfterJavaFieldAnnotations: false
-BreakAfterReturnType: None
+BreakAfterReturnType: ExceptShortType
 BreakArrays:     true
 BreakBeforeBinaryOperators: None
 BreakBeforeConceptDeclarations: Always
@@ -221,7 +221,7 @@ PPIndentWidth:   -1
 QualifierAlignment: Leave
 ReferenceAlignment: Pointer
 ReflowComments:  Always
-RemoveBracesLLVM: false
+RemoveBracesLLVM: true
 RemoveEmptyLinesInUnwrappedLines: false
 RemoveParentheses: Leave
 RemoveSemicolon: false
