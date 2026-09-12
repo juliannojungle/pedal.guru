@@ -18,3 +18,8 @@
 	url = https://github.com/juliannojungle/hal.ll.git
 	shallow = true
 	branch = main
+[submodule "src/Dependency/toolchain.ll"]
+	path = src/Dependency/toolchain.ll
+	url = https://github.com/juliannojungle/toolchain.ll.git
+	shallow = true
+	branch = main
