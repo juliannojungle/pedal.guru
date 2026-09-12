@@ -22,7 +22,10 @@
 #include "Canvas.h"
 #include "Color.hpp"
 #include "DataManager.hpp"
-#include "Time.hpp"
+
+extern "C" {
+    #include "HAL.h"
+}
 
 namespace PedalGuru {
 
@@ -68,12 +71,12 @@ void PageProvisioning::DrawPageContents() {
         state_ = ProvisioningState::STORE_FAILED;
     } else if (server_.CredentialsStored() && state_ != ProvisioningState::CONFIGURED) {
         state_ = ProvisioningState::CONFIGURED;
-        confirmationStart_ = Time::TicksMs();
+        confirmationStart_ = TicksMs();
     }
 
     // Unsigned subtraction, so the hold survives the tick counter wrapping.
     if (state_ == ProvisioningState::CONFIGURED
-        && (Time::TicksMs() - confirmationStart_) >= CONFIRMATION_HOLD_MILLISECONDS) {
+        && (TicksMs() - confirmationStart_) >= CONFIRMATION_HOLD_MILLISECONDS) {
         DataManager::GetInstance()->SetRestartRequested();
         drawer_.RequestClose();
     }

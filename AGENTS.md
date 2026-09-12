@@ -381,9 +381,10 @@ src/
     GUINavigator.{cpp,hpp}      turns HID events into page changes
     Page/                       BasePage + one class per screen (§6)
     Render/                     Window / Texture / Area / Color — the C++ face of gui.ll
+  Helper/Mutex.{cpp,hpp}        the one C++ wrapper over hal.ll left in the app: a HALMutex (§6, §9)
   Helper/TextHelper.{cpp,hpp}   tokenizer used by the NMEA parsing
   Model/                        plain data types (GPSFixData, MapTile, MapGrid, Settings, ...)
-  Platform/<Platform>/          the platform seam owned by pedal.guru (§9)
+  Platform/<Platform>/          per-platform build inputs only: ESP32 CMakeLists, RP2040 Boards, Simulator HalMock (§9)
   Dependency/
     hal.ll/                     submodule, carries its own hal.ll.cmake contract
     fs.ll/                      submodule, carries its own fs.ll.cmake contract
@@ -431,14 +432,14 @@ app_entry()                         PedalGuru.cpp
   MountSdCard() + SelectActiveDrive()      <- before any thread exists
   TaskManager::Execute()
       ReadSettings / CreateDevices / ConnectToDevices
-      Thread::NewThread(GetDevicesData)  --> thread 2: read every device's sensors in a loop
+      ThreadStart(GetDevicesData)  --> thread 2: read every device's sensors in a loop
       GUIDrawer + CreatePages + HIDHandler + GUINavigator
       drawer.Execute()               --> thread 1 (the caller): HID + GUI render loop
   UnMountSdCard()
 ```
 
 - **Thread 2 (sensors)** — `TaskManager::GetDevicesData()`, a `while (running_)` loop that calls
-  `GetData()` on each connected device, with a `Time::Delay(1000)` between passes. On the RP2040 this
+  `GetData()` on each connected device, with a `Delay(1000)` between passes. On the RP2040 this
   is literally core 1 (`multicore_launch_core1`).
 - **Thread 1 (UI)** — `GUIDrawer::Execute()`, a `while (!window.ShouldClose())` loop that invokes the
   current page's draw callback. `GUINavigator` uses `HIDHandler` to move between pages (and, in the
@@ -448,7 +449,7 @@ app_entry()                         PedalGuru.cpp
 
 `DataManager` is a **singleton** (`GetInstance()`) that centralizes data between the two threads. It
 currently holds one queue, `std::list<GPSFixData>`, with `Push` (sensor thread) and `Pop` (UI thread),
-both guarded by the platform `Mutex` (§9). `GetInstance()` takes the same lock, because both threads
+both guarded by `Mutex` (§9). `GetInstance()` takes the same lock, because both threads
 reach it (`GPS::LogGpsData` and `PageMap`) and either could be the first.
 
 ### How Mutex is initialized, and why
@@ -477,10 +478,11 @@ ignored, it is a bound that the data rate already provides.
   SD card is mounted in `app_entry`, but it left `Lock()` on a fresh `Mutex` as undefined behaviour and
   put the burden on every future owner.
 
-All three platforms therefore have the same shape: a constructor that prepares `lock_`, plus `Lock()`
-and `Release()`. The Simulator uses `pthread_mutex_init()` rather than the constant it could have used,
-so that no platform is the odd one out — that asymmetry is exactly what produced the original bug, where
-`PTHREAD_MUTEX_INITIALIZER` had been copied onto a pico-sdk type.
+There is now a single `Mutex` (`src/Helper/Mutex.{hpp,cpp}`, §9): a constructor that prepares `lock_`
+via `MutexInit`, plus `Lock()` and `Release()`. The per-platform difference lives entirely in hal.ll's
+`MutexInit` — the Simulator's uses `pthread_mutex_init()` rather than the compile-time constant it could
+have used, so no platform is the odd one out. That asymmetry is exactly what produced the original bug,
+where `PTHREAD_MUTEX_INITIALIZER` had been copied onto a pico-sdk type.
 
 Consequence to be aware of on the hardware platforms: `DataManager::mutex_` is a static object, so its
 constructor runs during static initialization, before `main`/`app_main`. On ESP32 that means
@@ -576,24 +578,30 @@ and confirm the pin assignments) is the remaining open item.
 
 ## 9. Platform abstraction owned by pedal.guru
 
-`src/Platform/<PLATFORM_NAME>/` now contains only the thin C++ wrappers that pedal.guru needs over
-hal.ll's C API. `pedal.guru.cmake` interpolates `${PLATFORM_NAME}` into both the source list and the
-include path, so the application includes `"Thread.hpp"` / `"Time.hpp"` with no `#ifdef` and gets the
-right file — which is the same file on every platform, since all wrappers are now identical. Same
-mechanism as fs.ll and gui.ll use for their own platform folders.
+**There is almost nothing left here.** The `Thread` and `Time` wrappers were pure pass-throughs to
+hal.ll — `Time::Delay(x)` called `::Delay(x)`, `Thread::NewThread(f)` called `ThreadStart(f)` — and were
+identical on all three platforms, so they earned nothing and were removed. The application now calls
+`Delay`, `TicksMs` and `ThreadStart` from `HAL.h` directly, inside an `extern "C"` block. That deletes
+twelve files (`Time.{cpp,hpp}` and `Thread.{cpp,hpp}` × 3 platforms).
 
-Each platform folder exposes:
+The one wrapper that stayed is `Mutex`, because it is **not** a pass-through: it is a C++ class holding a
+`HALMutex` whose constructor runs `MutexInit`, which is the whole point of §6. Being platform-agnostic
+now (all the platform detail lives in hal.ll), it moved out of `src/Platform` into
+**`src/Helper/Mutex.{hpp,cpp}`** — a single copy, not one per platform. `DataManager` includes
+`"Mutex.hpp"`.
+
+What remains under `src/Platform/<PLATFORM_NAME>/`:
 
 | file | contract |
 |---|---|
-| `Thread.{cpp,hpp}` | `PedalGuru::Thread::NewThread(void(*)())` and `PedalGuru::Mutex` (constructor, `Lock`, `Release`) |
-| `Time.{cpp,hpp}` | `PedalGuru::Time::Delay(unsigned int milliseconds)` |
 | `CMakeLists.txt` | ESP32 only: ESP-IDF component registration |
+| `Boards/` | RP2040 only: the pico-sdk board header with the radio pinout (§3) |
+| `HalMock.h` | Simulator only: what the mocked hardware answers (§9, below) |
 
-All three platforms now share **identical** `.hpp` and `.cpp` files — the platform-specific logic lives
-entirely in hal.ll. The headers include `HAL.h` in an `extern "C"` block, `Mutex` holds a `HALMutex`,
-and the implementations call `MutexInit/Lock/Release` and `ThreadStart`. `Time.Delay` calls `::Delay`.
-No platform SDK headers appear here anymore.
+So the folder no longer carries per-platform C++ at all on the Simulator and RP2040 beyond the mock and
+the board header; only the ESP32 keeps a `CMakeLists.txt` for the component registration. The `${PLATFORM_NAME}`
+interpolation in `pedal.guru.cmake` still drives the include path, but there are no swapped-in source
+files behind it anymore.
 
 `HttpClient` left `src/Platform` in wave 5, moving to net.ll where it belongs. The single call site,
 `OpenStreetMapAPI::DownloadTile`, now calls `HttpDownloadFile` from net.ll's `HttpClient.h`.
@@ -863,7 +871,7 @@ file before touching net.ll.** Only what pedal.guru itself has to know is kept h
   recorded, not built.
 - **Credentials are pedal.guru's problem, and only pedal.guru's.** net.ll asks for none, and no submodule
   may know `SettingsData` or pedal.guru exist. The dev has plans here; nothing is written down yet.
-- **The OSM rate-limit delay stays here.** The `Time::Delay(500)` in `OpenStreetMapAPI::DownloadTile` is a
+- **The OSM rate-limit delay stays here.** The `Delay(500)` in `OpenStreetMapAPI::DownloadTile` is a
   rule of the tile API, not of HTTP, so it does not follow the client into net.ll.
 - **Every network operation is synchronous and net.ll starts no thread.** That matches what pedal.guru
   already does — `HttpDownloadFile` blocks, and `PageMapSync` downloads one tile per draw pass on the UI
@@ -1069,8 +1077,11 @@ hal.ll, the GPS UART). Keeping the application working through wave 4 was the po
   `extern "C" { #include "HAL.h" }`, and `Mutex` using `HALMutex`. `.cpp` calls `MutexInit/Lock/Release`
   and `ThreadStart`. No platform SDK headers remain in the headers — the old `pthread.h`,
   `pico/mutex.h`, `freertos/semphr.h`, and the lambda+`xTaskCreate` in the ESP32 `.cpp` are gone.
+  **Superseded later:** these six files were pure pass-throughs and were removed; `ThreadStart` is now
+  called directly from `HAL.h`, and `Mutex` moved to `src/Helper/Mutex.{cpp,hpp}` (§9).
 - **`src/Platform/*/Time.{cpp,hpp}`**: same treatment. `.hpp` is now uniform across all three (fixing
   `TODO-C9` — the Simulator header was missing `#pragma once`). `.cpp` calls `::Delay`.
+  **Superseded later:** removed as well; the app calls `Delay`/`TicksMs` from `HAL.h` directly (§9).
 - **`src/Sensor/GPS.cpp`**: Linux `std::ifstream` layer and pico-sdk `uart_*` calls removed. Now calls
   `UARTInit(GPS_UART, GPS_UART_BAUDRATE, GPS_UART_TX_PIN, GPS_UART_RX_PIN)` in `Enable`, `UARTDeinit`
   in `Disable`, and `UARTIsEnabled`/`UARTIsReadable`/`UARTGetChar` in the read path. `GetData` guards

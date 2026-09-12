@@ -30,7 +30,10 @@
 #include "PageSummary.hpp"
 #include "HIDHandler.hpp"
 #include "LocationModule.hpp"
-#include "Thread.hpp"
+
+extern "C" {
+    #include "HAL.h"
+}
 
 namespace PedalGuru {
 
@@ -48,7 +51,7 @@ void TaskManager::Execute() {
      * Start a parallel task to keep reading devices data,
      * while the main core keeps handling HID and GUI.
      */
-    Thread::NewThread(GetDevicesData);
+    ThreadStart(GetDevicesData);
 
     GUIDrawer drawer;
 
@@ -130,7 +133,7 @@ void TaskManager::GetDevicesData() {
 
         device = (device == devices_.end()) ? devices_.begin() : device++;
 
-        Time::Delay(1000);//TODO something better.
+        Delay(1000);//TODO something better.
     }
 }
 

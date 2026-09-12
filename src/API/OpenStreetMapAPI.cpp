@@ -23,6 +23,7 @@ extern "C" {
     #include "FileSystem.h"
     #include "LCDSetup.h"
     #include "HttpClient.h" /* net.ll: HttpDownloadFile */
+    #include "HAL.h"
 }
 
 namespace PedalGuru {
@@ -132,7 +133,7 @@ std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::stri
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
      * Only two requests per second, as OSM API requires low brandwidth usage.
      */
-    Time::Delay(500);
+    Delay(500);
 
     return downloadOk ? fileHashPath : "";
 }

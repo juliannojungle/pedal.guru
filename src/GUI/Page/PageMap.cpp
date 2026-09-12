@@ -23,6 +23,10 @@
 #include "GPSFixData.hpp"
 #include <algorithm>
 
+extern "C" {
+    #include "HAL.h"
+}
+
 namespace PedalGuru {
 
 void PageMap::PreDrawPageContents() {
@@ -88,7 +92,7 @@ void PageMap::DrawPageContents() {
     window_.DrawTexture(mapTexture_);
 
     // We only get gps readings once per second.
-    Time::Delay(1000);
+    Delay(1000);
 }
 
 void PageMap::PostDrawPageContents() {

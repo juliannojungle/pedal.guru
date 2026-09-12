@@ -17,19 +17,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#include "Time.hpp"
-extern "C" {
-    #include "HAL.h"
-}
+#include "Mutex.hpp"
 
 namespace PedalGuru {
 
-void Time::Delay(unsigned int milliseconds) {
-    ::Delay(milliseconds);
+Mutex::Mutex() {
+    MutexInit(&lock_);
 }
 
-unsigned int Time::TicksMs() {
-    return ::TicksMs();
+void Mutex::Lock() {
+    MutexLock(&lock_);
+}
+
+void Mutex::Release() {
+    MutexRelease(&lock_);
 }
 
 }

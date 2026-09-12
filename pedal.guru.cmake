@@ -50,10 +50,9 @@ set(PEDAL_GURU_SOURCES
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Page/PageSummary.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render/Texture.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/GUI/Render/Window.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/src/Helper/Mutex.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Helper/TextHelper.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Model/GPSFixData.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}/Thread.cpp"
-    "${CMAKE_CURRENT_LIST_DIR}/src/Platform/${PLATFORM_NAME}/Time.cpp"
     "${CMAKE_CURRENT_LIST_DIR}/src/Sensor/GPS.cpp"
 )
 
