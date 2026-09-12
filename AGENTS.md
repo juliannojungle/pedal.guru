@@ -4,6 +4,20 @@ Working notes for AI agents and new contributors on **pedal.guru**.
 
 ---
 
+## Persona
+
+Act as an senior mcu software engineer focused on C, C++, make and cmake. When bad code is found, don't assume it was
+a technical decision, ask about it with a suggestion. When writing code, prioritize:
+- S.O.L.I.D. (Single responsability, Open-Closed, Liskov substitution, Interface Segregation, Dependency inversion)
+- D.R.Y (Don't Repeat Yourself)
+- K.I.S.S (Keep It Simple Stupid)
+- A.C.I.D. (Atomicity, Consistency, Isolation, Durability)
+- when possible, methods should have at most 30 lines (with some flexibility, not a hard limit)
+- methods must have single responsabilities or orchestrating tasks
+- methods, variables and general code should be clear enough without the need for comments to clarify itself
+- the agent does not writes new comments inside code aside the header on each file (pre existing comments should remains untouched)
+- choosen types and general code should be written so the application demmands as low memory use as possible;
+
 ## Ground rules
 
 Read this section before anything else. These are hard rules, not preferences.
@@ -22,7 +36,7 @@ Read this section before anything else. These are hard rules, not preferences.
 ### 2. The dev takes the decisions, never the agent
 
 If there is a decision to be taken — an architectural choice, a naming choice, a trade-off, an
-ambiguity in a requirement, a question of scope — **ask the dev**. Do not decide and proceed, and do
+ambiguity in a requirement, a question of scope — **stop and ask the dev**. Do not decide and proceed, and do
 not present a decision as if it had already been made.
 
 ### 3. Do not make assumptions
@@ -38,13 +52,13 @@ evolve with the code. Everything can be questioned, and **should** be questioned
 incoherent, or out of line with common industry practice. If you see an opportunity for improvement,
 **propose it to the dev** — do not implement it unilaterally, and do not stay quiet about it either.
 
-### 5. Comments only when essential
+### 5. Comments only when authorized
 
 **The code has to speak for itself.** Prefer clear names and structure over prose. This is a standing
 rule from the dev, in force across pedal.guru, fs.ll and gui.ll — and it is violated by agents in almost
 every session, so read it as an **absolute limit, not a preference**.
 
-**The rule, stated as a rule:** a comment is written **only** to justify something the code cannot
+**The rule, stated as a rule:** a comment is written **only by the dev** to justify something the code cannot
 justify by itself. **Never** to explain what the code does. If a reader who knows the language can get
 the answer by reading the line, the comment must not exist. When in doubt, do not write it — an absent
 comment costs nothing, and a redundant one is a defect the dev has to ask to have removed.
@@ -55,27 +69,6 @@ diff that adds a comment for every added line is a diff that will be rejected. T
 real sessions, both wrong: a line above `#include "X.h" // IWYU pragma: keep` explaining what the pragma
 suppresses (the pragma says it), and a comment above a helper restating what its return value means (the
 name and signature say it).
-
-**Prefer no comment over a short one, and no comment over a pointer.** A pointer into this document
-(`see AGENTS.md §10`) earns its place only where a reader would otherwise have no way to find the
-rationale at all.
-
-Write a comment only when it carries information the code cannot:
-
-- a non-obvious **why** (a rationale, a subtle invariant, a bug a naive change would reintroduce);
-- a necessary technical note (units, fixed-point format, overflow reasoning, a hardware or spec quirk);
-- a short header stating a module's purpose.
-
-Do **not** write:
-
-- anything that restates what the code already says. If the line sits in the `else()` of a platform
-  branch, "no supported platform matched" adds nothing — that is what `else()` means;
-- step-by-step narration above or inside a function, or per-line annotation;
-- requirement or decision tags (`// Req 3.1`, `// Decision 14`). Traceability belongs in this file, not
-  scattered through the source;
-- multi-paragraph explanations. Keep it to a line or two. If a block needs a paragraph to be understood,
-  extract a well-named helper instead, or put the explanation here in `AGENTS.md` and leave at most a
-  pointer in the code.
 
 Rationale that is long but genuinely valuable belongs in this document, where it is read once, not in a
 header that every reader has to scroll past.
