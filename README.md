@@ -25,12 +25,20 @@ An open-source DIY project to bring useful resources that are appreciated by cyc
 * One of the target devices:
   * [RP2040-LCD-1.28](https://www.waveshare.com/wiki/RP2040-LCD-1.28)
   * [ESP32-S3-LCD-1.28](https://www.waveshare.com/wiki/ESP32-S3-LCD-1.28)
-* MicroSD to SD card adapter (for easy soldering)
+* MicroSD to SD card adapter (for easy soldering): SDCARD
 * MicroSD card
-* Some nice wires (30 AWG recommended)
-* 2 x 10K resistors (for pull-up)
-* 1 x 10uF capacitor (for decoupling)
-* *(Optional)* 2 x [1.27mm 2x10Pin header](https://ae01.alicdn.com/kf/H874df6c6359144e497abad3f5e2a03c6b.jpg_220x220.jpg) (for connecting SD to target device)
+* 2 x 10K resistors (for pull-up): R1, R2
+* 1 x 10uF capacitor (for decoupling): C1
+* 2 x 49E hall sensor (for navigation): HS1, HS2
+* 2 x [1.27mm 2x10Pin header](Documentation/Image/pin_headers.png) (for connecting components to target device)
+
+If the choosen target is RP2040, additional hardware is required:
+* 1 x [RM2 (CYW43 based) radio](https://github.com/raspberrypi/documentation/blob/master/documentation/asciidoc/microcontrollers/radio-modules/rm2.adoc): CYW43
+* 1 x 10K resistor (for gSPI multiplex): R3
+* 1 x 470ohms resistor (for gSPI multiplex): R4
+
+Optional for prototyping:
+* Some nice silicone wires (28 AWG recommended)
 
 ---
 
@@ -39,23 +47,35 @@ An open-source DIY project to bring useful resources that are appreciated by cyc
 > The below table shows connections in a way that you can create a header connector/shield board to swap between the target devices.\
 > ⚠️ *Connect it to the RP2040 **or** to the ESP32. You're **NOT** supposed to wire RP2040 and ESP32 together.*
 
-| RP2040     | ESP32       | R1(10K) | R2(10K) | C1(10uF) | SDCARD           | LCD*       |
-|------------|-------------|---------|---------|----------|------------------|------------|
-| GP0 (MISO) | GP46 (MISO) |         |  MISO   |          | pin7 (DAT0/MISO) |            |
-| GP1 (CS)   | GP45 (CS)   |   CS    |         |          | pin1 (DAT3/CS)   |            |
-| GP2 (SCK)  | GP42 (SCK)  |         |         |          | pin5 (CLK/SCK)   |            |
-| GP3 (MOSI) | GP41 (MOSI) |         |         |          | pin2 (CMD/MOSI)  |            |
-| GP5        | GP39        |         |         |          | pin3 (VSS1/GND)  |            |
-| GND        | GND         |         |         |   GND    | pin6 (VSS2/GND)  | GND        |
-| 3V3        | 3V3         |   3V3   |  3V3    |   3V3    | pin4 (VDD/3V3)   | VCC (3V3)  |
-| GP8        | GP8         |         |         |          |                  | DC         |
-| GP9        | GP9         |         |         |          |                  | CS         |
-| GP10       | GP10        |         |         |          |                  | CLK        |
-| GP11       | GP11        |         |         |          |                  | DIN (MOSI) |
-| GP12       | GP12        |         |         |          |                  | RST        |
-| GP25       | GP40        |         |         |          |                  | BL         |
+| RP2040 | ESP32 | R1 | R2   | C1  | SDCARD           | LCD**    | GPS | HS1 | HS2 | R3* | R4*  | CYW43*      |
+|--------|-------|----|------|-----|------------------|----------|-----|-----|-----|-----|------|-------------|
+| GP0    | GP46  |    | MISO |     | pin7 (DAT0/MISO) |          |     |     |     |     |      |             |
+| GP1    | GP45  | CS |      |     | pin1 (DAT3/CS)   |          |     |     |     |     |      |             |
+| GP2    | GP42  |    |      |     | pin5 (CLK/SCK)   |          |     |     |     |     |      |             |
+| GP3    | GP41  |    |      |     | pin2 (CMD/MOSI)  |          |     |     |     |     |      |             |
+| GP5    | GP39  |    |      |     | pin3 (VSS1/GND)  |          |     |     |     |     |      |             |
+| GND    | GND   |    |      | GND | pin6 (VSS2/GND)  | GND      |     | GND | GND |     |      |             |
+| 3V3    | 3V3   | 3V | 3V3  | 3V3 | pin4 (VDD/3V3)   | VCC/3V3  |     | 3V3 | 3V3 |     |      |             |
+| GP8    | GP8   |    |      |     |                  | DC       |     |     |     |     |      |             |
+| GP9    | GP9   |    |      |     |                  | CS       |     |     |     |     |      |             |
+| GP10   | GP10  |    |      |     |                  | CLK      |     |     |     |     |      |             |
+| GP11   | GP11  |    |      |     |                  | DIN/MOSI |     |     |     |     |      |             |
+| GP12   | GP12  |    |      |     |                  | RST      |     |     |     |     |      |             |
+| GP25   | GP40  |    |      |     |                  | BL       |     |     |     |     |      |             |
+| GP16   | GP13  |    |      |     |                  |          | TX  |     |     |     |      |             |
+| GP13   | GP18  |    |      |     |                  |          | RX  |     |     |     |      |             |
+| GP14   | GP17  |    |      |     |                  |          |     | OUT |     |     |      |             |
+| GP15   | GP16  |    |      |     |                  |          |     |     | OUT |     |      |             |
+|        |       |    |      |     |                  |          |     |     |     | IRQ |      | pin10 (IRQ) |
+|        |       |    |      |     |                  |          |     |     |     |     | DOUT | pin6 (DOUT) |
+| GP19   |       |    |      |     |                  |          |     |     |     |     |      | pin12 (ON)  |
+| GP19   |       |    |      |     |                  |          |     |     |     |     |      | pin13 (ON)  |
+| GP20   |       |    |      |     |                  |          |     |     |     | DIN | DIN  | pin5 (DIN)  |
+| GP21   |       |    |      |     |                  |          |     |     |     |     |      | pin3 (SCK)  |
+| GP22   |       |    |      |     |                  |          |     |     |     |     |      | pin9 (CS)   |
 
-<sup>* The LCD connection is internally made on these devices, GP pins just for reference.</sup>
+<sup>* Required only for RP2040.</sup>
+<sup>** The LCD connection is internally made on these devices, GP pins just for reference.</sup>
 
 ---
 
