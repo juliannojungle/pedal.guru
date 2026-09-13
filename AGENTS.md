@@ -365,7 +365,6 @@ AGENTS.md                       this file
 README.md                       user-facing: BOM, wiring, toolchain setup, build tasks
 DIAGRAM.md                      mermaid class diagram (stale, see §14)
 Documentation/Image/            pinout and device reference images
-Toolchain/                      per-platform environment setup + RP2040 USB/flash helpers
 sample/sdcard/                  content that goes into the simulator disk image
 sample/sdcard.img               FAT image standing in for the physical card on Simulator
 src/
@@ -389,7 +388,8 @@ src/
     hal.ll/                     submodule, carries its own hal.ll.cmake contract
     fs.ll/                      submodule, carries its own fs.ll.cmake contract
     gui.ll/                     submodule, carries its own gui.ll.cmake contract
-    net.ll/                     submodule, carries its own net.ll.cmake contract; not consumed yet
+    net.ll/                     submodule, carries its own net.ll.cmake contract
+    toolchain.ll/               submodule, shared setup/build/flash scripts under Platform/ (see §11)
     pico_sdk_import.cmake       stock pico-sdk locator
 ```
 
@@ -770,7 +770,7 @@ directory. The equivalent commands:
 
 ```bash
 # Simulator (desktop)
-Toolchain/Simulator/Setup.sh                      # once: SDL2, gdb, dosfstools, mtools, sdcard.img
+src/Dependency/toolchain.ll/Platform/Simulator/Setup.sh   # once: SDL2, gdb, dosfstools, mtools, sdcard.img
 cmake -B build -DPLATFORM_NAME=Simulator && cmake --build build
 ./build/pedal.guru                                # run from the repo root, see below
 
@@ -786,7 +786,7 @@ The Simulator reads and writes `sample/sdcard.img` through a **relative** path (
 Running the program mutates the image, which then shows up as a modified binary file in
 `git status`; restore it with `git checkout -- sample/sdcard.img`.
 
-`Toolchain/Simulator/Setup.sh` rebuilds `sample/sdcard.img` from `sample/sdcard/` on every run (not
+`src/Dependency/toolchain.ll/Platform/Simulator/Setup.sh` rebuilds `sample/sdcard.img` from `sample/sdcard/` on every run (not
 idempotent, on purpose, so sample changes are always reflected). Note that `sample/sdcard/` holds a
 single `01.png`, while the map code looks tiles up by their `mod_tile` hash path (§7) — the sample
 image does not contain a pre-populated tile cache.
@@ -795,10 +795,12 @@ Also note that configuring **patches fs.ll's FatFs submodule in place** (`ffconf
 `fatfs.ffconf_patch.cmake`). That dirt is expected and must never be committed. See fs.ll's
 `AGENTS.md` §8.
 
-Flashing the RP2040 from WSL is handled by `Toolchain/RP2040/Bind.sh` (one-time USB share via
-`usbipd`, needs admin once) and `Toolchain/RP2040/Flash.sh` (`picotool` load of
-`build/pedal.guru.uf2`). `Toolchain/wsl.sh` repairs WSL Windows interop under systemd.
-`launch.json` debugs the Simulator through `Toolchain/Simulator/gdb-wrapper.sh`, which unsets
+The setup, build and flash scripts live in the `toolchain.ll` submodule at
+`src/Dependency/toolchain.ll/Platform/`, shared with gui.ll. Flashing the RP2040 from WSL is handled by
+`.../Platform/RP2040/Bind.sh` (one-time USB share via `usbipd`, needs admin once) and
+`.../Platform/RP2040/Flash.sh` (`picotool` load of `build/pedal.guru.uf2`). `.../Platform/wsl.sh`
+repairs WSL Windows interop under systemd. `launch.json` debugs the Simulator through
+`.../Platform/Simulator/gdb-wrapper.sh`, which unsets
 `DEBUGINFOD_URLS` — see gui.ll's `AGENTS.md`, "Known Issues", for why that wrapper exists.
 
 ## 12. Code conventions
