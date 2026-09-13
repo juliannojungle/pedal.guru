@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -19,32 +19,23 @@
 
 #pragma once
 
-#include <string>
 #include <functional>
 #include <memory>
-#include "../Model/Callback.hpp"
-#include "Render/Color.cpp"
-#include "Render/Rectangle.cpp"
-#include "Render/Image.cpp"
-#include "Render/Texture.cpp"
-#include "Render/Window.cpp"
+#include "Callback.hpp"
+#include "Window.hpp"
 
-#ifdef DESKTOP_SIMULATOR
-#include "Interface/DesktopSimulator.hpp"
-#else
-#include "Interface/Spi240x240.hpp"
-#endif
-
-namespace OpenCC {
+namespace PedalGuru {
 
 class GUIDrawer {
     private:
-        PiRender::Window window;
-        std::shared_ptr<OpenCC::Callback> pageContentsPreDrawCallback_;
-        std::shared_ptr<OpenCC::Callback> pageContentsDrawCallback_;
-        std::shared_ptr<OpenCC::Callback> pageContentsPostDrawCallback_;
+        Window window;
+        std::shared_ptr<PedalGuru::Callback> pageContentsPreDrawCallback_;
+        std::shared_ptr<PedalGuru::Callback> pageContentsDrawCallback_;
+        std::shared_ptr<PedalGuru::Callback> pageContentsPostDrawCallback_;
+        bool closeRequested_ {false};
     public:
         void Execute();
+        void RequestClose();
         void SetPageContentsPreDrawMethod(std::function<void()> method);
         void SetPageContentsDrawMethod(std::function<void()> method);
         void SetPageContentsPostDrawMethod(std::function<void()> method);

@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,42 +17,36 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
 #include "GUIDrawer.hpp"
 
-namespace OpenCC {
+namespace PedalGuru {
 
 void GUIDrawer::SetPageContentsPreDrawMethod(std::function<void()> method) {
-    pageContentsPreDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+    pageContentsPreDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };
 
 void GUIDrawer::SetPageContentsDrawMethod(std::function<void()> method) {
-    pageContentsDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+    pageContentsDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };
 
 void GUIDrawer::SetPageContentsPostDrawMethod(std::function<void()> method) {
-    pageContentsPostDrawCallback_ = std::make_shared<OpenCC::Callback>(method);
+    pageContentsPostDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
+};
+
+void GUIDrawer::RequestClose() {
+    closeRequested_ = true;
 };
 
 void GUIDrawer::Execute() {
-    window.Init(SCREEN_WIDTH, SCREEN_HEIGHT, std::string("OpenCC").c_str());
-    window.SetTargetFPS(FRAME_RATE);
-    window.HideCursor();
+    window.Init();
 
     if (pageContentsPreDrawCallback_ != nullptr)
         pageContentsPreDrawCallback_->Method();
 
-    while (!window.ShouldClose())
+    while (!window.ShouldClose() && !closeRequested_)
     {
-        window.BeginDrawing();
-        {
-            window.ClearBackground(PiRender::COLOR_WHITE);
-
-            if (pageContentsDrawCallback_ != nullptr)
-                pageContentsDrawCallback_->Method();
-        }
-        window.EndDrawing();
+        if (pageContentsDrawCallback_ != nullptr)
+            pageContentsDrawCallback_->Method();
     }
 
     if (pageContentsPostDrawCallback_ != nullptr)

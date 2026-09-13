@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,57 +17,113 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "Texture.hpp"
+#include "Area.hpp"
+#include "Canvas.h"
+#include "fonts.h"
+#include <string>
 
-#include "Image.cpp"
-
-namespace GUIDriver {
-/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
-#ifdef USE_RAYLIB
 extern "C" {
-    #include "../../Dependency/raylib/src/raylib.h"
-}
-#endif
+    #include "FileSystem.h"
 }
 
-namespace PiRender {
-
-#define TEXTURE2D_TO_RAYLIB(texture) CLITERAL(GUIDriver::Texture2D) \
-    { texture.id, texture.width, texture.height, texture.mipmaps, texture.format }
-
-class Texture {
-    public:
-        unsigned int id;        // OpenGL texture id
-        int width;              // Texture base width
-        int height;             // Texture base height
-        int mipmaps;            // Mipmap levels, 1 by default
-        int format;             // Data format (PixelFormat type)
-        Texture() {}
-        Texture(unsigned int id, int width, int height, int mipmaps, int format)
-            : id(id), width(width), height(height), mipmaps(mipmaps), format(format) {}
-        void LoadTextureFromImage(PiRender::Image& image);
-        void UnloadTexture();
-};
-
-// Texture2D type, same as Texture
-typedef Texture Texture2D;
-
-// TextureCubemap type, actually, same as Texture
-typedef Texture TextureCubemap;
-
-void Texture::LoadTextureFromImage(PiRender::Image& image) {
-    auto driverImage(IMAGE_TO_RAYLIB(image));
-    auto driverTexture = GUIDriver::LoadTextureFromImage(driverImage);
-    this->id = driverTexture.id;
-    this->width = driverTexture.width;
-    this->height = driverTexture.height;
-    this->mipmaps = driverTexture.mipmaps;
-    this->format = driverTexture.format;
+namespace PedalGuru {
+UINT8* Texture::Data() {
+    return this->cTexture.Data;
 }
 
-void Texture::UnloadTexture() {
-    auto driverTexture(TEXTURE2D_TO_RAYLIB((*this)));
-    GUIDriver::UnloadTexture(driverTexture);
+int Texture::Width() {
+    return this->cTexture.Width;
+}
+
+int Texture::Height() {
+    return this->cTexture.Height;
+}
+
+Texture::Texture(int width, int height) {
+    this->cTexture = CanvasNewTexture(width, height);
+}
+
+void Texture::Release() {
+    free(this->cTexture.Data);
+    this->cTexture.Data = NULL;
+}
+
+void Texture::DrawCircle(Point centerPoint, int radius, Color color, int lineWidth, bool fillCircle) {
+    CanvasDrawCircle(
+        this->cTexture,
+        centerPoint.x,
+        centerPoint.y,
+        radius,
+        COLOR_LL(color),
+        (PixelSize)lineWidth,
+        (DrawFillStyle)fillCircle);
+}
+
+sFONT* Texture::GetFont(int fontSize) {
+    switch (fontSize) {
+        case 8: return &Font8; break;
+        case 12: return &Font12; break;
+        case 16: return &Font16; break;
+        case 20: return &Font20; break;
+        case 24: return &Font24; break;
+        default: return &Font8; break;
+    }
+}
+
+void Texture::DrawText(std::string text, Point target, int fontSize, Color foregroundColor, Color backgroundColor) {
+    CanvasDrawText(
+        this->cTexture,
+        target.x,
+        target.y,
+        text.c_str(),
+        GetFont(fontSize),
+        COLOR_LL(foregroundColor),
+        COLOR_LL(backgroundColor));
+}
+
+void Texture::DrawPng(std::string filePath) {
+    FIL file;
+    if (OpenFile(&file, filePath.c_str())) {
+        CanvasDrawPng(cTexture, &file);
+        CloseFile(&file);
+    }
+}
+
+void Texture::DrawPngToArea(std::string filePath, Rectangle source, Point target) {
+    FIL file;
+    if (OpenFile(&file, filePath.c_str())) {
+        CanvasDrawPngToArea(
+            cTexture,
+            &file,
+            source.point.x, source.point.y,
+            source.size.width, source.size.height,
+            target.x, target.y);
+        CloseFile(&file);
+    }
+}
+
+void Texture::DrawQRCode(std::string url, Point target) {
+    CanvasDrawQRCode(
+        cTexture,
+        target.x,
+        target.y,
+        url.c_str());
+}
+
+void Texture::DrawCurvedText(std::string text, Point centerPoint, int radius, int startAngle,
+    TextOrientation orientation, int fontSize, Color foregroundColor, Color backgroundColor) {
+    CanvasDrawCurvedText(
+        cTexture,
+        text.c_str(),
+        centerPoint.x,
+        centerPoint.y,
+        radius,
+        startAngle,
+        orientation,
+        GetFont(fontSize),
+        COLOR_LL(foregroundColor),
+        COLOR_LL(backgroundColor));
 }
 
 }

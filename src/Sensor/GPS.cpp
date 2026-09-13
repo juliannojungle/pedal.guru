@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,116 +17,81 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "GPS.hpp"
+#include "DataManager.hpp"
+extern "C" {
+    #include "HAL.h"
+}
 
-#include "iSensor.hpp"
-#include "../Model/GPSFixData.hpp"
-#include <thread> // multithread
-#include <iostream> // cout
-#include <iomanip> // setprecision
-#include <fstream> // file stream
-#include <jsoncpp/json/json.h>
-
-namespace OpenCC {
-
-class GPS : public iSensor {
-    private:
-        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA,
-        int startingPos = 3;
-        OpenCC::TextHelper textHelper_;
-        void LastGpsLocation(double &latitude, double &longitude);
-        void OutputGpsLocation(double &latitude, double &longitude, bool fixed);
-        void GetData();
-    public:
-        void Enable() override;
-        void Disable() override;
-};
+namespace PedalGuru {
 
 void GPS::Enable() {
-    std::thread task([this](){ this->GetData(); });
-    task.detach();
+    UARTInit(GPS_UART, GPS_UART_BAUDRATE, GPS_UART_TX_PIN, GPS_UART_RX_PIN);
+
+#ifdef L96GPS
+    /* Configuration commands for the Quectel L96 module. */
+    // UARTPuts(GPS_UART, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
+    // UARTPuts(GPS_UART, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
+    // UARTPuts(GPS_UART, "$PMTK886,1*29\0"); // enable fitness mode.
+    //// UARTPuts(GPS_UART, "$PMTK886,0*28\0"); // enable normal mode.
+#endif
+
     this->enabled_ = true;
 }
 
 void GPS::Disable() {
+    UARTDeinit(GPS_UART);
     this->enabled_ = false;
 }
 
-void GPS::LastGpsLocation(double &latitude, double &longitude) {
-    std::ifstream file("gps.json", std::ifstream::binary);
-
-    if (!file) return;
-
-    Json::Reader reader;
-    Json::Value gpsData;
-
-    if (reader.parse(file, gpsData)) {
-        latitude = std::stod(gpsData["latitude"].asString());
-        longitude = std::stod(gpsData["longitude"].asString());
-    }
-
-    file.close();
+void GPS::LogGpsData(PedalGuru::GPSFixData &gpsFixData) {
+    PedalGuru::DataManager::GetInstance()->Push(gpsFixData);
 }
 
-void GPS::OutputGpsLocation(double &latitude, double &longitude, bool fixed) {
-    std::ofstream file("gps.json", std::ofstream::trunc | std::ofstream::binary);
+bool GPS::IsGpsFixInfo(std::string &info) {
+    return info.rfind(GPS_FIX, startingPos) == startingPos;
+}
 
-    if (!file) return;
+void GPS::UartGetLine(std::string &line) {
+    char singleChar = '\0';
+    line = "";
 
-    file << "{\"latitude\":" << std::fixed << std::setprecision(6) << latitude
-        << ",\"longitude\":" << std::fixed << std::setprecision(6) << longitude
-        << ",\"fixed\":" << (fixed ? "true" : "false")
-        << "}\n";
-    file.close();
+    while (UARTIsReadable(GPS_UART)) {
+        singleChar = UARTGetChar(GPS_UART);
+
+        if (singleChar == '\0' || singleChar == '\n') break;
+
+        line += singleChar;
+    }
 }
 
 void GPS::GetData() {
-    std::ifstream uart;
-    std::ios_base::iostate exceptionMask = uart.exceptions() | std::ios::failbit;
-    uart.exceptions(exceptionMask);
+    if (!enabled_ || !UARTIsEnabled(GPS_UART)) return;
 
-    try {
-        uart.open("/dev/serial0", std::ifstream::in);
-    } catch (std::ios_base::failure &error) {
-        std::cout << error.what();
-        this->enabled_ = false;
-        return;
+    std::string serial_rx = "";
+    int attempts = 0;
+
+    while (!IsGpsFixInfo(serial_rx) && (attempts < 50)) {
+        attempts++;
+        UartGetLine(serial_rx);
     }
 
-    std::string serial_rx;
-    OpenCC::GPSFixData gpsFixData;
-    double lastLatitude, lastLongitude;
-    LastGpsLocation(lastLatitude, lastLongitude);
+    if (!IsGpsFixInfo(serial_rx)) return;
 
-    while (this->enabled_ && uart.is_open()) {
-        std::getline(uart, serial_rx);
+    PedalGuru::GPSFixData gpsFixData;
+    gpsFixData.set(serial_rx);
 
-        if (serial_rx.rfind(GPS_FIX, startingPos) == startingPos) {
-            gpsFixData.set(serial_rx);
+    // convert NMEA (DDMM.MMMM) to decimal degrees
+    double latDegrees = (int)(gpsFixData.latitude / 100);
+    gpsFixData.latitude = latDegrees + (gpsFixData.latitude - latDegrees * 100) / 60.0;
 
-            if (gpsFixData.fixQuality > 0) {
-                // normalize coordinates
-                gpsFixData.latitude /= 100;
-                gpsFixData.longitude /= 100;
-                if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
-                if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
+    double lonDegrees = (int)(gpsFixData.longitude / 100);
+    gpsFixData.longitude = lonDegrees + (gpsFixData.longitude - lonDegrees * 100) / 60.0;
 
-                std::cout << "FIXED: " << gpsFixData.satellitesCount
-                    << " LATITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.latitude
-                    << " LONGITUDE: " << std::fixed << std::setprecision(6) << gpsFixData.longitude
-                    << "\n";
+    if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
+    if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
 
-                lastLatitude = gpsFixData.latitude;
-                lastLongitude = gpsFixData.longitude;
-                OutputGpsLocation(gpsFixData.latitude, gpsFixData.longitude, true);
-            } else {
-                std::cout << "NOT FIXED: " << serial_rx << "\n";
-                OutputGpsLocation(lastLatitude, lastLongitude, false);
-            }
-        }
-    }
-
-    uart.close();
+    LogGpsData(gpsFixData);
 }
 
 }

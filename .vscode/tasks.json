@@ -2,69 +2,377 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "WSL build (cross-compile: g++-arm-linux-gnueabihf)",
-            "detail": "LOCAL source (on Windows PC built with WSL): intellisense enabled",
-            "group": {
-                "kind": "build",
-                "isDefault": false
-            },
-            "type": "shell",
-            "command": "wsl",
-            "args": [
-                // "/opt/gcc-arm-none-eabi/bin/arm-none-eabi-g++",
-                "arm-linux-gnueabihf-g++", // if not found, in WSL run "sudo apt install g++-arm-linux-gnueabihf"
-                "-DTARGET_RASPBERRY_PI_ZERO_W",
-                "-std=c++14",
-                // "--specs=nosys.specs",
-                "-L", "src/Dependency/raylib/src",
-                "-L", "src/Dependency/opt/vc/lib",
-                "-I", "src/Dependency/raylib/src",
-                "-g", "src/OpenCC.cpp",
-                "-o", "build/opencc",
-                // "-shared-libgcc","-mfloat-abi=hard","-mfpu=vfp","-mtls-dialect=gnu","-marm", "-march=armv6+fp",
-                "-lcurl", "-ljsoncpp", "-lraylib","-lbrcmEGL","-lbrcmGLESv2","-lpthread","-lbcm_host"
+            "label": "Build+Flash: Full RP2040",
+            "dependsOn":[
+                "Build: RP2040 Full",
+                "Flash: uf2 to RP2040"
             ],
-            "problemMatcher": [],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build: RP2040 Full",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 && make"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
             "presentation": {
                 "reveal": "always",
-                "showReuseMessage": false,
                 "panel": "shared",
                 "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        // {
+        //     "label": "Build+Flash: Full ESP32",
+        //     "dependsOn":[
+        //       "Build: ESP32 Full",
+        //       "Flash: Attach USB device to WSL"
+        //     ],
+        //     "dependsOrder": "sequence",
+        //     "problemMatcher": []
+        // },
+        {
+            "label": "Build: ESP32 Full",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ~/esp-idf/export.sh && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
             }
         },
         {
-            "label": "SSH build (native Raspberry Pi: g++)",
-            "detail": "REMOTE source (on Raspberry Pi via SSHFS-Win): intellisense disabled",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "label": "Build: RP2040 Full (DEBUGMSGS)",
             "type": "shell",
-            "command": "ssh",
+            "command": "bash",
             "args": [
-                "pi@raspberrypi.local",
-                "\"",
-                    "mkdir -p /home/pi/OpenCC/build",
-                    "&&", "g++",
-                    "-std=c++14",
-                    "-DTARGET_RASPBERRY_PI_ZERO_W",
-                    "-L", "/opt/vc/lib",
-                    "-L", "~/OpenCC/src/Dependency/raylib/src",
-                    "-I", "~/OpenCC/src/Dependency/raylib/src",
-                    "-g", "~/OpenCC/src/OpenCC.cpp",
-                    "-o", "~/OpenCC/build/opencc",
-                    "-lcurl", "-ljsoncpp", "-lraylib -lbrcmEGL -lbrcmGLESv2 -lpthread -lbcm_host",
-                    //             // "&&","pkill OpenCC",
-                    //             // "&&","/home/pi/OpenCC/build/opencc",
-                "\""
+                "-c",
+                "rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=RP2040 -DDEBUGMSGS=ON && make"
             ],
-            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
             "presentation": {
                 "reveal": "always",
-                "showReuseMessage": false,
                 "panel": "shared",
                 "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
             }
+        },
+        {
+            "label": "Build: ESP32 Full (DEBUGMSGS)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "source ~/esp-idf/export.sh && rm -rf build && idf.py -DPLATFORM_NAME=ESP32 -DDEBUGMSGS=ON build"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Build+Flash: RP2040 Incremental",
+            "dependsOn":[
+                "Build: Incremental",
+                "Flash: uf2 to RP2040"
+            ],
+            "group": "build",
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build: Incremental",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "if [ ! -d build ]; then echo \"No build/ directory: run a Full build task first.\"; exit 1; fi; cd build; [ -f build.ninja ] && source ~/esp-idf/export.sh >/dev/null 2>&1; cmake --build ."
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Setup: ESP32 toolchain in WSL2",
+            "dependsOn": [
+                "ESP32 toolchain",
+                "Setup usbipd-win"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "ESP32 toolchain",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/ESP32/Setup.sh\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "hide": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Setup: RP2040 toolchain in WSL2",
+            "dependsOn": [
+                "RP2040 toolchain",
+                "Setup usbipd-win"
+            ],
+            "dependsOrder": "sequence",
+            "problemMatcher": []
+        },
+        {
+            "label": "RP2040 toolchain",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/RP2040/Setup.sh\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "hide": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Setup: WSL",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/wsl.sh\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Setup usbipd-win",
+            "type": "shell",
+            "command": "winget.exe",
+            "args": [
+                "install", "usbipd"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "hide": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Setup: Bind RP2040 (admin)",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c", "bash ${workspaceFolder}/src/Dependency/toolchain.ll/Platform/RP2040/Bind.sh"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        // {
+        //     "label": "Flash: Attach USB device to WSL",
+        //     "type": "shell",
+        //     "command": "powershell.exe -NoProfile -Command \"$line = usbipd list | Select-String -Pattern 'USB.*\\(COM\\d+\\)'; if (-not $line) { Write-Error 'USB serial device not found. Make sure the board is connected and try again.'; exit 1 }; $busid = ($line -split '\\s+')[0].Trim(); Write-Host ('Found device at bus ID: ' + $busid); if ($line -match 'Attached') { Write-Host ('Device ' + $busid + ' is already attached to WSL.'); exit 0 }; if ($line -match 'Not shared') { Write-Error ('Device ' + $busid + ' is not shared yet. Run the \"Setup: Bind RP2040 (admin)\" task once, then retry.'); exit 1 }; usbipd attach --wsl --busid=$busid\"",
+        //     "options": {
+        //         "cwd": "${workspaceFolder}"
+        //     },
+        //     "presentation": {
+        //         "reveal": "always",
+        //         "panel": "shared",
+        //         "clear": true
+        //     },
+        //     "problemMatcher": []
+        // },
+        {
+            "label": "Flash: uf2 to RP2040",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/RP2040/Flash.sh\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build: Simulator Incremental",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "if [ -d build ] && grep -qx 'PLATFORM_NAME:STRING=Simulator' build/CMakeCache.txt 2>/dev/null; then cd build && cmake --build .; else rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator -DCMAKE_BUILD_TYPE=Debug && cmake --build .; fi"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Build: Simulator Full",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "rm -rf build && mkdir build && cd build && cmake .. -DPLATFORM_NAME=Simulator && make"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": {
+                "owner": "gcc",
+                "fileLocation": ["autoDetect", "${workspaceFolder}"],
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1, "line": 2, "column": 3, "severity": 4, "message": 5
+                }
+            }
+        },
+        {
+            "label": "Setup: Simulator toolchain in WSL2",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/Simulator/Setup.sh\""
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true,
+                "focus": true
+            },
+            "problemMatcher": []
         }
     ]
 }

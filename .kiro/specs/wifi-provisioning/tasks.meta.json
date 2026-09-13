@@ -1,0 +1,602 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Add `TruncateFile` to fs.ll": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786112504
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786128842
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786204200
+      }
+    ],
+    "2.1 Declare `DeviceRestart` in the three platform HAL headers": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786112892
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786132715
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786275030
+      }
+    ],
+    "2.2 Implement `DeviceRestart` on the three platforms": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786113185
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786303677
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786461779
+      }
+    ],
+    "2.3 Add `hardware_watchdog` to hal.ll's RP2040 library list": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786113492
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786307441
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786465945
+      }
+    ],
+    "3.1 Declare the access point and station connect surface": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786113825
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786136444
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786278929
+      }
+    ],
+    "3.2 Implement the ESP32 access point and station connect": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786114092
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786312565
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786469980
+      }
+    ],
+    "3.3 Implement the RP2040 access point and station connect stubs": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786114348
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786474665
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786628531
+      }
+    ],
+    "3.4 Implement the Simulator access point as a successful no-op and connect as a failing stub": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786114622
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786478596
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786632611
+      }
+    ],
+    "4.1 Declare the HTTP server API and its types": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786114933
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786140363
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786282749
+      }
+    ],
+    "4.2 Implement the Simulator HTTP server over POSIX sockets": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786115204
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786482650
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786637000
+      }
+    ],
+    "4.3 Implement the ESP32 HTTP server over lwIP BSD sockets": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786115451
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786650997
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786790769
+      }
+    ],
+    "4.4 Implement the RP2040 HTTP server stub": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786115821
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786657228
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786794997
+      }
+    ],
+    "4.5 Add the server to net.ll's build contract": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786116106
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786661376
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786799909
+      }
+    ],
+    "5. Checkpoint - the four dependency repositories build": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786116356
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786816146
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786977589
+      }
+    ],
+    "6.1 Add the settings and credential data types": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786116638
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786143915
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786286695
+      }
+    ],
+    "6.2 Add the provisioning state type": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786116933
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786290465
+      }
+    ],
+    "6.3 Add `Time::TicksMs()` to the three platform folders": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786117246
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786294962
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786453486
+      }
+    ],
+    "6.4 Let a page end the render loop": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786117536
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786299928
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786457386
+      }
+    ],
+    "7.1 Add the settings file reader to `DataManager`": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786117826
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786486489
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786641159
+      }
+    ],
+    "7.2 Add the settings file writer to `DataManager`": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786118210
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786820298
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786967933
+      }
+    ],
+    "7.3 Add the restart request to `DataManager`": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786118434
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786824569
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787153318
+      }
+    ],
+    "8.1 Decode form-encoded bodies": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786118709
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786490128
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786646317
+      }
+    ],
+    "8.2 Build the configuration page content and both renderers": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786119007
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786665525
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786804441
+      }
+    ],
+    "8.3 Route the three endpoints and cross the C boundary": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786119261
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786832492
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786973251
+      }
+    ],
+    "8.4 Serve the root, the rescan and the save": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786119458
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786982415
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787158042
+      }
+    ],
+    "9.1 Implement `PageProvisioning`": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786119737
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786986600
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787162614
+      }
+    ],
+    "9.2 Branch the page list on the startup mode": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786119935
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787172933
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787246706
+      }
+    ],
+    "9.3 Restart from `app_entry` after the unmount": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786120212
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787177061
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787251151
+      }
+    ],
+    "9.4 Add the new sources and include directory to the build": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786120504
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786992505
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787167171
+      }
+    ],
+    "10. Verify the three builds": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786120798
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787257564
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787556706
+      }
+    ],
+    "11.1 Run the Simulator flow end to end": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786121090
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787561409
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788789261330
+      }
+    ],
+    "11.2 Run the ESP32 flow on hardware": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786121292
+      },
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788789372718
+      }
+    ],
+    "1. fs.ll: truncate a file at the current pointer": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786204591
+      }
+    ],
+    "6. pedal.guru: the types and the two small primitives the flow needs": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786457746
+      }
+    ],
+    "2. hal.ll: restart the device": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786466220
+      }
+    ],
+    "3. net.ll: access point and station connect on the radio API": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786632878
+      }
+    ],
+    "4. net.ll: the HTTP server": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788786800237
+      }
+    ],
+    "7. pedal.guru: `DataManager` owns the Credential_Store": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787153713
+      }
+    ],
+    "8. pedal.guru: the self-hosted configuration page": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787158466
+      }
+    ],
+    "9. pedal.guru: the provisioning page and the mode branch": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788787251546
+      }
+    ],
+    "11. Verify the flow by running it": [
+      {
+        "executionId": "d67cc878-1cda-48d5-85c5-c4ee41bf23b5",
+        "chatSessionId": "sess_d42f13bd-bb44-40dc-90f3-56f694aacc1f",
+        "timestamp": 1788789373170
+      }
+    ]
+  }
+}

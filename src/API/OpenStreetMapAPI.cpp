@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,43 +17,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "OpenStreetMapAPI.hpp"
 
-#include <string>
-#include <cmath>
-#include <chrono>
-#include <thread>
-#include "../Model/MapTile.hpp"
-#include "../Helper/HTTPHelper.cpp"
-#include "../Model/MapGrid.hpp"
+extern "C" {
+    #include "FileSystem.h"
+    #include "LCDSetup.h"
+    #include "HttpClient.h" /* net.ll: HttpDownloadFile */
+    #include "HAL.h"
+}
 
-/* define the constant since it's not standard c++ and some compilers does not include it */
-#ifndef M_PI
-    #define M_PI 3.14159265358979323846
-#endif
+namespace PedalGuru {
 
-#define TILE_WIDTH 256
-#define TILE_HEIGHT 256
-#define ZERO_CENTER_SCREEN (SCREEN_HEIGHT / 2)
-
-namespace OpenCC {
-
-class OpenStreetMapAPI {
-    private:
-        void Swap(int &a, int &b);
-    public:
-        std::string LatLongZoomToHashPath(double latitude, double longitude, int zoom);
-        std::string LatLongZoomToXyzPath(double latitude, double longitude, int zoom);
-        int LongitudeToTileX(double longitude, int zoom);
-        int LatitudeToTileY(double latitude, int zoom);
-        double TilexToLongitude(int x, int zoom);
-        double TileyToLatitude(int y, int zoom);
-        std::string XyZoomToHashPath(int x, int y, int zoom);
-        std::string DownloadTile(OpenCC::MapTile mapTile, std::string baseUrl);
-        void ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
-            double latitudeMin, double latitudeMax, double longitudeMin, double longitudeMax, int zoom);
-        void MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom);
-};
+    /* define the constant since it's not standard c++ and some compilers does not include it */
+    #ifndef M_PI
+        #define M_PI 3.14159265358979323846
+    #endif
+    
+    #define TILE_WIDTH 256
+    #define TILE_HEIGHT 256
+    #define ZERO_CENTER_SCREEN (LCD.HEIGHT / 2.0)
 
 std::string OpenStreetMapAPI::LatLongZoomToHashPath(double latitude, double longitude, int zoom) {
     int tileY = LatitudeToTileY(latitude, zoom);
@@ -117,13 +99,12 @@ void OpenStreetMapAPI::Swap(int &a, int &b) {
     b = temp;
 }
 
-void OpenStreetMapAPI::ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
+void OpenStreetMapAPI::ListTilesForArea(std::list<PedalGuru::MapTile> &mapList,
     double latitudeMin, double latitudeMax, double longitudeMin, double longitudeMax, int zoom) {
     auto tileYMin = LatitudeToTileY(latitudeMin, zoom);
     auto tileYMax = LatitudeToTileY(latitudeMax, zoom);
     auto tileXMin = LongitudeToTileX(longitudeMin, zoom);
     auto tileXMax = LongitudeToTileX(longitudeMax, zoom);
-    int x = 0, y = 0;
 
     if (tileYMin > tileYMax) Swap(tileYMin, tileYMax);
     if (tileXMin > tileXMax) Swap(tileXMin, tileXMax);
@@ -132,32 +113,36 @@ void OpenStreetMapAPI::ListTilesForArea(std::list<OpenCC::MapTile> &mapList,
     {
         for (int y = tileYMin; y <= tileYMax; y++)
         {
-            mapList.push_back(OpenCC::MapTile(x, y, zoom));
+            mapList.push_back(PedalGuru::MapTile(x, y, zoom));
         }
     }
 }
 
-std::string OpenStreetMapAPI::DownloadTile(OpenCC::MapTile mapTile, std::string baseUrl) {
+std::string OpenStreetMapAPI::DownloadTile(PedalGuru::MapTile mapTile, std::string baseUrl) {
     char tileUrl[1024];
     std::sprintf(tileUrl, "%s/%d/%u/%u.png", baseUrl.c_str(), mapTile.zoom, mapTile.x, mapTile.y);
     auto fileHashPath = XyZoomToHashPath(mapTile.x, mapTile.y, mapTile.zoom) + ".png";
 
-    HTTPHelper::DownloadFile(std::string(tileUrl), fileHashPath);
+    if (PathOrFileExists(fileHashPath.c_str())) {
+        return fileHashPath;
+    }
+
+    bool downloadOk = HttpDownloadFile(tileUrl, fileHashPath.c_str());
 
     /*
      * Please be aware of the tile usage policy: https://operations.osmfoundation.org/policies/tiles/
      * Only two requests per second, as OSM API requires low brandwidth usage.
      */
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    Delay(500);
 
-    return fileHashPath;
+    return downloadOk ? fileHashPath : "";
 }
 
 int ApplyOperator(int tilePos, int value, int gridPos) {
     return (gridPos == 0) ? tilePos + value : tilePos - value;
 }
 
-void OpenStreetMapAPI::MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double latitude, double longitude, int zoom) {
+void OpenStreetMapAPI::MapGridForCoordinate(PedalGuru::MapGrid &mapGrid, double latitude, double longitude, int zoom) {
     int tileX = LongitudeToTileX(longitude, zoom);
     int tileY = LatitudeToTileY(latitude, zoom);
 
@@ -193,17 +178,17 @@ void OpenStreetMapAPI::MapGridForCoordinate(OpenCC::MapGrid &mapGrid, double lat
     // Find pointX of the pixel in the tile for the given longitude.
     auto maxLongitude = tileRightLongitude - tileLeftLongitude;
     auto pointLongitude = absLongitude - tileLeftLongitude;
-    auto percentualX = (pointLongitude * 100) / maxLongitude;
-    auto pointX = (percentualX * TILE_WIDTH) / 100;
+    auto percentualX = (pointLongitude * 100.0) / maxLongitude;
+    auto pointX = (percentualX * TILE_WIDTH) / 100.0;
 
     // Find pointY of the pixel in the tile for the given latitude.
     auto maxLatitude = tileTopLatitude - tileBottomLatitude;
     auto pointLatitude = absLatitude - tileBottomLatitude;
-    auto percentualY = 100 - ((pointLatitude * 100) / maxLatitude); // inverted: latitude grows up, pixel grows down
-    auto pointY = (percentualY * TILE_HEIGHT) / 100;
+    auto percentualY = 100.0 - ((pointLatitude * 100.0) / maxLatitude); // inverted: latitude grows up, pixel grows down
+    auto pointY = (percentualY * TILE_HEIGHT) / 100.0;
 
-    mapGrid.offsetX = ZERO_CENTER_SCREEN - (indexLongitude * TILE_WIDTH) - pointX;
-    mapGrid.offsetY = ZERO_CENTER_SCREEN - (indexLatitude * TILE_HEIGHT) - pointY;
+    mapGrid.offsetX = -(ZERO_CENTER_SCREEN - (indexLongitude * TILE_WIDTH) - pointX);
+    mapGrid.offsetY = -(ZERO_CENTER_SCREEN - (indexLatitude * TILE_HEIGHT) - pointY);
 }
 
 }

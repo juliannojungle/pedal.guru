@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,28 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
-
 #include <list>
 #include <memory>
-#include "../../../Sensor/GPS.cpp"
-#include "../../iDevice.hpp"
+#include "GPS.hpp"
+#include "LocationModule.hpp"
 
-namespace OpenCC {
-
-class LocationModule : public iDevice {
-    public:
-        LocationModule();
-        void Connect() override;
-        void Disconnect() override;
-};
+namespace PedalGuru {
 
 LocationModule::LocationModule() {
-    this->sensors_.push_back(std::make_unique<OpenCC::GPS>());
+    this->sensors_.push_back(std::make_unique<PedalGuru::GPS>());
+}
+
+bool LocationModule::Connected() {
+    return this->connected_;
 }
 
 void LocationModule::Connect() {
-    for(const auto &sensor : sensors_) {
+    for(const auto &sensor : this->sensors_) {
         if (!sensor.get()->Enabled())
             sensor.get()->Enable();
     }
@@ -47,12 +42,21 @@ void LocationModule::Connect() {
 }
 
 void LocationModule::Disconnect() {
-    for(const auto &sensor : sensors_) {
+    for(const auto &sensor : this->sensors_) {
         if (sensor.get()->Enabled())
             sensor.get()->Disable();
     }
 
     this->connected_ = false;
+}
+
+void LocationModule::GetData() {
+    if (!this->connected_) return;
+
+    for(const auto &sensor : this->sensors_) {
+        if (sensor.get()->Enabled())
+            sensor.get()->GetData();
+    }
 }
 
 }

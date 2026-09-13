@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,83 +17,85 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "TaskManager.hpp"
+#include "DataManager.hpp"
+#include "GUINavigator.hpp"
+#include "PageAltimetry.hpp"
+#include "PageDistance.hpp"
+#include "PageHillsGraph.hpp"
+#include "PageMap.hpp"
+#include "PageMapSync.hpp"
+#include "PageProvisioning.hpp"
+#include "PageRoute.hpp"
+#include "PageSummary.hpp"
+#include "HIDHandler.hpp"
+#include "LocationModule.hpp"
 
-#include <memory>
-#include <list>
-#include <thread>
-#include "GUI/GUIDrawer.cpp"
-#include "GUI/GUINavigator.cpp"
-#include "GUI/Page/BasePage.cpp"
-#include "GUI/Page/PageAltimetry.cpp"
-#include "GUI/Page/PageDistance.cpp"
-#include "GUI/Page/PageHillsGraph.cpp"
-#include "GUI/Page/PageMap.cpp"
-#include "GUI/Page/PageMapSync.cpp"
-#include "GUI/Page/PageRoute.cpp"
-#include "GUI/Page/PageSummary.cpp"
-#include "HIDHandler.cpp"
-#include "Model/SettingsData.hpp"
-#include "Device/iDevice.hpp"
-#include "Device/Generic/LocationModule/LocationModule.cpp"
+extern "C" {
+    #include "HAL.h"
+}
 
-namespace OpenCC {
+namespace PedalGuru {
 
-class TaskManager {
-    private:
-        OpenCC::SettingsData settings_;
-        std::list<std::unique_ptr<OpenCC::iDevice>> devices_;
-        std::list<std::unique_ptr<OpenCC::BasePage>> pages_;
-        void ReadSettings();
-        void CreateDevices();
-        void StartDevices();
-        void CreatePages(OpenCC::GUIDrawer& drawer);
-    public:
-        ~TaskManager();
-        void Execute();
-};
+std::list<std::unique_ptr<Device>> TaskManager::devices_;
+bool TaskManager::running_;
 
 void TaskManager::Execute() {
     ReadSettings();
+    provisioned_ = DataManager::GetInstance()->ReadCredentials(credentials_);
+
     CreateDevices();
-    StartDevices();
-    OpenCC::GUIDrawer drawer;
-    CreatePages(drawer);
-    OpenCC::HIDHandler handler;
-    OpenCC::GUINavigator guiNavigator(handler, pages_);
+    ConnectToDevices();
+
+    /*
+     * Start a parallel task to keep reading devices data,
+     * while the main core keeps handling HID and GUI.
+     */
+    ThreadStart(GetDevicesData);
+
+    GUIDrawer drawer;
+
+    if (provisioned_) {
+        CreatePages(drawer);
+    } else {
+        pages_.push_back(std::make_unique<PageProvisioning>(drawer, settings_));
+    }
+
+    HIDHandler handler;
+    GUINavigator guiNavigator(handler, pages_);
     drawer.Execute();
 }
 
-void TaskManager::CreatePages(OpenCC::GUIDrawer& drawer) {
+void TaskManager::CreatePages(GUIDrawer& drawer) {
     /*
      * The pages order here is crucial, since it represents the pages cycle order!
      */
     if (settings_.pageMapEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageMap>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageMap>(drawer, settings_));
     }
 
     if (settings_.pageRouteEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageRoute>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageRoute>(drawer, settings_));
     }
 
     if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageHillsGraph>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageHillsGraph>(drawer, settings_));
     }
 
     if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageDistance>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageDistance>(drawer, settings_));
     }
 
     if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageAltimetry>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageAltimetry>(drawer, settings_));
     }
 
     if (settings_.pageSummaryEnabled) {
-        pages_.push_back(std::make_unique<OpenCC::PageSummary>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageSummary>(drawer, settings_));
     }
 
     // Settings pages aren't optional.
-    pages_.push_back(std::make_unique<OpenCC::PageMapSync>(drawer, settings_));
+    pages_.push_back(std::make_unique<PageMapSync>(drawer, settings_));
 }
 
 void TaskManager::ReadSettings() {
@@ -109,17 +111,35 @@ void TaskManager::ReadSettings() {
 
 void TaskManager::CreateDevices() {
     //TODO: condition to settings
-    devices_.push_back(std::make_unique<OpenCC::LocationModule>());
+    devices_.push_back(std::make_unique<LocationModule>());
 }
 
-void TaskManager::StartDevices() {
+void TaskManager::ConnectToDevices() {
+    running_ = true;
+
     for(const auto &device : devices_) {
-        if (!device.get()->Connected())
-            device.get()->Connect();
+        if (!device->Connected())
+            device->Connect();
+    }
+}
+
+void TaskManager::GetDevicesData() {
+    auto device = devices_.begin();
+
+    while (running_)
+    {
+        if (device->get()->Connected())
+            device->get()->GetData();
+
+        device = (device == devices_.end()) ? devices_.begin() : device++;
+
+        Delay(1000);//TODO something better.
     }
 }
 
 TaskManager::~TaskManager() {
+    running_ = false;
+
     for(const auto &device : devices_) {
         if (device.get()->Connected())
             device.get()->Disconnect();

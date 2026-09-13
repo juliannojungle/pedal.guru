@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,79 +17,63 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "PageMap.hpp"
+#include "Area.hpp"
+#include "DataManager.hpp"
+#include "GPSFixData.hpp"
+#include <algorithm>
 
-#include "BasePage.cpp"
-#include "../../API/OpenStreetMapAPI.cpp"
-#include "../../Model/MapGrid.hpp"
-#include <jsoncpp/json/json.h>
-#include <iomanip> // setprecision
-#include <fstream>
-#include <chrono>
-#include <thread>
+extern "C" {
+    #include "HAL.h"
+}
 
-namespace OpenCC {
-
-class PageMap : public OpenCC::BasePage {
-    private:
-        OpenCC::OpenStreetMapAPI mapApi_;
-        PiRender::Texture mapTexture_;
-        OpenCC::MapGrid mapGrid_;
-        double previousLatitude, previousLongitude;
-        void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
-        void LoadGridImage();
-    public:
-        using BasePage::BasePage; // nothing to do here, using parent constructor
-        void PreDrawPageContents() override;
-        void DrawPageContents() override;
-        void PostDrawPageContents() override;
-};
+namespace PedalGuru {
 
 void PageMap::PreDrawPageContents() {
 }
 
 void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
-    std::ifstream gpsFile("gps.json", std::ifstream::binary);
-
-    if (!gpsFile) return;
-
-    Json::Reader reader;
-    Json::Value gpsData;
-
-    if (reader.parse(gpsFile, gpsData)) {
-        latitude = gpsData["latitude"].asDouble();
-        longitude = gpsData["longitude"].asDouble();
-        fixed = gpsData["fixed"].asBool();
-    }
-
-    gpsFile.close();
+    GPSFixData gpsFixData;
+    DataManager::GetInstance()->Pop(gpsFixData);
+    latitude = gpsFixData.latitude;
+    longitude = gpsFixData.longitude;
+    fixed = gpsFixData.fixQuality > 0;
 }
 
-void PageMap::LoadGridImage() {
-    PiRender::Image gridImage(512, 512, PiRender::COLOR_BLUE);
-    int latitude, longitude;
-    PiRender::Rectangle tileRectangle(0, 0, 256, 256);
-    PiRender::Rectangle gridRectangle(0, 0, 256, 256);
+void PageMap::LoadGridTexture() {
+    Rectangle sourceTile({0, 0}, {256, 256});
+    Point gridTarget({0, 0});
 
-    for (int latitude = 0; latitude < 2; latitude++)
+    for (int row = 0; row < 2; row++)
     {
-        for (int longitude = 0; longitude < 2; longitude++)
+        for (int col = 0; col < 2; col++)
         {
+            // Tile position in the virtual grid
+            int tileX = col * 256;
+            int tileY = row * 256;
+
+            // Intersection of visible area (240x240) with this tile (256x256)
+            sourceTile.point.x = std::max(mapGrid_.offsetX - tileX, 0);
+            sourceTile.point.y = std::max(mapGrid_.offsetY - tileY, 0);
+            sourceTile.size.width = std::min(tileX + 256, mapGrid_.offsetX + 240) - std::max(tileX, mapGrid_.offsetX);
+            sourceTile.size.height = std::min(tileY + 256, mapGrid_.offsetY + 240) - std::max(tileY, mapGrid_.offsetY);
+
+            gridTarget.x = std::max(tileX - mapGrid_.offsetX, 0);
+            gridTarget.y = std::max(tileY - mapGrid_.offsetY, 0);
+
+            if (sourceTile.size.width <= 0 || sourceTile.size.height <= 0) continue;
+
             auto imagePath = mapApi_.XyZoomToHashPath(
-                mapGrid_.tiles[latitude][longitude].x,
-                mapGrid_.tiles[latitude][longitude].y,
-                mapGrid_.tiles[latitude][longitude].zoom) + ".png";
-            PiRender::Image tileImage(imagePath);
-            gridRectangle.x = longitude * 256;
-            gridRectangle.y = latitude * 256;
-            gridImage.ImageDraw(tileImage, tileRectangle, gridRectangle, PiRender::COLOR_WHITE);
-            tileImage.UnloadImage();
+                mapGrid_.tiles[row][col].x,
+                mapGrid_.tiles[row][col].y,
+                mapGrid_.tiles[row][col].zoom) + ".png";
+
+            mapTexture_.DrawPngToArea(
+                imagePath,
+                sourceTile,
+                gridTarget);
         }
     }
-
-    mapTexture_.UnloadTexture();
-    mapTexture_.LoadTextureFromImage(gridImage);
-    gridImage.UnloadImage();
 }
 
 void PageMap::DrawPageContents() {
@@ -101,18 +85,18 @@ void PageMap::DrawPageContents() {
         previousLatitude = latitude;
         previousLongitude = longitude;
         mapApi_.MapGridForCoordinate(mapGrid_, latitude, longitude, 16);
-        LoadGridImage();
+        LoadGridTexture();
     }
 
-    window_.DrawTexture(mapTexture_, mapGrid_.offsetX, mapGrid_.offsetY, PiRender::COLOR_WHITE);
-    window_.DrawCircle(120, 120, 4, (fixed ? PiRender::COLOR_GREEN : PiRender::COLOR_ORANGE));
+    mapTexture_.DrawCircle({120, 120}, 4, (fixed ? COLOR_GREEN : COLOR_ORANGE), 1, false);
+    window_.DrawTexture(mapTexture_);
 
     // We only get gps readings once per second.
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    Delay(1000);
 }
 
 void PageMap::PostDrawPageContents() {
-    mapTexture_.UnloadTexture();
+    mapTexture_.Release();
 }
 
 }

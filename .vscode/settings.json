@@ -2,10 +2,13 @@
     "editor.rulers": [120],
     "editor.tabSize": 4,
     "editor.detectIndentation": false,
-    // "C_Cpp.default.browse.databaseFilename": "${workspaceFolder}/.vscode/vc.db",
-    "cmake.configureSettings": {
-        "CMAKE_MAKE_PROGRAM": "C:\\dev\\mingw64\\bin\\mingw32-make.exe"
-    },
+    "clangd.path": "clangd",
+    "clangd.arguments": [
+        "--query-driver=/usr/bin/arm-none-eabi-gcc"
+    ],
+    "clangd.restartAfterCrash": true,
+    "editor.indentSize": 4,
+    "explorer.excludeGitIgnore": true,
     "files.associations": {
         "cstdarg": "cpp",
         "array": "cpp",
@@ -39,6 +42,31 @@
         "type_traits": "cpp",
         "tuple": "cpp",
         "typeinfo": "cpp",
-        "utility": "cpp"
-    }
+        "utility": "cpp",
+        "atomic": "cpp",
+        "bit": "cpp",
+        "chrono": "cpp",
+        "cstddef": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "deque": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "algorithm": "cpp",
+        "iterator": "cpp",
+        "memory": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "random": "cpp",
+        "ratio": "cpp",
+        "string": "cpp",
+        "iomanip": "cpp",
+        "iostream": "cpp",
+        "thread": "cpp",
+        "cinttypes": "cpp",
+        "*.h": "c",
+        "*.c": "c"
+    },
+    "git.detectSubmodules": false,
+    "git.autoRepositoryDetection": "openEditors"
 }

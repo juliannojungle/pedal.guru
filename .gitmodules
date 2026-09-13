@@ -1,11 +1,25 @@
-# [submodule "raylib"]
-#     path = src/Dependency/raylib
-#     url = https://github.com/raysan5/raylib.git
-#     shallow = true
-#     branch = master
-
-# [submodule "pigpio"]
-#     path = src/Dependency/pigpio
-#     url = https://github.com/joan2937/pigpio.git
-#     shallow = true
-#     branch = master
+[submodule "src/Dependency/gui.ll"]
+    path = src/Dependency/gui.ll
+    url = https://github.com/juliannojungle/gui.ll.git
+    shallow = true
+    branch = main
+[submodule "src/Dependency/fs.ll"]
+    path = src/Dependency/fs.ll
+    url = https://github.com/juliannojungle/fs.ll.git
+    shallow = true
+    branch = main
+[submodule "src/Dependency/net.ll"]
+	path = src/Dependency/net.ll
+	url = https://github.com/juliannojungle/net.ll.git
+	shallow = true
+	branch = main
+[submodule "src/Dependency/hal.ll"]
+	path = src/Dependency/hal.ll
+	url = https://github.com/juliannojungle/hal.ll.git
+	shallow = true
+	branch = main
+[submodule "src/Dependency/toolchain.ll"]
+	path = src/Dependency/toolchain.ll
+	url = https://github.com/juliannojungle/toolchain.ll.git
+	shallow = true
+	branch = main

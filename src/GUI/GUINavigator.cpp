@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,41 +17,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "GUINavigator.hpp"
 
-#include <memory>
-#include <list>
-#include "Page/BasePage.cpp"
-#include "../HIDHandler.cpp"
-
-namespace OpenCC {
-
-class GUINavigator {
-    private:
-        OpenCC::HIDHandler& handler_;
-        std::list<std::unique_ptr<OpenCC::BasePage>>& pages_;
-        std::list<std::unique_ptr<OpenCC::BasePage>>::iterator pageIndex_;
-        void RegisterEvents();
-        void UnregisterEvents();
-        void GoToNextPage();
-        void GoToPreviousPage();
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator previousPageReference_;
-        std::list<std::shared_ptr<OpenCC::Callback>>::const_iterator nextPageReference_;
-    public:
-        GUINavigator(OpenCC::HIDHandler& handler, std::list<std::unique_ptr<OpenCC::BasePage>>& pages)
-            : handler_(handler), pages_(pages) {
-            RegisterEvents();
-
-            if (pages_.size() == 0) return;
-
-            pageIndex_ = pages_.begin();
-            (*pageIndex_)->Setup();
-        }
-        ~GUINavigator() {
-            //TODO: This is throwing an invalid pointer exception. Check the iterators reference.
-            // UnregisterEvents();
-        }
-};
+namespace PedalGuru {
 
 void GUINavigator::RegisterEvents() {
     nextPageReference_ = handler_.RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});

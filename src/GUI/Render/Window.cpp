@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,81 +17,34 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "Window.hpp"
 
-#include <string>
-#include "Color.cpp"
-#include "Texture.cpp"
-
-namespace GUIDriver {
-/* The raylib dependency must be the last one, so it doesn't cause building problems due it's dependencies */
-#ifdef USE_RAYLIB
 extern "C" {
-    #include "../../Dependency/raylib/src/raylib.h"
-}
-#endif
-}
-
-namespace PiRender {
-
-class Window {
-    public:
-        void Init(int width, int height, std::string title);
-        void SetTargetFPS(int frameRate);
-        void HideCursor();
-        bool ShouldClose();
-        void Close();
-        void BeginDrawing();
-        void ClearBackground(PiRender::Color color);
-        void EndDrawing();
-        void DrawCircle(int centerX, int centerY, float radius, PiRender::Color color);
-        void DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color);
-        void DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color);
-};
-
-void Window::Init(int width, int height, std::string title) {
-    GUIDriver::InitWindow(width, height, title.c_str());
+    #include "LCDSetup.h"
+    #include "LCDRenderer.h"
 }
 
-void Window::SetTargetFPS(int frameRate) {
-    GUIDriver::SetTargetFPS(frameRate);
-}
+namespace PedalGuru {
 
-void Window::HideCursor() {
-    GUIDriver::HideCursor();
+void Window::Init() {
+    LCDInitialize();
+    LCDClear(COLOR_LL(COLOR_BLACK));
 }
 
 bool Window::ShouldClose() {
-    return GUIDriver::WindowShouldClose();
+    return LCDRenderShouldClose();
 }
 
 void Window::Close() {
-    GUIDriver::CloseWindow();
+    LCDRenderClose();
 }
 
-void Window::BeginDrawing() {
-    GUIDriver::BeginDrawing();
+void Window::ClearBackground(Color color) {
+    LCDClear(COLOR_LL(color));
 }
 
-void Window::ClearBackground(PiRender::Color color) {
-    GUIDriver::ClearBackground(COLOR_TO_RAYLIB(color));
-}
-
-void Window::EndDrawing() {
-    GUIDriver::EndDrawing();
-}
-
-void Window::DrawCircle(int centerX, int centerY, float radius, PiRender::Color color) {
-    GUIDriver::DrawCircle(centerX, centerY, radius, COLOR_TO_RAYLIB(color));
-}
-
-void Window::DrawText(std::string text, int posX, int posY, int fontSize, PiRender::Color color) {
-    GUIDriver::DrawText(text.c_str(), posX, posY, fontSize, COLOR_TO_RAYLIB(color));
-}
-
-void Window::DrawTexture(PiRender::Texture& texture, int posX, int posY, PiRender::Color color) {
-    auto driverTexture(TEXTURE2D_TO_RAYLIB(texture));
-    GUIDriver::DrawTexture(driverTexture, posX, posY, COLOR_TO_RAYLIB(color));
+void Window::DrawTexture(Texture texture) {
+    LCDRenderTexture(texture.Data());
 }
 
 }

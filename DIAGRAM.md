@@ -1,6 +1,6 @@
 <!---
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -28,21 +28,21 @@ classDiagram
 
 class SettingsData
 
-link SettingsData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+link SettingsData "https://github.com/juliannojungle/PedalGuru/blob/main/src/PedalGuru.hpp"
 
 class TaskManager {
     -SettingsData *settings_
-    -List~*iDevice~ devices_
+    -List~*Device~ devices_
     -List~*BasePage~ pages_
     -ReadSettings() SettingsData
     -DisplayPage(BasePage *page)
-    -StartDevice(iDevice *device)
+    -StartDevice(Device *device)
     +Run()
 }
 
-link TaskManager "https://github.com/juliannojungle/OpenCC/blob/main/src/task_manager.cpp"
+link TaskManager "https://github.com/juliannojungle/PedalGuru/blob/main/src/task_manager.cpp"
 TaskManager ..|> BasePage
-TaskManager ..|> iDevice
+TaskManager ..|> Device
 TaskManager ..> SettingsData : Reads
 
 class BasePage {
@@ -56,9 +56,9 @@ class BasePage {
     +NextPage()
 }
 
-link BasePage "https://github.com/juliannojungle/OpenCC/blob/main/src/gui/pages/BasePage.cpp"
+link BasePage "https://github.com/juliannojungle/PedalGuru/blob/main/src/gui/pages/BasePage.cpp"
 
-class iSensor {
+class Sensor {
     <<interface>>
     #bool enabled_
     +Enabled()
@@ -66,27 +66,27 @@ class iSensor {
     +Disable()
 }
 
-link iSensor "https://github.com/juliannojungle/OpenCC/blob/main/src/sensors/iSensor.hpp"
+link Sensor "https://github.com/juliannojungle/PedalGuru/blob/main/src/sensors/Sensor.hpp"
 
-class iDevice {
+class Device {
     <<interface>>
     #bool connected_
-    #List~iSensor~ sensors_
+    #List~Sensor~ sensors_
     -SettingsData *settings
     +Connect()
     +Connected()
 }
 
-link iDevice "https://github.com/juliannojungle/OpenCC/blob/main/src/devices/iDevice.hpp"
+link Device "https://github.com/juliannojungle/PedalGuru/blob/main/src/devices/Device.hpp"
 
 class SensorData
 
-link SensorData "https://github.com/juliannojungle/OpenCC/blob/main/src/opencc.hpp"
+link SensorData "https://github.com/juliannojungle/PedalGuru/blob/main/src/PedalGuru.hpp"
 
-iDevice "1" --* "1..*" iSensor : Contains
-SensorData <.. iDevice : Writes
+Device "1" --* "1..*" Sensor : Contains
+SensorData <.. Device : Writes
 
 BasePage "1" ..> "1..*" SensorData : Reads
 SettingsData <.. BasePage : Reads/Writes
-iDevice ..> SettingsData : Reads
+Device ..> SettingsData : Reads
 ```

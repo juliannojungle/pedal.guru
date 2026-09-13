@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,28 +17,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "PageMapSync.hpp"
+#include "Color.hpp"
 
-#include "BasePage.cpp"
-#include "../../API/OpenStreetMapAPI.cpp"
-#include "../../Model/MapTile.hpp"
-#include <list>
-
-namespace OpenCC {
-
-class PageMapSync : public OpenCC::BasePage {
-    private:
-        OpenStreetMapAPI mapApi_;
-        std::list<OpenCC::MapTile> mapList_;
-        int syncedTiles_, totalTiles_;
-        PiRender::Texture mapTexture_;
-        void ShowTile(std::string filePath);
-    public:
-        using BasePage::BasePage; // nothing to do here, using parent constructor
-        void PreDrawPageContents() override;
-        void DrawPageContents() override;
-        void PostDrawPageContents() override;
-};
+namespace PedalGuru {
 
 void PageMapSync::PreDrawPageContents() {
     mapApi_.ListTilesForArea(mapList_, -22.4701917, -22.1223827, -43.047406, -42.7110277, 16);
@@ -50,28 +32,20 @@ void PageMapSync::DrawPageContents() {
     if (mapList_.size() > 0) {
         auto tile = mapList_.front();
         auto filePath = mapApi_.DownloadTile(tile, settings_.mapSyncingBaseUrl);
-        ShowTile(filePath);
+        // 256x256 tile on 240x240 display: 8 padding to center the tile.
+        mapTexture_.DrawPngToArea(filePath, {{8, 8}, {240, 240}}, {0, 0});
         mapList_.pop_front();
         syncedTiles_++;
     }
 
-    char progress[100];
+    char progress[(totalTiles_ * 2) + 3];
     std::sprintf(progress, "%d / %d", syncedTiles_, totalTiles_);
-    window_.DrawText(std::string(progress), 50, 125, 20, PiRender::COLOR_BLACK);
+    mapTexture_.DrawText(std::string(progress), {50, 125}, 20, COLOR_BLACK, COLOR_TRANSPARENT);
+    window_.DrawTexture(mapTexture_);
 }
 
 void PageMapSync::PostDrawPageContents() {
-    mapTexture_.UnloadTexture();
-}
-
-void PageMapSync::ShowTile(std::string filePath) {
-    PiRender::Image mapTile;
-    mapTile.LoadImage(filePath);
-    mapTexture_.UnloadTexture();
-    mapTexture_.LoadTextureFromImage(mapTile);
-    mapTile.UnloadImage();
-    // 256x256 tile on 240x240 display: -8 padding to center the tile.
-    window_.DrawTexture(mapTexture_, -8, -8, PiRender::COLOR_WHITE);
+    mapTexture_.Release();
 }
 
 }

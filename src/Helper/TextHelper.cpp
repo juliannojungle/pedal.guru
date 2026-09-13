@@ -1,6 +1,6 @@
 /*
-    Open Cycle Computer (aka OpenCC) is an open-source software
-    for cycle computers based on DIY hardware (primarily Raspberry Pi).
+    Pedal.guru is an open-source software
+    for cycle computers based on DIY hardware (MCUs like RP2040 and ESP32-S3).
     Copyright (C) 2022, Julianno F. C. Silva (@juliannojungle)
 
     This program is free software: you can redistribute it and/or modify
@@ -17,32 +17,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
-#pragma once
+#include "TextHelper.hpp"
 
-#include <vector>
-#include <string>
+namespace PedalGuru {
 
-namespace OpenCC {
+bool TextHelper::Contains(char* string, char* substring) {
+    std::size_t substringLength = std::strlen(substring);
+    if (std::strlen(string) < substringLength) return false;
 
-class TextHelper {
-    public:
-        static void Tokenize(std::string &source, char delimiter, char checksumChar, char (&target)[16][16]);
-        static std::vector<std::string> Tokenize(std::string &text, char delimiter, char checksumChar);
-        static bool contains(char* string, char* substring);
-};
-
-bool TextHelper::contains(char* string, char* substring) {
-    if (strlen(string) < strlen(substring)) return false;
-
-    for (int i = 0; i < strlen(substring); i++)
+    for (std::size_t i = 0; i < substringLength; i++)
         if (string[i] != substring[i]) return false;
 
     return true;
 }
 
 void TextHelper::Tokenize(std::string &source, char delimiter, char checksumChar, char (&target)[16][16]) {
-    int index, item = 0, itemIndex = 0;
-    for (index = 0; index < source.size(); index++) {
+    int item = 0, itemIndex = 0;
+    for (std::size_t index = 0; index < source.size(); index++) {
         if (source[index] == delimiter) {
             target[item][itemIndex] = '\0';
             item++;
@@ -63,11 +54,10 @@ void TextHelper::Tokenize(std::string &source, char delimiter, char checksumChar
 }
 
 std::vector<std::string> TextHelper::Tokenize(std::string &text, char delimiter, char checksumChar) {
-    int i;
     std::string token = "";
     std::vector<std::string> tokens;
 
-    for (i = 0; i < text.size(); i++) {
+    for (std::size_t i = 0; i < text.size(); i++) {
         if (text[i] == delimiter) {
             tokens.push_back(token);
             token = "";
