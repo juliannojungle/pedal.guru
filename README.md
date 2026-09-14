@@ -54,8 +54,8 @@ Optional for prototyping:
 | GP2    | GP42  |    |      |     | pin5 (CLK/SCK)   |          |     |     |     |     |      |             |
 | GP3    | GP41  |    |      |     | pin2 (CMD/MOSI)  |          |     |     |     |     |      |             |
 | GP5    | GP39  |    |      |     | pin3 (VSS1/GND)  |          |     |     |     |     |      |             |
-| GND    | GND   |    |      | GND | pin6 (VSS2/GND)  | GND      |     | GND | GND |     |      |             |
-| 3V3    | 3V3   | 3V | 3V3  | 3V3 | pin4 (VDD/3V3)   | VCC/3V3  |     | 3V3 | 3V3 |     |      |             |
+| GND    | GND   |    |      | GND | pin6 (VSS2/GND)  | GND      |     | GND | GND |     |      | pin1 (GND)  |
+| 3V3    | 3V3   | 3V | 3V3  | 3V3 | pin4 (VDD/3V3)   | VCC/3V3  |     | 3V3 | 3V3 |     |      | pin14+pin16 |
 | GP8    | GP8   |    |      |     |                  | DC       |     |     |     |     |      |             |
 | GP9    | GP9   |    |      |     |                  | CS       |     |     |     |     |      |             |
 | GP10   | GP10  |    |      |     |                  | CLK      |     |     |     |     |      |             |
