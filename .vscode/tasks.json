@@ -290,7 +290,7 @@
             "type": "shell",
             "command": "bash",
             "args": [
-                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/RP2040/Flash.sh\""
+                "-c", "bash \"${workspaceFolder}/src/Dependency/toolchain.ll/Platform/RP2040/Flash.sh\" \"${workspaceFolder}/build/${workspaceFolderBasename}.uf2\""
             ],
             "options": {
                 "cwd": "${workspaceFolder}"
