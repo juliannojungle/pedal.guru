@@ -22,12 +22,19 @@
 
 extern "C" {
     #include "HAL.h"
+    #include "Debug.h"
     #include "FileSystem.h"
 }
 
 
 void app_entry(void) {
     STDIOInitAll();
+
+    #ifdef DEBUGMSGS
+    ::Delay(3000); // wait to connect serial monitor
+    #endif
+
+    SHOWDEBUG("Welcome to Pedal.Guru!\r\n");
 
     if (!MountSdCard()) {
         exit(EXIT_FAILURE);
@@ -38,16 +45,10 @@ void app_entry(void) {
         exit(EXIT_FAILURE);
     }
 
-#ifdef _DEBUG
-    std::cout << "Welcome to Pedal.Guru!\n";
-#endif
-
     PedalGuru::TaskManager taskManager;
     taskManager.Execute();
 
-#ifdef _DEBUG
-    std::cout << "See you later!\n";
-#endif
+    SHOWDEBUG("See you later!\r\n");
 
     UnMountSdCard();
 

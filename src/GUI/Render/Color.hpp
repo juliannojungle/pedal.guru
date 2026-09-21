@@ -25,7 +25,7 @@ extern "C" {
 
 namespace PedalGuru {
 
-#define COLOR_LL(color) (short)RGB_COLOR(color.red, color.green, color.blue)
+#define COLOR_LL(color) RGB_COLOR(color.red, color.green, color.blue)
 
 class Color {
     public:

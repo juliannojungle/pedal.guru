@@ -31,7 +31,6 @@ class PageProvisioning : public PedalGuru::BasePage {
     private:
         Server server_;
         std::list<WiFiNetwork> networks_;
-        Texture screenTexture_ { 240, 240 };
         ProvisioningState state_ {ProvisioningState::SERVING};
         unsigned int confirmationStart_ {0};
         void DrawScreen();

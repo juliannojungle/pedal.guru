@@ -33,7 +33,6 @@ static const char ACCESS_POINT_SSID[] = "pedal.guru";
 static const char CONFIGURATION_URL[] = "http://" WIFI_ACCESS_POINT_ADDRESS ":3333/";
 static const unsigned int SERVER_POLL_MILLISECONDS = 100;
 static const unsigned int CONFIRMATION_HOLD_MILLISECONDS = 5000;
-static const uint16_t SCAN_MAX_NETWORKS = 32;
 
 void PageProvisioning::PreDrawPageContents() {
     if (!WiFiInitialize()) {
@@ -41,19 +40,22 @@ void PageProvisioning::PreDrawPageContents() {
         return;
     }
 
-    WiFiNetwork scanned[SCAN_MAX_NETWORKS];
-    uint16_t foundNetworks {0};
-
-    if (WiFiScan(scanned, SCAN_MAX_NETWORKS, &foundNetworks)) {
-        for (uint16_t index = 0; index < foundNetworks; index++) {
-            networks_.push_back(scanned[index]);
-        }
-    }
-
     if (!WiFiAccessPointStart(ACCESS_POINT_SSID, nullptr)) {
         state_ = ProvisioningState::UNAVAILABLE;
         return;
     }
+
+//    WiFiNetwork scanned[SCAN_MAX_NETWORKS];
+//    uint16_t foundNetworks {0};
+//
+//    SHOWDEBUG("PageProvisioning: wifi scan\r\n");
+//    if (WiFiScan(scanned, SCAN_MAX_NETWORKS, &foundNetworks)) {
+//        SHOWDEBUG("PageProvisioning: listing networks\r\n");
+//        for (uint16_t index = 0; index < foundNetworks; index++) {
+//            networks_.push_back(scanned[index]);
+//            SHOWDEBUG("PageProvisioning: listing networks: %s\r\n", scanned[index].Ssid);
+//        }
+//    }
 
     if (!server_.Start(networks_)) {
         state_ = ProvisioningState::UNAVAILABLE;
@@ -83,6 +85,7 @@ void PageProvisioning::DrawPageContents() {
 }
 
 void PageProvisioning::DrawScreen() {
+    Texture screenTexture_ { 240, 240 };
     screenTexture_.DrawCircle({120, 120}, 120, COLOR_WHITE, 1, true);
 
     switch (state_) {
@@ -113,13 +116,13 @@ void PageProvisioning::DrawScreen() {
     }
 
     window_.DrawTexture(screenTexture_);
+    screenTexture_.Release();
 }
 
 void PageProvisioning::PostDrawPageContents() {
     server_.Stop();
     WiFiAccessPointStop();
     WiFiDeinitialize();
-    screenTexture_.Release();
 }
 
 }

@@ -31,17 +31,20 @@ namespace PedalGuru {
 
 class TaskManager {
     private:
-        PedalGuru::SettingsData settings_;
-        PedalGuru::CredentialData credentials_;
-        bool provisioned_ {false};
-        static std::list<std::unique_ptr<PedalGuru::Device>> devices_;
-        std::list<std::unique_ptr<PedalGuru::BasePage>> pages_;
+        static GUIDrawer drawer_;
+        static std::list<std::unique_ptr<Device>> devices_;
+        static std::list<std::unique_ptr<BasePage>> pages_;
         static bool running_;
+        static void GetDevicesData();
+        static void ExecuteGuiDrawer();
+
+        SettingsData settings_;
+        CredentialData credentials_;
+        bool provisioned_ {false};
         void ReadSettings();
         void CreateDevices();
         void ConnectToDevices();
-        static void GetDevicesData();
-        void CreatePages(PedalGuru::GUIDrawer& drawer);
+        void CreatePages();
     public:
         ~TaskManager();
         void Execute();

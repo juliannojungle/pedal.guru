@@ -38,7 +38,9 @@ extern "C" {
 namespace PedalGuru {
 
 std::list<std::unique_ptr<Device>> TaskManager::devices_;
+std::list<std::unique_ptr<BasePage>> TaskManager::pages_;
 bool TaskManager::running_;
+GUIDrawer TaskManager::drawer_;
 
 void TaskManager::Execute() {
     ReadSettings();
@@ -48,54 +50,52 @@ void TaskManager::Execute() {
     ConnectToDevices();
 
     /*
-     * Start a parallel task to keep reading devices data,
-     * while the main core keeps handling HID and GUI.
+     * Separated tasks to "read devices data" and "handle HID and GUI".
      */
     ThreadStart(GetDevicesData);
 
-    GUIDrawer drawer;
-
     if (provisioned_) {
-        CreatePages(drawer);
+        CreatePages();
     } else {
-        pages_.push_back(std::make_unique<PageProvisioning>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageProvisioning>(drawer_, settings_));
     }
 
     HIDHandler handler;
     GUINavigator guiNavigator(handler, pages_);
-    drawer.Execute();
+    ThreadStart(ExecuteGuiDrawer);
+    ThreadSchedulerStart();
 }
 
-void TaskManager::CreatePages(GUIDrawer& drawer) {
+void TaskManager::CreatePages() {
     /*
      * The pages order here is crucial, since it represents the pages cycle order!
      */
     if (settings_.pageMapEnabled) {
-        pages_.push_back(std::make_unique<PageMap>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageMap>(drawer_, settings_));
     }
 
     if (settings_.pageRouteEnabled) {
-        pages_.push_back(std::make_unique<PageRoute>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageRoute>(drawer_, settings_));
     }
 
     if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<PageHillsGraph>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageHillsGraph>(drawer_, settings_));
     }
 
     if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<PageDistance>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageDistance>(drawer_, settings_));
     }
 
     if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<PageAltimetry>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageAltimetry>(drawer_, settings_));
     }
 
     if (settings_.pageSummaryEnabled) {
-        pages_.push_back(std::make_unique<PageSummary>(drawer, settings_));
+        pages_.push_back(std::make_unique<PageSummary>(drawer_, settings_));
     }
 
     // Settings pages aren't optional.
-    pages_.push_back(std::make_unique<PageMapSync>(drawer, settings_));
+    pages_.push_back(std::make_unique<PageMapSync>(drawer_, settings_));
 }
 
 void TaskManager::ReadSettings() {
@@ -135,6 +135,10 @@ void TaskManager::GetDevicesData() {
 
         Delay(1000);//TODO something better.
     }
+}
+
+void TaskManager::ExecuteGuiDrawer() {
+    drawer_.Execute();
 }
 
 TaskManager::~TaskManager() {
