@@ -25,6 +25,7 @@
 #include "FormBody.hpp"
 
 extern "C" {
+#include "WiFi.h"
 
 void ServeRoot(const HttpRequest *request, HttpResponse *response, void *context) {
     static_cast<PedalGuru::Server*>(context)->OnRoot(request, response);
@@ -36,6 +37,18 @@ void ServeScan(const HttpRequest *request, HttpResponse *response, void *context
 
 void ServeSave(const HttpRequest *request, HttpResponse *response, void *context) {
     static_cast<PedalGuru::Server*>(context)->OnSave(request, response);
+}
+
+void ServeWifiScanStart(const HttpRequest *request, HttpResponse *response, void *context) {
+    static_cast<PedalGuru::Server*>(context)->OnWifiScanStart(request, response);
+}
+
+void ServeWifiScanGetStatus(const HttpRequest *request, HttpResponse *response, void *context) {
+    static_cast<PedalGuru::Server*>(context)->OnWifiScanGetStatus(request, response);
+}
+
+void ServeWifiScanGetResults(const HttpRequest *request, HttpResponse *response, void *context) {
+    static_cast<PedalGuru::Server*>(context)->OnWifiScanGetResults(request, response);
 }
 
 }
@@ -83,6 +96,9 @@ bool Server::Start(const std::list<WiFiNetwork> &networks) {
 
     return HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/", ServeRoot, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan", ServeScan, this)
+        && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/start", ServeWifiScanStart, this)
+        && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/status", ServeWifiScanGetStatus, this)
+        && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/results", ServeWifiScanGetResults, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_POST, "/settings/save", ServeSave, this);
 }
 
@@ -129,6 +145,38 @@ void Server::OnScan(const HttpRequest *request, HttpResponse *response) {
 
     networks_.assign(scanned, scanned + found);
     Respond(response, 200, "application/json", page_.RenderNetworkJson(networks_));
+}
+
+void Server::OnWifiScanStart(const HttpRequest *request, HttpResponse *response) {
+    (void)request;
+
+    if (!WiFiScanStart()) {
+        Respond(response, 503, "text/plain", "Scan failed to start.");
+        return;
+    }
+
+    Respond(response, 202, "text/plain", "Scan started.");
+}
+
+void Server::OnWifiScanGetStatus(const HttpRequest *request, HttpResponse *response) {
+    (void)request;
+    std::string status = "{\"scanComplete\":" + std::string(WiFiScanIsComplete() ? "true}" : "false}");
+
+    Respond(response, 200, "application/json", status);
+}
+
+void Server::OnWifiScanGetResults(const HttpRequest *request, HttpResponse *response) {
+    (void)request;
+    WiFiNetwork scanned[SCAN_MAX_NETWORKS];
+    uint16_t found {0};
+    std::string json = "[]";
+
+    if (WiFiScanGetResults(scanned, SCAN_MAX_NETWORKS, &found)) {
+        networks_.assign(scanned, scanned + found);
+        json = page_.RenderNetworkJson(networks_);
+    }
+
+    Respond(response, 200, "application/json", json);
 }
 
 void Server::OnSave(const HttpRequest *request, HttpResponse *response) {

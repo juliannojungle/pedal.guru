@@ -26,11 +26,13 @@
 
 extern "C" {
 #include "HttpServer.h"
-#include "WiFi.h"
 
 void ServeRoot(const HttpRequest *request, HttpResponse *response, void *context);
 void ServeScan(const HttpRequest *request, HttpResponse *response, void *context);
 void ServeSave(const HttpRequest *request, HttpResponse *response, void *context);
+void ServeWifiScanStart(const HttpRequest *request, HttpResponse *response, void *context);
+void ServeWifiScanGetStatus(const HttpRequest *request, HttpResponse *response, void *context);
+void ServeWifiScanGetResults(const HttpRequest *request, HttpResponse *response, void *context);
 }
 
 namespace PedalGuru {
@@ -44,6 +46,9 @@ class Server {
         bool credentialStoreFailed_ {false};
         void OnRoot(const HttpRequest *request, HttpResponse *response);
         void OnScan(const HttpRequest *request, HttpResponse *response);
+        void OnWifiScanStart(const HttpRequest *request, HttpResponse *response);
+        void OnWifiScanGetStatus(const HttpRequest *request, HttpResponse *response);
+        void OnWifiScanGetResults(const HttpRequest *request, HttpResponse *response);
         void OnSave(const HttpRequest *request, HttpResponse *response);
         void Respond(HttpResponse *response, uint16_t statusCode, const char *contentType,
             const std::string &body);
@@ -55,6 +60,9 @@ class Server {
         bool CredentialStoreFailed() const;
         friend void ::ServeRoot(const HttpRequest *request, HttpResponse *response, void *context);
         friend void ::ServeScan(const HttpRequest *request, HttpResponse *response, void *context);
+        friend void ::ServeWifiScanStart(const HttpRequest *request, HttpResponse *response, void *context);
+        friend void ::ServeWifiScanGetStatus(const HttpRequest *request, HttpResponse *response, void *context);
+        friend void ::ServeWifiScanGetResults(const HttpRequest *request, HttpResponse *response, void *context);
         friend void ::ServeSave(const HttpRequest *request, HttpResponse *response, void *context);
 };
 
