@@ -20,7 +20,6 @@
 #include "ConfigurationPage.hpp"
 
 #include <cstdio>
-#include <vector>
 
 namespace PedalGuru {
 
@@ -36,71 +35,133 @@ select, input { width: 100%; box-sizing: border-box; padding: 0.5rem; font-size:
 button { margin-top: 1rem; width: 100%; padding: 0.6rem; font-size: 1rem; border: 0;
     border-radius: 4px; background: #2f7d32; color: #fff; }
 button.secondary { background: #3a4149; }
+div.network { display: flex; gap: 0.5rem; align-items: stretch; }
+div.network select { flex: 1; }
+button#scan { margin-top: 0; width: auto; flex: 0 0 auto; white-space: nowrap; }
 p#status { min-height: 1.2rem; font-size: 0.9rem; color: #f0b429; }
 </style></head>
 <body>
 <h1>pedal.guru</h1>
 <form method="post" action="/settings/save" accept-charset="UTF-8">
 <label for="ssid">Network</label>
-<select id="ssid" name="ssid">%NETWORKS%</select>
+<div class="network">
+<select id="ssid" name="ssid" size="8"></select>
+<button id="scan" class="secondary" type="button">Scan</button>
+</div>
 <label for="ssidTyped">Or type the network name</label>
 <input id="ssidTyped" type="text" name="ssidTyped" autocomplete="off">
 <label for="password">Password</label>
 <input id="password" type="password" name="password" autocomplete="off">
 <button type="submit">Save</button>
 </form>
-<button id="rescan" class="secondary" type="button">Rescan</button>
 <p id="status"></p>
 <script>
-var rescan = document.getElementById('rescan');
+var scan = document.getElementById('scan');
 var select = document.getElementById('ssid');
 var status = document.getElementById('status');
-rescan.addEventListener('click', function () {
-    status.textContent = 'Scanning...';
+var pollTimer = null;
+var pollDeadline = 0;
+function finishScan(message) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+    scan.disabled = false;
+    status.textContent = message;
+}
+function renderNetworks(networks) {
+    var chosen = select.value;
+    select.innerHTML = '';
+    if (!networks.length) {
+        var empty = document.createElement('option');
+        empty.disabled = true;
+        empty.textContent = 'no network found';
+        select.appendChild(empty);
+        finishScan('No network found.');
+        return;
+    }
+    for (var index = 0; index < networks.length; index++) {
+        var network = networks[index];
+        var option = document.createElement('option');
+        option.value = network.ssid;
+        option.textContent = network.ssid + ' (' + network.auth + ', ' + network.rssi + ' dBm)';
+        select.appendChild(option);
+    }
+    select.value = chosen;
+    finishScan('');
+}
+function fetchResults() {
     var request = new XMLHttpRequest();
-    request.open('GET', '/network/scan', true);
+    request.open('GET', '/network/scan/results', true);
     request.onreadystatechange = function () {
         if (request.readyState !== 4) {
             return;
         }
         if (request.status !== 200) {
-            status.textContent = 'Scan failed. The previous list is still shown.';
+            finishScan('Scan failed.');
             return;
         }
         var networks;
         try {
             networks = JSON.parse(request.responseText);
         } catch (error) {
-            status.textContent = 'Scan failed. The previous list is still shown.';
+            finishScan('Scan failed.');
             return;
         }
-        var chosen = select.value;
-        select.innerHTML = '';
-        if (!networks.length) {
-            var empty = document.createElement('option');
-            empty.disabled = true;
-            empty.textContent = 'no network found';
-            select.appendChild(empty);
-            status.textContent = 'No network found.';
+        renderNetworks(networks);
+    };
+    request.send();
+}
+function pollStatus() {
+    if (Date.now() >= pollDeadline) {
+        finishScan('Scan timed out.');
+        return;
+    }
+    var request = new XMLHttpRequest();
+    request.open('GET', '/network/scan/status', true);
+    request.onreadystatechange = function () {
+        if (request.readyState !== 4 || pollTimer === null) {
             return;
         }
-        for (var index = 0; index < networks.length; index++) {
-            var network = networks[index];
-            var option = document.createElement('option');
-            option.value = network.ssid;
-            option.textContent = network.ssid + ' (' + network.auth + ', ' + network.rssi + ' dBm)';
-            select.appendChild(option);
+        if (request.status !== 200) {
+            return;
         }
-        select.value = chosen;
-        status.textContent = '';
+        var state;
+        try {
+            state = JSON.parse(request.responseText);
+        } catch (error) {
+            return;
+        }
+        if (state.scanComplete) {
+            clearInterval(pollTimer);
+            pollTimer = null;
+            fetchResults();
+        }
+    };
+    request.send();
+}
+scan.addEventListener('click', function () {
+    if (pollTimer !== null) {
+        return;
+    }
+    scan.disabled = true;
+    status.textContent = 'Scanning...';
+    var request = new XMLHttpRequest();
+    request.open('GET', '/network/scan/start', true);
+    request.onreadystatechange = function () {
+        if (request.readyState !== 4) {
+            return;
+        }
+        if (request.status !== 202 && request.status !== 200) {
+            finishScan('Scan failed to start.');
+            return;
+        }
+        pollDeadline = Date.now() + 10000;
+        pollTimer = setInterval(pollStatus, 1000);
     };
     request.send();
 });
 </script>
 </body></html>
 )HTML";
-
-static const char NETWORKS_PLACEHOLDER[] = "%NETWORKS%";
 
 namespace {
 
@@ -137,24 +198,6 @@ std::list<WiFiNetwork> PresentedNetworks(const std::list<WiFiNetwork> &networks)
     }
 
     return presented;
-}
-
-std::string EntityEscape(const std::string &text) {
-    std::string escaped;
-    escaped.reserve(text.size());
-
-    for (char character : text) {
-        switch (character) {
-            case '&': escaped.append("&amp;"); break;
-            case '<': escaped.append("&lt;"); break;
-            case '>': escaped.append("&gt;"); break;
-            case '"': escaped.append("&quot;"); break;
-            case '\'': escaped.append("&#39;"); break;
-            default: escaped.push_back(character); break;
-        }
-    }
-
-    return escaped;
 }
 
 bool IsValidUtf8(const std::string &text) {
@@ -232,25 +275,6 @@ std::string JsonEscape(const std::string &text) {
 
 }
 
-std::string ConfigurationPage::RenderNetworkOptions(const std::list<WiFiNetwork> &networks) const {
-    std::list<WiFiNetwork> presented = PresentedNetworks(networks);
-
-    if (presented.empty()) {
-        return "<option disabled>no network found</option>";
-    }
-
-    std::string options;
-
-    for (const auto &network : presented) {
-        std::string ssid = EntityEscape(network.Ssid);
-        options.append("<option value=\"").append(ssid).append("\">").append(ssid)
-            .append(" (").append(AuthModeLabel(network.AuthMode)).append(", ")
-            .append(std::to_string(network.Rssi)).append(" dBm)</option>");
-    }
-
-    return options;
-}
-
 std::string ConfigurationPage::RenderNetworkJson(const std::list<WiFiNetwork> &networks) const {
     std::string json("[");
     bool first = true;
@@ -267,17 +291,6 @@ std::string ConfigurationPage::RenderNetworkJson(const std::list<WiFiNetwork> &n
     }
 
     return json.append("]");
-}
-
-std::string ConfigurationPage::Render(const std::list<WiFiNetwork> &networks) const {
-    std::string page(PAGE_TEMPLATE, sizeof(PAGE_TEMPLATE) - 1);
-    std::size_t placeholder = page.find(NETWORKS_PLACEHOLDER);
-
-    if (placeholder != std::string::npos) {
-        page.replace(placeholder, sizeof(NETWORKS_PLACEHOLDER) - 1, RenderNetworkOptions(networks));
-    }
-
-    return page;
 }
 
 const char *ConfigurationPage::Template() const {

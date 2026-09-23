@@ -31,8 +31,6 @@ namespace PedalGuru {
 
 class ConfigurationPage {
     public:
-        std::string Render(const std::list<WiFiNetwork> &networks) const;
-        std::string RenderNetworkOptions(const std::list<WiFiNetwork> &networks) const;
         std::string RenderNetworkJson(const std::list<WiFiNetwork> &networks) const;
         const char *Template() const;
         std::size_t TemplateLength() const;

@@ -31,10 +31,6 @@ void ServeRoot(const HttpRequest *request, HttpResponse *response, void *context
     static_cast<PedalGuru::Server*>(context)->OnRoot(request, response);
 }
 
-void ServeScan(const HttpRequest *request, HttpResponse *response, void *context) {
-    static_cast<PedalGuru::Server*>(context)->OnScan(request, response);
-}
-
 void ServeSave(const HttpRequest *request, HttpResponse *response, void *context) {
     static_cast<PedalGuru::Server*>(context)->OnSave(request, response);
 }
@@ -85,8 +81,7 @@ bool IsBlank(const std::string &text) {
 
 }
 
-bool Server::Start(const std::list<WiFiNetwork> &networks) {
-    networks_ = networks;
+bool Server::Start() {
     credentialsStored_ = false;
     credentialStoreFailed_ = false;
 
@@ -95,7 +90,6 @@ bool Server::Start(const std::list<WiFiNetwork> &networks) {
     }
 
     return HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/", ServeRoot, this)
-        && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan", ServeScan, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/start", ServeWifiScanStart, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/status", ServeWifiScanGetStatus, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/results", ServeWifiScanGetResults, this)
@@ -121,30 +115,8 @@ bool Server::CredentialStoreFailed() const {
 void Server::OnRoot(const HttpRequest *request, HttpResponse *response) {
     (void)request;
     response->ContentType = "text/html";
-
-    if (networks_.empty()) {
-        response->Body = page_.Template();
-        response->BodyLength = page_.TemplateLength();
-        return;
-    }
-
-    responseBody_ = page_.Render(networks_);
-    response->Body = responseBody_.data();
-    response->BodyLength = responseBody_.size();
-}
-
-void Server::OnScan(const HttpRequest *request, HttpResponse *response) {
-    (void)request;
-    WiFiNetwork scanned[SCAN_MAX_NETWORKS];
-    uint16_t found {0};
-
-    if (!WiFiScan(scanned, SCAN_MAX_NETWORKS, &found)) {
-        Respond(response, 503, "text/plain", "Scan failed.");
-        return;
-    }
-
-    networks_.assign(scanned, scanned + found);
-    Respond(response, 200, "application/json", page_.RenderNetworkJson(networks_));
+    response->Body = page_.Template();
+    response->BodyLength = page_.TemplateLength();
 }
 
 void Server::OnWifiScanStart(const HttpRequest *request, HttpResponse *response) {

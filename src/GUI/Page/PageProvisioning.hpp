@@ -30,7 +30,6 @@ namespace PedalGuru {
 class PageProvisioning : public PedalGuru::BasePage {
     private:
         Server server_;
-        std::list<WiFiNetwork> networks_;
         ProvisioningState state_ {ProvisioningState::SERVING};
         unsigned int confirmationStart_ {0};
         void DrawScreen();

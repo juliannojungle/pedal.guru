@@ -45,19 +45,7 @@ void PageProvisioning::PreDrawPageContents() {
         return;
     }
 
-//    WiFiNetwork scanned[SCAN_MAX_NETWORKS];
-//    uint16_t foundNetworks {0};
-//
-//    SHOWDEBUG("PageProvisioning: wifi scan\r\n");
-//    if (WiFiScan(scanned, SCAN_MAX_NETWORKS, &foundNetworks)) {
-//        SHOWDEBUG("PageProvisioning: listing networks\r\n");
-//        for (uint16_t index = 0; index < foundNetworks; index++) {
-//            networks_.push_back(scanned[index]);
-//            SHOWDEBUG("PageProvisioning: listing networks: %s\r\n", scanned[index].Ssid);
-//        }
-//    }
-
-    if (!server_.Start(networks_)) {
+    if (!server_.Start()) {
         state_ = ProvisioningState::UNAVAILABLE;
     }
 }
