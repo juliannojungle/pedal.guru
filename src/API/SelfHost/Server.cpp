@@ -52,11 +52,8 @@ void ServeWifiScanGetResults(const HttpRequest *request, HttpResponse *response,
 }
 
 namespace PedalGuru {
-#define STRINGIFY_HELPER(x) #x
-#define STRINGIFY(x) STRINGIFY_HELPER(x)
-#define SERVER_PORT 3333
-#define LOCATION_HEADER "Location: http://" WIFI_ACCESS_POINT_ADDRESS ":" STRINGIFY(SERVER_PORT) "\r\n"
-
+#define SERVER_PORT 80
+#define LOCATION_HEADER "Location: http://" WIFI_ACCESS_POINT_ADDRESS "\r\n"
 #define PASSWORD_MIN_LENGTH 8
 #define PASSWORD_MAX_LENGTH 63
 

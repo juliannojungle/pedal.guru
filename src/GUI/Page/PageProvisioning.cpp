@@ -18,7 +18,6 @@
 */
 
 #include "PageProvisioning.hpp"
-
 #include "Canvas.h"
 #include "Color.hpp"
 #include "DataManager.hpp"
@@ -30,7 +29,7 @@ extern "C" {
 namespace PedalGuru {
 
 static const char ACCESS_POINT_SSID[] = "pedal.guru";
-static const char CONFIGURATION_URL[] = "http://" WIFI_ACCESS_POINT_ADDRESS ":3333/";
+static const char CONFIGURATION_URL[] = "http://" WIFI_ACCESS_POINT_ADDRESS;
 static const unsigned int SERVER_POLL_MILLISECONDS = 100;
 static const unsigned int CONFIRMATION_HOLD_MILLISECONDS = 5000;
 
