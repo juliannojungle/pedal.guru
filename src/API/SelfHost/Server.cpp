@@ -18,14 +18,16 @@
 */
 
 #include "Server.hpp"
-
 #include <cstddef>
-
 #include "DataManager.hpp"
 #include "FormBody.hpp"
 
 extern "C" {
 #include "WiFi.h"
+
+void ServeDefault(const HttpRequest *request, HttpResponse *response, void *context) {
+    static_cast<PedalGuru::Server*>(context)->OnDefault(request, response);
+}
 
 void ServeRoot(const HttpRequest *request, HttpResponse *response, void *context) {
     static_cast<PedalGuru::Server*>(context)->OnRoot(request, response);
@@ -50,11 +52,13 @@ void ServeWifiScanGetResults(const HttpRequest *request, HttpResponse *response,
 }
 
 namespace PedalGuru {
+#define STRINGIFY_HELPER(x) #x
+#define STRINGIFY(x) STRINGIFY_HELPER(x)
+#define SERVER_PORT 3333
+#define LOCATION_HEADER "Location: http://" WIFI_ACCESS_POINT_ADDRESS ":" STRINGIFY(SERVER_PORT) "\r\n"
 
-static const uint16_t SERVER_PORT {3333};
-static const std::size_t SSID_MAX_LENGTH {WIFI_SSID_MAX_LENGTH};
-static const std::size_t PASSWORD_MIN_LENGTH {8};
-static const std::size_t PASSWORD_MAX_LENGTH {63};
+#define PASSWORD_MIN_LENGTH 8
+#define PASSWORD_MAX_LENGTH 63
 
 namespace {
 
@@ -89,7 +93,8 @@ bool Server::Start() {
         return false;
     }
 
-    return HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/", ServeRoot, this)
+    return HttpServerSetDefaultEndpoint(HTTP_METHOD_GET, "*", ServeDefault, this)
+        && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/", ServeRoot, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/start", ServeWifiScanStart, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/status", ServeWifiScanGetStatus, this)
         && HttpServerRegisterEndpoint(HTTP_METHOD_GET, "/network/scan/results", ServeWifiScanGetResults, this)
@@ -110,6 +115,12 @@ bool Server::CredentialsStored() const {
 
 bool Server::CredentialStoreFailed() const {
     return credentialStoreFailed_;
+}
+
+void Server::OnDefault(const HttpRequest *request, HttpResponse *response) {
+    (void)request;
+    response->StatusCode = 302;
+    response->CustomHeader = LOCATION_HEADER;
 }
 
 void Server::OnRoot(const HttpRequest *request, HttpResponse *response) {
@@ -159,7 +170,7 @@ void Server::OnSave(const HttpRequest *request, HttpResponse *response) {
     std::string ssid = typed.empty() ? body.Value("ssid") : typed;
     std::string password = body.Value("password");
 
-    if (ssid.empty() || IsBlank(ssid) || ssid.size() > SSID_MAX_LENGTH) {
+    if (ssid.empty() || IsBlank(ssid) || ssid.size() > WIFI_SSID_MAX_LENGTH) {
         Respond(response, 400, "text/plain", "The network name was rejected.");
         return;
     }

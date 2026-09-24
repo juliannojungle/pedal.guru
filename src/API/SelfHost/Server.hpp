@@ -27,6 +27,7 @@
 extern "C" {
 #include "HttpServer.h"
 
+void ServeDefault(const HttpRequest *request, HttpResponse *response, void *context);
 void ServeRoot(const HttpRequest *request, HttpResponse *response, void *context);
 void ServeSave(const HttpRequest *request, HttpResponse *response, void *context);
 void ServeWifiScanStart(const HttpRequest *request, HttpResponse *response, void *context);
@@ -43,6 +44,7 @@ class Server {
         std::string responseBody_;
         bool credentialsStored_ {false};
         bool credentialStoreFailed_ {false};
+        void OnDefault(const HttpRequest *request, HttpResponse *response);
         void OnRoot(const HttpRequest *request, HttpResponse *response);
         void OnWifiScanStart(const HttpRequest *request, HttpResponse *response);
         void OnWifiScanGetStatus(const HttpRequest *request, HttpResponse *response);
@@ -56,6 +58,7 @@ class Server {
         bool Poll(unsigned int timeoutMilliseconds);
         bool CredentialsStored() const;
         bool CredentialStoreFailed() const;
+        friend void ::ServeDefault(const HttpRequest *request, HttpResponse *response, void *context);
         friend void ::ServeRoot(const HttpRequest *request, HttpResponse *response, void *context);
         friend void ::ServeWifiScanStart(const HttpRequest *request, HttpResponse *response, void *context);
         friend void ::ServeWifiScanGetStatus(const HttpRequest *request, HttpResponse *response, void *context);
