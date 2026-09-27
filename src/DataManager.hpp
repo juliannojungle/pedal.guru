@@ -39,8 +39,8 @@ class DataManager {
      * operator.
      */
 private:
-    static DataManager * instance_;
-    static Mutex mutex_;
+    static DataManager *instance_;
+    static Mutex *mutex_;
     DataManager() {}
     ~DataManager() {}
     std::list<PedalGuru::GPSFixData> gpsFixData_;

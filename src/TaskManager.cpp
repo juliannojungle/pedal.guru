@@ -46,15 +46,10 @@ void TaskManager::Execute() {
     ReadSettings();
     provisioned_ = DataManager::GetInstance()->ReadCredentials(credentials_);
 
-    CreateDevices();
-    ConnectToDevices();
-
-    /*
-     * Separated tasks to "read devices data" and "handle HID and GUI".
-     */
-    ThreadStart(GetDevicesData);
-
     if (provisioned_) {
+        CreateDevices();
+        ConnectToDevices();
+        ThreadStart(GetDevicesData); // Separated task to "read devices data".
         CreatePages();
     } else {
         pages_.push_back(std::make_unique<PageProvisioning>(drawer_, settings_));
@@ -62,8 +57,7 @@ void TaskManager::Execute() {
 
     HIDHandler handler;
     GUINavigator guiNavigator(handler, pages_);
-    ThreadStart(ExecuteGuiDrawer);
-    ThreadSchedulerStart();
+    ThreadStart(ExecuteGuiDrawer); // Separated task to "handle HID and GUI".
 }
 
 void TaskManager::CreatePages() {

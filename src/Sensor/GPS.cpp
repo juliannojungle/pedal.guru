@@ -28,13 +28,13 @@ namespace PedalGuru {
 void GPS::Enable() {
     UARTInit(GPS_UART, GPS_UART_BAUDRATE, GPS_UART_TX_PIN, GPS_UART_RX_PIN);
 
-#ifdef L96GPS
+// #ifdef L96GPS
     /* Configuration commands for the Quectel L96 module. */
-    // UARTPuts(GPS_UART, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
-    // UARTPuts(GPS_UART, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
-    // UARTPuts(GPS_UART, "$PMTK886,1*29\0"); // enable fitness mode.
+    UARTPuts(GPS_UART, "$PMTK353,1,1,1,0,0*2A\0"); // enable GPS, GLONASS and GALILEO satellite system.
+    UARTPuts(GPS_UART, "$PMTK869,1,1*35\0"); // enable AGPS (EASY function).
+    UARTPuts(GPS_UART, "$PMTK886,1*29\0"); // enable fitness mode.
     //// UARTPuts(GPS_UART, "$PMTK886,0*28\0"); // enable normal mode.
-#endif
+// #endif
 
     this->enabled_ = true;
 }
@@ -56,10 +56,16 @@ void GPS::UartGetLine(std::string &line) {
     char singleChar = '\0';
     line = "";
 
-    while (UARTIsReadable(GPS_UART)) {
+    while (true) {
+        if (!UARTIsReadable(GPS_UART)) {
+            Delay(1);
+            continue;
+        }
+
         singleChar = UARTGetChar(GPS_UART);
 
         if (singleChar == '\0' || singleChar == '\n') break;
+        if (singleChar == '\r') continue;
 
         line += singleChar;
     }

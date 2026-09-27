@@ -29,7 +29,7 @@ namespace PedalGuru {
 const char *SETTINGS_FILE_NAME = "settings";
 const char *WIFI_SSID_KEY = "WIFI_SSID";
 const char *WIFI_PWD_KEY = "WIFI_PWD";
-const unsigned int SETTINGS_CHUNK_SIZE = 512;
+const unsigned int SETTINGS_BUFFER_SIZE = 512;
 const unsigned int SETTINGS_MAX_SIZE = 4096;
 const std::size_t SSID_MAX_LENGTH = 32;
 
@@ -70,54 +70,55 @@ static void ParseSettingsContent(const std::string &content, SettingsFileData &f
 }
 
 void DataManager::Push(PedalGuru::GPSFixData &gpsFixData) {
-    mutex_.Lock();
+    mutex_->Lock();
     this->gpsFixData_.push_back(gpsFixData);
-    mutex_.Release();
+    mutex_->Release();
 }
 
 void DataManager::Pop(PedalGuru::GPSFixData &gpsFixData) {
-    mutex_.Lock();
+    mutex_->Lock();
 
     if (!this->gpsFixData_.empty()) {
         gpsFixData = *(this->gpsFixData_.cbegin());
         this->gpsFixData_.pop_front();
     }
 
-    mutex_.Release();
+    mutex_->Release();
 }
 
 bool DataManager::ReadSettingsFile(PedalGuru::SettingsFileData &fileData) {
     FIL file;
+    mutex_->Lock();
 
     if (!OpenFile(&file, SETTINGS_FILE_NAME)) {
+        mutex_->Release();
         return false;
     }
 
     std::string content;
-    char chunk[SETTINGS_CHUNK_SIZE];
+    char buffer[SETTINGS_BUFFER_SIZE];
     unsigned int bytesRead;
 
     do {
-        bytesRead = ReadFile(&file, chunk, SETTINGS_CHUNK_SIZE);
-        content.append(chunk, bytesRead);
-    } while (bytesRead == SETTINGS_CHUNK_SIZE && content.length() < SETTINGS_MAX_SIZE);
+        bytesRead = ReadFile(&file, buffer, sizeof(buffer) - 1);
+        buffer[bytesRead] = '\0';
+        content.append(buffer, bytesRead);
+    } while (bytesRead == SETTINGS_BUFFER_SIZE && content.length() < SETTINGS_MAX_SIZE);
 
     CloseFile(&file);
+    mutex_->Release();
     ParseSettingsContent(content, fileData);
 
     return true;
 }
 
 bool DataManager::ReadCredentials(PedalGuru::CredentialData &credentials) {
-    mutex_.Lock();
-
     credentials.ssid.clear();
     credentials.password.clear();
     credentials.ssidPresent = false;
     credentials.passwordPresent = false;
 
     if (!PathOrFileExists(SETTINGS_FILE_NAME)) {
-        mutex_.Release();
         return false;
     }
 
@@ -127,7 +128,6 @@ bool DataManager::ReadCredentials(PedalGuru::CredentialData &credentials) {
     if (!ReadSettingsFile(fileData)) {
         MountSdCard();
         SelectActiveDrive();
-        mutex_.Release();
         return false;
     }
 
@@ -146,7 +146,6 @@ bool DataManager::ReadCredentials(PedalGuru::CredentialData &credentials) {
         && !credentials.ssid.empty()
         && credentials.ssid.length() <= SSID_MAX_LENGTH;
 
-    mutex_.Release();
     return provisioned;
 }
 
@@ -166,8 +165,10 @@ bool DataManager::WriteSettingsFile(const PedalGuru::SettingsFileData &fileData)
     }
 
     FIL file;
+    mutex_->Lock();
 
     if (!OpenFile(&file, SETTINGS_FILE_NAME)) {
+        mutex_->Release();
         return false;
     }
 
@@ -175,19 +176,19 @@ bool DataManager::WriteSettingsFile(const PedalGuru::SettingsFileData &fileData)
 
     if (bytesWritten != content.length()) {
         CloseFile(&file);
+        mutex_->Release();
         return false;
     }
 
     /** OpenFile does not truncate, so the cut belongs at the pointer left by the single write. */
     bool truncated = TruncateFile(&file);
     CloseFile(&file);
+    mutex_->Release();
 
     return truncated;
 }
 
 bool DataManager::WriteCredentials(const std::string &ssid, const std::string &password) {
-    mutex_.Lock();
-
     PedalGuru::SettingsFileData fileData;
     ReadSettingsFile(fileData);
 
@@ -219,38 +220,41 @@ bool DataManager::WriteCredentials(const std::string &ssid, const std::string &p
     }
 
     bool written = WriteSettingsFile(fileData);
-
-    mutex_.Release();
     return written;
 }
 
 void DataManager::SetRestartRequested() {
-    mutex_.Lock();
+    mutex_->Lock();
     this->restartRequested_ = true;
-    mutex_.Release();
+    mutex_->Release();
 }
 
 bool DataManager::GetRestartRequested() {
-    mutex_.Lock();
+    mutex_->Lock();
     bool requested = this->restartRequested_;
-    mutex_.Release();
+    mutex_->Release();
 
     return requested;
 }
 
 /** Initializing static members. */
 DataManager* DataManager::instance_{nullptr};
-Mutex DataManager::mutex_;
+Mutex* DataManager::mutex_{nullptr};
 
 /** Static methods should be defined outside the class. */
 DataManager *DataManager::GetInstance() {
-    mutex_.Lock();
+    if (mutex_ == nullptr) {
+        mutex_ = new Mutex();
+    }
+
+    mutex_->Lock();
+
     if (instance_ == nullptr)
     {
         instance_ = new DataManager();
     }
-    mutex_.Release();
 
+    mutex_->Release();
     return instance_;
 }
 

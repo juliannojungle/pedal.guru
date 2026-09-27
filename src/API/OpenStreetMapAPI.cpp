@@ -22,7 +22,7 @@
 extern "C" {
     #include "FileSystem.h"
     #include "LCDSetup.h"
-    #include "HttpClient.h" /* net.ll: HttpDownloadFile */
+    #include "HttpClient.h"
     #include "HAL.h"
 }
 

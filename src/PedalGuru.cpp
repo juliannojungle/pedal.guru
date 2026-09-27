@@ -16,7 +16,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
-
 #include "TaskManager.hpp"
 #include "DataManager.hpp"
 
@@ -26,16 +25,20 @@ extern "C" {
     #include "FileSystem.h"
 }
 
+static PedalGuru::TaskManager taskManager;
 
-void app_entry(void) {
+void app_start(void) {
     STDIOInitAll();
+    RTCInitialize();
 
     #ifdef DEBUGMSGS
     ::Delay(3000); // wait to connect serial monitor
     #endif
 
     SHOWDEBUG("Welcome to Pedal.Guru!\r\n");
+}
 
+void app_thread(void) {
     if (!MountSdCard()) {
         exit(EXIT_FAILURE);
     }
@@ -45,9 +48,10 @@ void app_entry(void) {
         exit(EXIT_FAILURE);
     }
 
-    PedalGuru::TaskManager taskManager;
     taskManager.Execute();
+}
 
+void app_exit(void) {
     SHOWDEBUG("See you later!\r\n");
 
     UnMountSdCard();
@@ -57,13 +61,20 @@ void app_entry(void) {
     }
 }
 
+void app_run(void) {
+    app_start();
+    ThreadStart(app_thread);
+    ThreadSchedulerStart();
+    app_exit();
+}
+
 #ifdef ESP_PLATFORM
 extern "C" void app_main(void) { // ESP-IDF calls it from C: it must not be name-mangled.
-    app_entry();
+    app_run();
 }
 #else
 int main(void) {
-    app_entry();
+    app_run();
     return 0;
 }
 #endif
