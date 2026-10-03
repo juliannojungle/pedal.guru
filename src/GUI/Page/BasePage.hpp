@@ -20,19 +20,29 @@
 #pragma once
 
 #include "SettingsData.hpp"
-#include "GUIDrawer.hpp"
+#include "Window.hpp"
 
 namespace PedalGuru {
+
+enum class AvailablePages {
+    PAGE_ALTIMETRY,
+    PAGE_DISTANCE,
+    PAGE_HILLS_GRAPH,
+    PAGE_MAP,
+    PAGE_MAP_SYNC,
+    PAGE_PROVISIONING,
+    PAGE_ROUTE,
+    PAGE_SUMMARY
+};
 
 class BasePage {
     protected:
         PedalGuru::SettingsData& settings_;
-        PedalGuru::GUIDrawer& drawer_;
         Window window_;
     public:
         virtual ~BasePage() = default; // make it polymorphic
-        BasePage(PedalGuru::GUIDrawer& drawer, PedalGuru::SettingsData& settings)
-            : settings_(settings), drawer_(drawer) {}
+        BasePage(PedalGuru::SettingsData& settings)
+            : settings_(settings) {}
         virtual void PreDrawPageContents() = 0;
         virtual void DrawPageContents() = 0;
         virtual void PostDrawPageContents() = 0;

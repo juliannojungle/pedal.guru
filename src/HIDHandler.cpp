@@ -22,6 +22,11 @@
 
 namespace PedalGuru {
 
+HIDHandler& HIDHandler::GetInstance() {
+    static HIDHandler instance;
+    return instance;
+}
+
 void HIDHandler::ExecuteHandlers(std::list<std::shared_ptr<PedalGuru::Callback>> handlers) {
     for (auto handler : handlers) {
         handler->Method();

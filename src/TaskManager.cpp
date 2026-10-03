@@ -17,18 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include <iterator>
 #include "TaskManager.hpp"
 #include "DataManager.hpp"
 #include "GUINavigator.hpp"
-#include "PageAltimetry.hpp"
-#include "PageDistance.hpp"
-#include "PageHillsGraph.hpp"
 #include "PageMap.hpp"
-#include "PageMapSync.hpp"
-#include "PageProvisioning.hpp"
-#include "PageRoute.hpp"
-#include "PageSummary.hpp"
-#include "HIDHandler.hpp"
 #include "LocationModule.hpp"
 
 extern "C" {
@@ -38,26 +31,23 @@ extern "C" {
 namespace PedalGuru {
 
 std::list<std::unique_ptr<Device>> TaskManager::devices_;
-std::list<std::unique_ptr<BasePage>> TaskManager::pages_;
+std::list<AvailablePages> TaskManager::pages_;
 bool TaskManager::running_;
-GUIDrawer TaskManager::drawer_;
 
 void TaskManager::Execute() {
-    ReadSettings();
-    provisioned_ = DataManager::GetInstance()->ReadCredentials(credentials_);
+    bool provisioned_ = DataManager::GetInstance()->ReadCredentials(credentials_);
 
-    if (provisioned_) {
+    if (!provisioned_) {
+        pages_.push_back(AvailablePages::PAGE_PROVISIONING);
+    } else {
+        ReadSettings(); // temporary, move to DataManager
         CreateDevices();
         ConnectToDevices();
         ThreadStart(GetDevicesData); // Separated task to "read devices data".
         CreatePages();
-    } else {
-        pages_.push_back(std::make_unique<PageProvisioning>(drawer_, settings_));
     }
 
-    HIDHandler handler;
-    GUINavigator guiNavigator(handler, pages_);
-    ThreadStart(ExecuteGuiDrawer); // Separated task to "handle HID and GUI".
+    GUINavigator::GetInstance().Setup(pages_);
 }
 
 void TaskManager::CreatePages() {
@@ -65,31 +55,32 @@ void TaskManager::CreatePages() {
      * The pages order here is crucial, since it represents the pages cycle order!
      */
     if (settings_.pageMapEnabled) {
-        pages_.push_back(std::make_unique<PageMap>(drawer_, settings_));
+        pages_.push_back(AvailablePages::PAGE_MAP);
     }
 
     if (settings_.pageRouteEnabled) {
-        pages_.push_back(std::make_unique<PageRoute>(drawer_, settings_));
+        pages_.push_back(AvailablePages::PAGE_ROUTE);
     }
 
     if (settings_.pageHillsGraphEnabled) {
-        pages_.push_back(std::make_unique<PageHillsGraph>(drawer_, settings_));
+        pages_.push_back(AvailablePages::PAGE_HILLS_GRAPH);
     }
 
     if (settings_.pageDistanceEnabled) {
-        pages_.push_back(std::make_unique<PageDistance>(drawer_, settings_));
+        pages_.push_back(AvailablePages::PAGE_DISTANCE);
     }
 
     if (settings_.pageAltimetryEnabled) {
-        pages_.push_back(std::make_unique<PageAltimetry>(drawer_, settings_));
+        pages_.push_back(AvailablePages::PAGE_ALTIMETRY);
     }
 
     if (settings_.pageSummaryEnabled) {
-        pages_.push_back(std::make_unique<PageSummary>(drawer_, settings_));
+        pages_.push_back(AvailablePages::PAGE_SUMMARY);
     }
 
     // Settings pages aren't optional.
-    pages_.push_back(std::make_unique<PageMapSync>(drawer_, settings_));
+    pages_.push_back(AvailablePages::PAGE_MAP_SYNC);
+    pages_.push_back(AvailablePages::PAGE_PROVISIONING);
 }
 
 void TaskManager::ReadSettings() {
@@ -118,6 +109,8 @@ void TaskManager::ConnectToDevices() {
 }
 
 void TaskManager::GetDevicesData() {
+    if (devices_.size() == 0) return;
+
     auto device = devices_.begin();
 
     while (running_)
@@ -125,14 +118,14 @@ void TaskManager::GetDevicesData() {
         if (device->get()->Connected())
             device->get()->GetData();
 
-        device = (device == devices_.end()) ? devices_.begin() : device++;
+        if (device == std::prev(devices_.end())) {
+            device = devices_.begin();
+        } else {
+            std::advance(device, 1);
+        }
 
         Delay(1000);//TODO something better.
     }
-}
-
-void TaskManager::ExecuteGuiDrawer() {
-    drawer_.Execute();
 }
 
 TaskManager::~TaskManager() {

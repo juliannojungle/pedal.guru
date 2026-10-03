@@ -22,35 +22,31 @@
 #include <memory>
 #include <list>
 #include "BasePage.hpp"
-#include "HIDHandler.hpp"
+#include "Callback.hpp"
 
 namespace PedalGuru {
 
 class GUINavigator {
     private:
-        PedalGuru::HIDHandler& handler_;
-        std::list<std::unique_ptr<PedalGuru::BasePage>>& pages_;
-        std::list<std::unique_ptr<PedalGuru::BasePage>>::iterator pageIndex_;
+        static void ExecuteGuiDrawer();
+
+        GUINavigator() {}
+        std::unique_ptr<BasePage> currentPage_;
+        std::list<AvailablePages> *pages_;
+        std::list<AvailablePages>::iterator pageIndex_;
+        std::list<std::shared_ptr<Callback>>::const_iterator previousPageReference_;
+        std::list<std::shared_ptr<Callback>>::const_iterator nextPageReference_;
+        SettingsData settings_;
         void RegisterEvents();
         void UnregisterEvents();
         void GoToNextPage();
         void GoToPreviousPage();
-        std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator previousPageReference_;
-        std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator nextPageReference_;
+        std::unique_ptr<BasePage> GetPage(AvailablePages page);
     public:
-        GUINavigator(PedalGuru::HIDHandler& handler, std::list<std::unique_ptr<PedalGuru::BasePage>>& pages)
-            : handler_(handler), pages_(pages) {
-            RegisterEvents();
-
-            if (pages_.size() == 0) return;
-
-            pageIndex_ = pages_.begin();
-            (*pageIndex_)->Setup();
-        }
-        ~GUINavigator() {
-            //TODO: This is throwing an invalid pointer exception. Check the iterators reference.
-            // UnregisterEvents();
-        }
+        GUINavigator(GUINavigator& other) = delete;
+        void operator=(const GUINavigator&) = delete;
+        static GUINavigator& GetInstance();
+        void Setup(std::list<AvailablePages>& pages);
 };
 
 }

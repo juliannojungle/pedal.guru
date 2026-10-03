@@ -17,42 +17,105 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/agpl-3.0.html>.
 */
 
+#include <iterator>
 #include "GUINavigator.hpp"
+#include "GUIDrawer.hpp"
+#include "HIDHandler.hpp"
+#include "PageAltimetry.hpp"
+#include "PageDistance.hpp"
+#include "PageHillsGraph.hpp"
+#include "PageMap.hpp"
+#include "PageMapSync.hpp"
+#include "PageProvisioning.hpp"
+#include "PageRoute.hpp"
+#include "PageSummary.hpp"
+
+extern "C" {
+    #include "HAL.h"
+}
 
 namespace PedalGuru {
 
+GUINavigator& GUINavigator::GetInstance() {
+    static GUINavigator instance;
+    return instance;
+}
+
+void GUINavigator::Setup(std::list<AvailablePages>& pages) {
+    pages_ = &pages;
+    RegisterEvents();
+
+    if (pages_->size() == 0) return;
+
+    pageIndex_ = pages_->begin();
+    currentPage_ = GetPage(*pageIndex_);
+    currentPage_->Setup();
+    ThreadStart(ExecuteGuiDrawer); // Separated task to "handle HID and GUI".
+}
+
 void GUINavigator::RegisterEvents() {
-    nextPageReference_ = handler_.RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
-    previousPageReference_ = handler_.RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
+    auto& handler = HIDHandler::GetInstance();
+    nextPageReference_ = handler.RegisterEventHandler(HIDEventType::ENTER_PRESSED, [this](){this->GoToNextPage();});
+    previousPageReference_ = handler.RegisterEventHandler(HIDEventType::EXIT_PRESSED, [this](){this->GoToPreviousPage();});
 }
 
 void GUINavigator::UnregisterEvents() {
-    handler_.UnregisterEventHandler(HIDEventType::ENTER_PRESSED, nextPageReference_);
-    handler_.UnregisterEventHandler(HIDEventType::EXIT_PRESSED, previousPageReference_);
+    auto& handler = HIDHandler::GetInstance();
+    handler.UnregisterEventHandler(HIDEventType::ENTER_PRESSED, nextPageReference_);
+    handler.UnregisterEventHandler(HIDEventType::EXIT_PRESSED, previousPageReference_);
 }
 
 void GUINavigator::GoToNextPage() {
-    if (pages_.size() == 0) return;
+    if (pages_->size() == 0) return;
 
-    if (pageIndex_ == pages_.end()) {
-        pageIndex_ = pages_.begin();
+    if (pageIndex_ == std::prev(pages_->end())) {
+        pageIndex_ = pages_->begin();
     } else {
         std::advance(pageIndex_, 1);
     }
 
-    (*pageIndex_)->Setup();
+    currentPage_ = GetPage(*pageIndex_);
+    currentPage_->Setup();
 }
 
 void GUINavigator::GoToPreviousPage() {
-    if (pages_.size() == 0) return;
+    if (pages_->size() == 0) return;
 
-    if (pageIndex_ == pages_.begin()) {
-        pageIndex_ = pages_.end();
+    if (pageIndex_ == pages_->begin()) {
+        pageIndex_ = std::prev(pages_->end());
     } else {
         std::advance(pageIndex_, -1);
     }
 
-    (*pageIndex_)->Setup();
+    currentPage_ = GetPage(*pageIndex_);
+    currentPage_->Setup();
+}
+
+std::unique_ptr<BasePage> GUINavigator::GetPage(AvailablePages page) {
+    switch (page) {
+        case AvailablePages::PAGE_MAP:
+            return std::make_unique<PageMap>(settings_); break;
+        case AvailablePages::PAGE_ROUTE:
+            return std::make_unique<PageRoute>(settings_); break;
+        case AvailablePages::PAGE_HILLS_GRAPH:
+            return std::make_unique<PageHillsGraph>(settings_); break;
+        case AvailablePages::PAGE_DISTANCE:
+            return std::make_unique<PageDistance>(settings_); break;
+        case AvailablePages::PAGE_ALTIMETRY:
+            return std::make_unique<PageAltimetry>(settings_); break;
+        case AvailablePages::PAGE_SUMMARY:
+            return std::make_unique<PageSummary>(settings_); break;
+        case AvailablePages::PAGE_MAP_SYNC:
+            return std::make_unique<PageMapSync>(settings_); break;
+        case AvailablePages::PAGE_PROVISIONING:
+            return std::make_unique<PageProvisioning>(settings_); break;
+        default:
+            return nullptr;
+    }
+}
+
+void GUINavigator::ExecuteGuiDrawer() {
+    GUIDrawer::GetInstance().Execute();
 }
 
 }

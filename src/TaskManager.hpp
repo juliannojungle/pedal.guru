@@ -22,7 +22,6 @@
 #include <memory>
 #include <list>
 #include "Device.hpp"
-#include "GUIDrawer.hpp"
 #include "BasePage.hpp"
 #include "SettingsData.hpp"
 #include "CredentialData.hpp"
@@ -31,16 +30,13 @@ namespace PedalGuru {
 
 class TaskManager {
     private:
-        static GUIDrawer drawer_;
         static std::list<std::unique_ptr<Device>> devices_;
-        static std::list<std::unique_ptr<BasePage>> pages_;
+        static std::list<AvailablePages> pages_;
         static bool running_;
         static void GetDevicesData();
-        static void ExecuteGuiDrawer();
 
         SettingsData settings_;
         CredentialData credentials_;
-        bool provisioned_ {false};
         void ReadSettings();
         void CreateDevices();
         void ConnectToDevices();

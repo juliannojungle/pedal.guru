@@ -33,7 +33,11 @@ class GUIDrawer {
         std::shared_ptr<PedalGuru::Callback> pageContentsDrawCallback_;
         std::shared_ptr<PedalGuru::Callback> pageContentsPostDrawCallback_;
         bool closeRequested_ {false};
+        GUIDrawer() {}
     public:
+        GUIDrawer(GUIDrawer& other) = delete;
+        void operator=(const GUIDrawer&) = delete;
+        static GUIDrawer& GetInstance();
         void Execute();
         void RequestClose();
         void SetPageContentsPreDrawMethod(std::function<void()> method);

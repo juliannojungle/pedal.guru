@@ -28,6 +28,7 @@ namespace PedalGuru {
 
 class HIDHandler {
     private:
+        HIDHandler() {}
         void ExecuteHandlers(std::list<std::shared_ptr<PedalGuru::Callback>> handlers);
         std::list<std::shared_ptr<Callback>> OnEnterDown_;
         std::list<std::shared_ptr<Callback>> OnEnterUp_;
@@ -52,10 +53,15 @@ class HIDHandler {
         void ExitPressed2Seconds() { ExecuteHandlers(OnExitPressed2Seconds_); }
         void ExitPressed5Seconds() { ExecuteHandlers(OnExitPressed5Seconds_); }
     public:
-        std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator RegisterEventHandler(
-            HIDEventType eventType, std::function<void()> handler);
+        HIDHandler(HIDHandler& other) = delete;
+        void operator=(const HIDHandler&) = delete;
+        static HIDHandler& GetInstance();
+        std::list<std::shared_ptr<Callback>>::const_iterator RegisterEventHandler(
+            HIDEventType eventType,
+            std::function<void()> handler);
         void UnregisterEventHandler(
-            HIDEventType eventType, std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator iterator);
+            HIDEventType eventType,
+            std::list<std::shared_ptr<Callback>>::const_iterator iterator);
 };
 
 }

@@ -21,6 +21,11 @@
 
 namespace PedalGuru {
 
+GUIDrawer& GUIDrawer::GetInstance() {
+    static GUIDrawer instance;
+    return instance;
+}
+
 void GUIDrawer::SetPageContentsPreDrawMethod(std::function<void()> method) {
     pageContentsPreDrawCallback_ = std::make_shared<PedalGuru::Callback>(method);
 };

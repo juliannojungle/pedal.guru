@@ -18,13 +18,15 @@
 */
 
 #include "BasePage.hpp"
+#include "GUIDrawer.hpp"
 
 namespace PedalGuru {
 
 void BasePage::Setup() {
-    drawer_.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
-    drawer_.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
-    drawer_.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
+    auto& drawer = GUIDrawer::GetInstance();
+    drawer.SetPageContentsPreDrawMethod([this](){this->PreDrawPageContents();});
+    drawer.SetPageContentsDrawMethod([this](){this->DrawPageContents();});
+    drawer.SetPageContentsPostDrawMethod([this](){this->PostDrawPageContents();});
 }
 
 }

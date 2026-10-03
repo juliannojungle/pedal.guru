@@ -21,6 +21,7 @@
 #include "Canvas.h"
 #include "Color.hpp"
 #include "DataManager.hpp"
+#include "GUIDrawer.hpp"
 
 extern "C" {
     #include "HAL.h"
@@ -67,7 +68,7 @@ void PageProvisioning::DrawPageContents() {
     if (state_ == ProvisioningState::CONFIGURED
         && (TicksMs() - confirmationStart_) >= CONFIRMATION_HOLD_MILLISECONDS) {
         DataManager::GetInstance()->SetRestartRequested();
-        drawer_.RequestClose();
+        GUIDrawer::GetInstance().RequestClose();
     }
 }
 
