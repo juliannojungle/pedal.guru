@@ -40,7 +40,6 @@ void TaskManager::Execute() {
     if (!provisioned_) {
         pages_.push_back(AvailablePages::PAGE_PROVISIONING);
     } else {
-        ReadSettings(); // temporary, move to DataManager
         CreateDevices();
         ConnectToDevices();
         ThreadStart(GetDevicesData); // Separated task to "read devices data".
@@ -54,44 +53,35 @@ void TaskManager::CreatePages() {
     /*
      * The pages order here is crucial, since it represents the pages cycle order!
      */
-    if (settings_.pageMapEnabled) {
+    SettingsData &settings = DataManager::GetInstance()->Settings();
+
+    if (settings.pageMapEnabled) {
         pages_.push_back(AvailablePages::PAGE_MAP);
     }
 
-    if (settings_.pageRouteEnabled) {
+    if (settings.pageRouteEnabled) {
         pages_.push_back(AvailablePages::PAGE_ROUTE);
     }
 
-    if (settings_.pageHillsGraphEnabled) {
+    if (settings.pageHillsGraphEnabled) {
         pages_.push_back(AvailablePages::PAGE_HILLS_GRAPH);
     }
 
-    if (settings_.pageDistanceEnabled) {
+    if (settings.pageDistanceEnabled) {
         pages_.push_back(AvailablePages::PAGE_DISTANCE);
     }
 
-    if (settings_.pageAltimetryEnabled) {
+    if (settings.pageAltimetryEnabled) {
         pages_.push_back(AvailablePages::PAGE_ALTIMETRY);
     }
 
-    if (settings_.pageSummaryEnabled) {
+    if (settings.pageSummaryEnabled) {
         pages_.push_back(AvailablePages::PAGE_SUMMARY);
     }
 
     // Settings pages aren't optional.
     pages_.push_back(AvailablePages::PAGE_MAP_SYNC);
     pages_.push_back(AvailablePages::PAGE_PROVISIONING);
-}
-
-void TaskManager::ReadSettings() {
-    // TODO: Here we need saved settings.
-    this->settings_.pageAltimetryEnabled = true;
-    this->settings_.pageDistanceEnabled = true;
-    this->settings_.pageHillsGraphEnabled = true;
-    this->settings_.pageMapEnabled = true;
-    this->settings_.pageRouteEnabled = true;
-    this->settings_.pageSummaryEnabled = true;
-    this->settings_.mapSyncingBaseUrl = "https://tile.openstreetmap.org";
 }
 
 void TaskManager::CreateDevices() {

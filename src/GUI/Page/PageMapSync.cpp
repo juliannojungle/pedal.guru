@@ -19,6 +19,7 @@
 
 #include "PageMapSync.hpp"
 #include "Color.hpp"
+#include "DataManager.hpp"
 
 namespace PedalGuru {
 
@@ -31,7 +32,7 @@ void PageMapSync::PreDrawPageContents() {
 void PageMapSync::DrawPageContents() {
     if (mapList_.size() > 0) {
         auto tile = mapList_.front();
-        auto filePath = mapApi_.DownloadTile(tile, settings_.mapSyncingBaseUrl);
+        auto filePath = mapApi_.DownloadTile(tile, DataManager::GetInstance()->Settings().mapSyncingBaseUrl);
         // 256x256 tile on 240x240 display: 8 padding to center the tile.
         mapTexture_.DrawPngToArea(filePath, {{8, 8}, {240, 240}}, {0, 0});
         mapList_.pop_front();

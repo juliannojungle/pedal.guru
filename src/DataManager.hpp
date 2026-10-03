@@ -24,6 +24,7 @@
 #include <string>
 #include "GPSFixData.hpp"
 #include "SettingsEntry.hpp"
+#include "SettingsData.hpp"
 #include "CredentialData.hpp"
 
 namespace PedalGuru {
@@ -44,9 +45,16 @@ private:
     DataManager() {}
     ~DataManager() {}
     std::list<PedalGuru::GPSFixData> gpsFixData_;
+    SettingsData settings_;
+    bool settingsLoaded_{false};
     bool restartRequested_{false};
     bool ReadSettingsFile(PedalGuru::SettingsFileData &fileData);
     bool WriteSettingsFile(const PedalGuru::SettingsFileData &fileData);
+    void LoadSettings();
+    void ApplyEntry(const PedalGuru::SettingsEntry &entry);
+    static bool ParseBool(const std::string &value, bool fallback);
+    static const char *BoolText(bool value);
+    void UpsertEntry(PedalGuru::SettingsFileData &fileData, const char *key, const std::string &value);
 
 public:
     /** Singletons should not be cloneable. */
@@ -59,6 +67,8 @@ public:
     void Pop(PedalGuru::GPSFixData &gpsFixData);
     bool ReadCredentials(PedalGuru::CredentialData &credentials);
     bool WriteCredentials(const std::string &ssid, const std::string &password);
+    bool WritePageSelection(const PedalGuru::SettingsData &selection);
+    PedalGuru::SettingsData &Settings();
     void SetRestartRequested();
     bool GetRestartRequested();
 

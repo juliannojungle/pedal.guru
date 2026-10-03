@@ -94,21 +94,21 @@ void GUINavigator::GoToPreviousPage() {
 std::unique_ptr<BasePage> GUINavigator::GetPage(AvailablePages page) {
     switch (page) {
         case AvailablePages::PAGE_MAP:
-            return std::make_unique<PageMap>(settings_); break;
+            return std::make_unique<PageMap>(); break;
         case AvailablePages::PAGE_ROUTE:
-            return std::make_unique<PageRoute>(settings_); break;
+            return std::make_unique<PageRoute>(); break;
         case AvailablePages::PAGE_HILLS_GRAPH:
-            return std::make_unique<PageHillsGraph>(settings_); break;
+            return std::make_unique<PageHillsGraph>(); break;
         case AvailablePages::PAGE_DISTANCE:
-            return std::make_unique<PageDistance>(settings_); break;
+            return std::make_unique<PageDistance>(); break;
         case AvailablePages::PAGE_ALTIMETRY:
-            return std::make_unique<PageAltimetry>(settings_); break;
+            return std::make_unique<PageAltimetry>(); break;
         case AvailablePages::PAGE_SUMMARY:
-            return std::make_unique<PageSummary>(settings_); break;
+            return std::make_unique<PageSummary>(); break;
         case AvailablePages::PAGE_MAP_SYNC:
-            return std::make_unique<PageMapSync>(settings_); break;
+            return std::make_unique<PageMapSync>(); break;
         case AvailablePages::PAGE_PROVISIONING:
-            return std::make_unique<PageProvisioning>(settings_); break;
+            return std::make_unique<PageProvisioning>(); break;
         default:
             return nullptr;
     }

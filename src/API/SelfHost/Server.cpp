@@ -159,28 +159,67 @@ void Server::OnWifiScanGetResults(const HttpRequest *request, HttpResponse *resp
     Respond(response, 200, "application/json", json);
 }
 
-void Server::OnSave(const HttpRequest *request, HttpResponse *response) {
-    FormBody body(request->Body == nullptr
-        ? std::string()
-        : std::string(request->Body, request->BodyLength));
+bool Server::PersistCredentials(const FormBody &body, HttpResponse *response) {
     std::string typed = body.Value("ssidTyped");
     std::string ssid = typed.empty() ? body.Value("ssid") : typed;
     std::string password = body.Value("password");
 
     if (ssid.empty() || IsBlank(ssid) || ssid.size() > WIFI_SSID_MAX_LENGTH) {
         Respond(response, 400, "text/plain", "The network name was rejected.");
-        return;
+        return false;
     }
 
     if (!IsOpenNetwork(networks_, ssid)
         && (password.size() < PASSWORD_MIN_LENGTH || password.size() > PASSWORD_MAX_LENGTH)) {
         Respond(response, 400, "text/plain", "The password was rejected.");
-        return;
+        return false;
     }
 
     if (!DataManager::GetInstance()->WriteCredentials(ssid, password)) {
         credentialStoreFailed_ = true;
         Respond(response, 500, "text/plain", "The credentials were not stored.");
+        return false;
+    }
+
+    return true;
+}
+
+bool Server::PersistPageSelection(const FormBody &body, HttpResponse *response) {
+    SettingsData selection;
+    selection.pageAltimetryEnabled = body.Has("pageAltimetry");
+    selection.pageDistanceEnabled = body.Has("pageDistance");
+    selection.pageHillsGraphEnabled = body.Has("pageHillsGraph");
+    selection.pageMapEnabled = body.Has("pageMap");
+    selection.pageRouteEnabled = body.Has("pageRoute");
+    selection.pageSummaryEnabled = body.Has("pageSummary");
+
+    if (!selection.pageAltimetryEnabled && !selection.pageDistanceEnabled
+        && !selection.pageHillsGraphEnabled && !selection.pageMapEnabled
+        && !selection.pageRouteEnabled && !selection.pageSummaryEnabled) {
+        Respond(response, 400, "text/plain", "At least one page must be selected.");
+        return false;
+    }
+
+    selection.mapSyncingBaseUrl = DataManager::GetInstance()->Settings().mapSyncingBaseUrl;
+
+    if (!DataManager::GetInstance()->WritePageSelection(selection)) {
+        Respond(response, 500, "text/plain", "The page selection was not stored.");
+        return false;
+    }
+
+    return true;
+}
+
+void Server::OnSave(const HttpRequest *request, HttpResponse *response) {
+    FormBody body(request->Body == nullptr
+        ? std::string()
+        : std::string(request->Body, request->BodyLength));
+
+    if (!PersistPageSelection(body, response)) {
+        return;
+    }
+
+    if (!PersistCredentials(body, response)) {
         return;
     }
 

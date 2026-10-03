@@ -1,0 +1,271 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Add settings state, keys, and defaults to DataManager": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038963546
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038972823
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039075034
+      }
+    ],
+    "1.2 Add the boolean encoding and entry helpers": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038963935
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039079691
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039149294
+      }
+    ],
+    "1.3 Implement lazy load and the Settings accessor": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038964154
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039154015
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039236994
+      }
+    ],
+    "1.4 Implement WritePageSelection": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038964371
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039240130
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039303063
+      }
+    ],
+    "2.1 Read page flags from DataManager in TaskManager": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038964580
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039307414
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041028223
+      }
+    ],
+    "2.2 Drop SettingsData from BasePage": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038964747
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039308850
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041030619
+      }
+    ],
+    "2.3 Default-construct pages in GUINavigator": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038965034
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041108447
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041198457
+      }
+    ],
+    "2.4 Read the base URL from the accessor in PageMapSync": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038965212
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039309757
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041029602
+      }
+    ],
+    "3. Checkpoint - Simulator build is green after migration": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038965467
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041220899
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791042463659
+      }
+    ],
+    "4.1 Add the page checkboxes to ConfigurationPage": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038965711
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041037183
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041103897
+      }
+    ],
+    "4.2 Add the client-side at-least-one guard": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038966001
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041109151
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041199519
+      }
+    ],
+    "4.3 Split Server::OnSave into credential and selection persistence": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038966271
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039311109
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041032886
+      }
+    ],
+    "5.1 Confirm the ReadCredentials comment is accurate and retain it": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038966487
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039312055
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041031967
+      }
+    ],
+    "6. Final checkpoint - Simulator build is green and page selection observed": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791038966739
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791042467054
+      },
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791042470197
+      }
+    ],
+    "1. Give DataManager ownership of SettingsData": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791039303288
+      }
+    ],
+    "5. Record the Requirement 6 comment verification": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041032230
+      }
+    ],
+    "2. Migrate normal-run use sites to the accessor": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041198710
+      }
+    ],
+    "4. Expose optional pages in provisioning": [
+      {
+        "executionId": "957c7870-39ae-418a-a4e4-e7ec8b66f49f",
+        "chatSessionId": "sess_2c4772c1-532b-44ae-be91-c4fcb32bbb98",
+        "timestamp": 1791041199770
+      }
+    ]
+  }
+}

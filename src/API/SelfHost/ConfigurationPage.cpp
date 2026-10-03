@@ -38,6 +38,11 @@ button.secondary { background: #3a4149; }
 div.network { display: flex; gap: 0.5rem; align-items: stretch; }
 div.network select { flex: 1; }
 button#scan { margin-top: 0; width: auto; flex: 0 0 auto; white-space: nowrap; }
+fieldset.pages { margin: 0.8rem 0 0; padding: 0.5rem 0.8rem 0.8rem;
+    border: 1px solid #444; border-radius: 4px; }
+fieldset.pages legend { padding: 0 0.4rem; font-size: 0.9rem; }
+fieldset.pages label { display: flex; align-items: center; gap: 0.5rem; margin: 0.4rem 0; }
+fieldset.pages input { width: auto; }
 p#status { min-height: 1.2rem; font-size: 0.9rem; color: #f0b429; }
 </style></head>
 <body>
@@ -52,6 +57,15 @@ p#status { min-height: 1.2rem; font-size: 0.9rem; color: #f0b429; }
 <input id="ssidTyped" type="text" name="ssidTyped" autocomplete="off">
 <label for="password">Password</label>
 <input id="password" type="password" name="password" autocomplete="off">
+<fieldset class="pages">
+<legend>Pages</legend>
+<label><input type="checkbox" name="pageAltimetry" checked> Altimetry</label>
+<label><input type="checkbox" name="pageDistance" checked> Distance</label>
+<label><input type="checkbox" name="pageHillsGraph" checked> Hills graph</label>
+<label><input type="checkbox" name="pageMap" checked> Map</label>
+<label><input type="checkbox" name="pageRoute" checked> Route</label>
+<label><input type="checkbox" name="pageSummary" checked> Summary</label>
+</fieldset>
 <button type="submit">Save</button>
 </form>
 <p id="status"></p>
@@ -158,6 +172,14 @@ scan.addEventListener('click', function () {
         pollTimer = setInterval(pollStatus, 1000);
     };
     request.send();
+});
+var form = document.querySelector('form');
+form.addEventListener('submit', function (event) {
+    var checked = document.querySelectorAll('fieldset.pages input[type=checkbox]:checked').length;
+    if (checked === 0) {
+        event.preventDefault();
+        status.textContent = 'Select at least one page.';
+    }
 });
 </script>
 </body></html>

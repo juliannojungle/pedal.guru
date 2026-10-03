@@ -36,7 +36,6 @@ class GUINavigator {
         std::list<AvailablePages>::iterator pageIndex_;
         std::list<std::shared_ptr<Callback>>::const_iterator previousPageReference_;
         std::list<std::shared_ptr<Callback>>::const_iterator nextPageReference_;
-        SettingsData settings_;
         void RegisterEvents();
         void UnregisterEvents();
         void GoToNextPage();

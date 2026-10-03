@@ -37,6 +37,8 @@ void ServeWifiScanGetResults(const HttpRequest *request, HttpResponse *response,
 
 namespace PedalGuru {
 
+class FormBody;
+
 class Server {
     private:
         ConfigurationPage page_;
@@ -50,6 +52,8 @@ class Server {
         void OnWifiScanGetStatus(const HttpRequest *request, HttpResponse *response);
         void OnWifiScanGetResults(const HttpRequest *request, HttpResponse *response);
         void OnSave(const HttpRequest *request, HttpResponse *response);
+        bool PersistCredentials(const FormBody &body, HttpResponse *response);
+        bool PersistPageSelection(const FormBody &body, HttpResponse *response);
         void Respond(HttpResponse *response, uint16_t statusCode, const char *contentType,
             const std::string &body);
     public:

@@ -18,6 +18,7 @@
 */
 
 #include "DataManager.hpp"
+#include <cctype>
 #include <string>
 
 extern "C" {
@@ -29,6 +30,14 @@ namespace PedalGuru {
 const char *SETTINGS_FILE_NAME = "settings";
 const char *WIFI_SSID_KEY = "WIFI_SSID";
 const char *WIFI_PWD_KEY = "WIFI_PWD";
+const char *PAGE_ALTIMETRY_KEY = "PAGE_ALTIMETRY";
+const char *PAGE_DISTANCE_KEY = "PAGE_DISTANCE";
+const char *PAGE_HILLS_GRAPH_KEY = "PAGE_HILLS_GRAPH";
+const char *PAGE_MAP_KEY = "PAGE_MAP";
+const char *PAGE_ROUTE_KEY = "PAGE_ROUTE";
+const char *PAGE_SUMMARY_KEY = "PAGE_SUMMARY";
+const char *MAP_BASE_URL_KEY = "MAP_BASE_URL";
+const char *MAP_BASE_URL_DEFAULT = "https://tile.openstreetmap.org";
 const unsigned int SETTINGS_BUFFER_SIZE = 512;
 const unsigned int SETTINGS_MAX_SIZE = 4096;
 const std::size_t SSID_MAX_LENGTH = 32;
@@ -188,6 +197,40 @@ bool DataManager::WriteSettingsFile(const PedalGuru::SettingsFileData &fileData)
     return truncated;
 }
 
+bool DataManager::ParseBool(const std::string &value, bool fallback) {
+    static const std::string trueText = "true";
+
+    if (value.length() != trueText.length()) {
+        return fallback;
+    }
+
+    for (std::size_t index = 0; index < value.length(); ++index) {
+        if (std::tolower(static_cast<unsigned char>(value[index])) != trueText[index]) {
+            return fallback;
+        }
+    }
+
+    return true;
+}
+
+const char *DataManager::BoolText(bool value) {
+    return value ? "true" : "false";
+}
+
+void DataManager::UpsertEntry(PedalGuru::SettingsFileData &fileData, const char *key, const std::string &value) {
+    for (auto &entry : fileData.entries) {
+        if (entry.key == key) {
+            entry.value = value;
+            return;
+        }
+    }
+
+    SettingsEntry entry;
+    entry.key = key;
+    entry.value = value;
+    fileData.entries.push_back(entry);
+}
+
 bool DataManager::WriteCredentials(const std::string &ssid, const std::string &password) {
     PedalGuru::SettingsFileData fileData;
     ReadSettingsFile(fileData);
@@ -221,6 +264,74 @@ bool DataManager::WriteCredentials(const std::string &ssid, const std::string &p
 
     bool written = WriteSettingsFile(fileData);
     return written;
+}
+
+bool DataManager::WritePageSelection(const PedalGuru::SettingsData &selection) {
+    PedalGuru::SettingsFileData fileData;
+    ReadSettingsFile(fileData);
+
+    UpsertEntry(fileData, PAGE_ALTIMETRY_KEY, BoolText(selection.pageAltimetryEnabled));
+    UpsertEntry(fileData, PAGE_DISTANCE_KEY, BoolText(selection.pageDistanceEnabled));
+    UpsertEntry(fileData, PAGE_HILLS_GRAPH_KEY, BoolText(selection.pageHillsGraphEnabled));
+    UpsertEntry(fileData, PAGE_MAP_KEY, BoolText(selection.pageMapEnabled));
+    UpsertEntry(fileData, PAGE_ROUTE_KEY, BoolText(selection.pageRouteEnabled));
+    UpsertEntry(fileData, PAGE_SUMMARY_KEY, BoolText(selection.pageSummaryEnabled));
+    UpsertEntry(fileData, MAP_BASE_URL_KEY, selection.mapSyncingBaseUrl);
+
+    return WriteSettingsFile(fileData);
+}
+
+void DataManager::ApplyEntry(const PedalGuru::SettingsEntry &entry) {
+    if (entry.key == PAGE_ALTIMETRY_KEY) {
+        settings_.pageAltimetryEnabled = ParseBool(entry.value, settings_.pageAltimetryEnabled);
+    } else if (entry.key == PAGE_DISTANCE_KEY) {
+        settings_.pageDistanceEnabled = ParseBool(entry.value, settings_.pageDistanceEnabled);
+    } else if (entry.key == PAGE_HILLS_GRAPH_KEY) {
+        settings_.pageHillsGraphEnabled = ParseBool(entry.value, settings_.pageHillsGraphEnabled);
+    } else if (entry.key == PAGE_MAP_KEY) {
+        settings_.pageMapEnabled = ParseBool(entry.value, settings_.pageMapEnabled);
+    } else if (entry.key == PAGE_ROUTE_KEY) {
+        settings_.pageRouteEnabled = ParseBool(entry.value, settings_.pageRouteEnabled);
+    } else if (entry.key == PAGE_SUMMARY_KEY) {
+        settings_.pageSummaryEnabled = ParseBool(entry.value, settings_.pageSummaryEnabled);
+    } else if (entry.key == MAP_BASE_URL_KEY) {
+        settings_.mapSyncingBaseUrl = entry.value;
+    }
+}
+
+void DataManager::LoadSettings() {
+    settings_.pageAltimetryEnabled = true;
+    settings_.pageDistanceEnabled = true;
+    settings_.pageHillsGraphEnabled = true;
+    settings_.pageMapEnabled = true;
+    settings_.pageRouteEnabled = true;
+    settings_.pageSummaryEnabled = true;
+    settings_.mapSyncingBaseUrl = MAP_BASE_URL_DEFAULT;
+
+    PedalGuru::SettingsFileData fileData;
+
+    if (!ReadSettingsFile(fileData)) {
+        return;
+    }
+
+    for (const auto &entry : fileData.entries) {
+        ApplyEntry(entry);
+    }
+}
+
+PedalGuru::SettingsData &DataManager::Settings() {
+    mutex_->Lock();
+    bool loaded = settingsLoaded_;
+    mutex_->Release();
+
+    if (!loaded) {
+        LoadSettings();
+        mutex_->Lock();
+        settingsLoaded_ = true;
+        mutex_->Release();
+    }
+
+    return settings_;
 }
 
 void DataManager::SetRestartRequested() {

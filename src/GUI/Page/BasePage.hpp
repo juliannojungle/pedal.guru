@@ -19,7 +19,6 @@
 
 #pragma once
 
-#include "SettingsData.hpp"
 #include "Window.hpp"
 
 namespace PedalGuru {
@@ -37,12 +36,10 @@ enum class AvailablePages {
 
 class BasePage {
     protected:
-        PedalGuru::SettingsData& settings_;
         Window window_;
     public:
         virtual ~BasePage() = default; // make it polymorphic
-        BasePage(PedalGuru::SettingsData& settings)
-            : settings_(settings) {}
+        BasePage() = default;
         virtual void PreDrawPageContents() = 0;
         virtual void DrawPageContents() = 0;
         virtual void PostDrawPageContents() = 0;

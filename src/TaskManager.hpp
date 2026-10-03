@@ -23,7 +23,6 @@
 #include <list>
 #include "Device.hpp"
 #include "BasePage.hpp"
-#include "SettingsData.hpp"
 #include "CredentialData.hpp"
 
 namespace PedalGuru {
@@ -35,9 +34,7 @@ class TaskManager {
         static bool running_;
         static void GetDevicesData();
 
-        SettingsData settings_;
         CredentialData credentials_;
-        void ReadSettings();
         void CreateDevices();
         void ConnectToDevices();
         void CreatePages();
