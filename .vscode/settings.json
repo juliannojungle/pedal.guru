@@ -4,7 +4,7 @@
     "editor.detectIndentation": false,
     "clangd.path": "clangd",
     "clangd.arguments": [
-        "--query-driver=/usr/bin/arm-none-eabi-gcc"
+        "--query-driver=/usr/bin/arm-none-eabi-g*"
     ],
     "clangd.restartAfterCrash": true,
     "editor.indentSize": 4,
