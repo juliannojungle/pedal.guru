@@ -18,6 +18,7 @@
 */
 
 #include <functional>
+#include <iterator>
 #include "HIDHandler.hpp"
 
 namespace PedalGuru {
@@ -38,38 +39,38 @@ std::list<std::shared_ptr<PedalGuru::Callback>>::const_iterator HIDHandler::Regi
     switch (eventType) {
         case ENTER_DOWN:
             OnEnterDown_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnEnterDown_.end();
+            return std::prev(OnEnterDown_.end());
         case ENTER_UP:
             OnEnterUp_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnEnterUp_.end();
+            return std::prev(OnEnterUp_.end());
         case ENTER_PRESSED:
             OnEnterPressed_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnEnterPressed_.end();
+            return std::prev(OnEnterPressed_.end());
         case ENTER_PRESSED_2_SECONDS:
             OnEnterPressed2Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnEnterPressed2Seconds_.end();
+            return std::prev(OnEnterPressed2Seconds_.end());
         case ENTER_PRESSED_5_SECONDS:
             OnEnterPressed5Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnEnterPressed5Seconds_.end();
+            return std::prev(OnEnterPressed5Seconds_.end());
         case EXIT_DOWN:
             OnExitDown_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnExitDown_.end();
+            return std::prev(OnExitDown_.end());
         case EXIT_UP:
             OnExitUp_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnExitUp_.end();
+            return std::prev(OnExitUp_.end());
         case EXIT_PRESSED:
             OnExitPressed_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnExitPressed_.end();
+            return std::prev(OnExitPressed_.end());
         case EXIT_PRESSED_2_SECONDS:
             OnExitPressed2Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnExitPressed2Seconds_.end();
+            return std::prev(OnExitPressed2Seconds_.end());
         case EXIT_PRESSED_5_SECONDS:
             OnExitPressed5Seconds_.push_back(std::make_shared<PedalGuru::Callback>(handler));
-            return OnExitPressed5Seconds_.end();
+            return std::prev(OnExitPressed5Seconds_.end());
     }
 
     // Probably never gets here, so any iterator is ok.
-    return OnExitPressed_.end();
+    return std::prev(OnExitPressed_.end());
 }
 
 void HIDHandler::UnregisterEventHandler(

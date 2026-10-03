@@ -433,8 +433,10 @@ app_entry()                         PedalGuru.cpp
   TaskManager::Execute()
       ReadSettings / CreateDevices / ConnectToDevices
       ThreadStart(GetDevicesData)  --> thread 2: read every device's sensors in a loop
-      GUIDrawer + CreatePages + HIDHandler + GUINavigator
-      drawer.Execute()               --> thread 1 (the caller): HID + GUI render loop
+      CreatePages
+      GUINavigator::GetInstance().Setup(pages)
+          RegisterEvents + first page Setup() + ThreadStart(ExecuteGuiDrawer)
+          GUIDrawer::GetInstance().Execute() --> thread 1: HID + GUI render loop
   UnMountSdCard()
 ```
 
@@ -442,8 +444,12 @@ app_entry()                         PedalGuru.cpp
   `GetData()` on each connected device, with a `Delay(1000)` between passes. On the RP2040 this
   is literally core 1 (`multicore_launch_core1`).
 - **Thread 1 (UI)** — `GUIDrawer::Execute()`, a `while (!window.ShouldClose())` loop that invokes the
-  current page's draw callback. `GUINavigator` uses `HIDHandler` to move between pages (and, in the
-  future, between items inside a page: menus, buttons).
+  current page's draw callback. It runs on a thread started by `ThreadStart(ExecuteGuiDrawer)` inside
+  `GUINavigator::Setup()`. `GUINavigator` uses `HIDHandler` to move between pages (and, in the future,
+  between items inside a page: menus, buttons). `GUIDrawer`, `HIDHandler` and `GUINavigator` are each a
+  Meyers singleton (`GetInstance()` over a function-local `static`), so the permanent, whole-run objects
+  live in static storage instead of on a thread stack — `GUINavigator` has an empty constructor and all
+  its wiring lives in `Setup(pages)`.
 
 ### DataManager
 
@@ -504,9 +510,10 @@ acting on it.
 
 ```
 BasePage subclass (PageMap, PageSummary, ...)      the screen
-    |  registers PreDraw / Draw / PostDraw callbacks through BasePage::Setup()
-GUIDrawer            owns the loop, calls the current page's callbacks
-GUINavigator         HID events -> page change -> new page's Setup()
+    |  registers PreDraw / Draw / PostDraw callbacks through BasePage::Setup(),
+    |  reaching the drawer via GUIDrawer::GetInstance() (BasePage no longer holds a drawer_)
+GUIDrawer            owns the loop, calls the current page's callbacks (singleton, GetInstance())
+GUINavigator         HID events -> page change -> new page's Setup() (singleton, GetInstance())
     |
 Window / Texture     C++ wrappers over gui.ll (LCDSetup.h, LCDRenderer.h, Canvas.h)
     |
@@ -535,10 +542,28 @@ screens are planned.
 
 Two things to know: the functions that *fire* those events (`EnterDown()`, `ExitPressed()`, …) are
 private and **nothing calls them yet** — they carry a `TODO` saying they should become GPIO interrupt
-callbacks (the two reed switches, §3). And `GUINavigator`'s destructor has `UnregisterEvents()`
-commented out because it threw an invalid-pointer exception; the `RegisterEventHandler` switch returns
-`list::end()` rather than an iterator to the element just pushed, which is very likely the cause.
-Recorded, not fixed — `TODO-D1` and `TODO-B1`.
+callbacks (the two reed switches, §3). And `GUINavigator::UnregisterEvents()` exists but is never
+called: `GUINavigator` is now a whole-run singleton (§6), so its destructor effectively never runs.
+The earlier invalid-pointer exception it threw is gone — `RegisterEventHandler` now returns an iterator
+to the element it pushed (`std::prev(list.end())`) rather than `list::end()`. Recorded — `TODO-D1`.
+
+**Static destructors and the restart path — they differ by platform.** The provisioning flow asks for a
+reboot: `PageProvisioning` calls `DataManager::SetRestartRequested()`, and after the UI thread ends
+`app_exit` (`PedalGuru.cpp`) calls `UnMountSdCard()` and then `DeviceRestart()` when the flag is set.
+`DeviceRestart()` is in hal.ll and is **not** the same thing on each target:
+
+- **RP2040** — `watchdog_reboot(0, 0, 0)`, a hardware reset. It does not return, and **no destructor
+  runs**: the static singletons (`GUINavigator`, `GUIDrawer`, `HIDHandler`) and the global
+  `taskManager` are abandoned, RAM is discarded, the core restarts from zero. The code after
+  `DeviceRestart()` in `app_exit`, and the `return 0` in `main`, are never reached.
+- **ESP32** — `esp_restart()`, a software SoC reset. Same consequence: no destructor runs.
+- **Simulator** — `exit(EXIT_SUCCESS)`, which **does** run destructors of objects with static storage
+  duration. So the Simulator is the one target where `GUINavigator`'s destructor executes on the restart
+  path, and the only one where the commented-out `UnregisterEvents()` would be observable.
+
+The practical rule this sets: on the hardware targets, anything that must happen before a reboot has to
+be called **explicitly** before `DeviceRestart()` — never left to a destructor. The SD unmount already
+follows this (it is an explicit `UnMountSdCard()` in `app_exit`, not a destructor side effect).
 
 ## 7. Maps
 
@@ -985,17 +1010,6 @@ list to work from. Do not fix any of these as a side effect of unrelated work.
 
 **Logic / correctness:**
 
-- `TODO-B1` — `HIDHandler::RegisterEventHandler` returns `list::end()` for every case instead of an
-  iterator to the element it just pushed. `UnregisterEventHandler` then erases `end()`, which is
-  undefined behaviour — almost certainly why `GUINavigator`'s `UnregisterEvents()` is commented out with
-  an "invalid pointer exception" note.
-- `TODO-B2` — `GUINavigator::GoToNextPage` advances the iterator and dereferences it without re-checking
-  for `end()`, so the last page steps one past the end. `GoToPreviousPage` sets
-  `pageIndex_ = pages_.end()` and dereferences it directly. Both dereference `end()`.
-- `TODO-B3` — `TaskManager::GetDevicesData` has
-  `device = (device == devices_.end()) ? devices_.begin() : device++;` — the ternary yields the
-  *pre*-increment value, so the iterator never actually advances past the first device, and the `end()`
-  check happens before the increment rather than after.
 - `TODO-B5` — `PageMapSync::DrawPageContents` sizes a VLA as `char progress[(totalTiles_ * 2) + 3]` from
   a runtime value and writes into it with `sprintf`. Beyond the VLA itself, the size formula does not
   follow from the format it writes.
@@ -1195,9 +1209,6 @@ as linking, for the first time.
 
 | ID | Item |
 |---|---|
-| `TODO-B1` | `HIDHandler::RegisterEventHandler` returns `list::end()` instead of an iterator to the pushed element; `UnregisterEventHandler` then erases `end()`. Fixing this is what unblocks `GUINavigator::UnregisterEvents()`, currently commented out. |
-| `TODO-B2` | `GUINavigator::GoToNextPage` / `GoToPreviousPage` both dereference `end()` at the ends of the page cycle. |
-| `TODO-B3` | `TaskManager::GetDevicesData`'s iterator never advances past the first device (`device++` inside a ternary). |
 | `TODO-B12` | Four `-Wsign-compare` warnings: `TextHelper.cpp:27,35,60` and `GPS.cpp:69` compare a signed loop counter against `size_t`/`std::string::size_type`. Surfaced by the new `-Wall -Wextra`. |
 | `TODO-B5` | `PageMapSync::DrawPageContents` uses a runtime-sized VLA plus `sprintf`, with a size formula unrelated to what it writes. |
 | `TODO-B6` | `PageMap::previousLatitude` / `previousLongitude` are never initialized. |
