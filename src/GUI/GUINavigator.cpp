@@ -50,7 +50,7 @@ void GUINavigator::Setup(std::list<AvailablePages>& pages) {
     pageIndex_ = pages_->begin();
     currentPage_ = GetPage(*pageIndex_);
     currentPage_->Setup();
-    ThreadStart(ExecuteGuiDrawer, 8192); // Separated task to "handle HID and GUI".
+    ThreadStart(ExecuteGuiDrawer, 3072, "GuiDrawer"); // Separated task to "handle HID and GUI".
 }
 
 void GUINavigator::RegisterEvents() {

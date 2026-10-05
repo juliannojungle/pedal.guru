@@ -78,6 +78,8 @@ set(FS_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/fs.ll" CACHE PATH "fs.l
 set(GUI_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/gui.ll" CACHE PATH "gui.ll root directory" FORCE)
 set(NET_LL_PATH "${CMAKE_CURRENT_LIST_DIR}/src/Dependency/net.ll" CACHE PATH "net.ll root directory" FORCE)
 
+set(GUI_LL_PNG_HEAP_VIA_HAL ON)
+
 include(${HAL_LL_PATH}/hal.ll.cmake)
 include(${FS_LL_PATH}/fs.ll.cmake)
 include(${GUI_LL_PATH}/gui.ll.cmake)
