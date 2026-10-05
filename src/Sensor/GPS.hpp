@@ -31,6 +31,8 @@ class GPS : public Sensor {
         const std::string::size_type startingPos = 3;
         bool IsGpsFixInfo(std::string &info);
         void UartGetLine(std::string &line);
+        void ParseGGA(std::string serial_rx, PedalGuru::GPSFixData &gpsFixData);
+        double NMEA2DecimalDegrees(double coordinate, char cardinal);
         void LogGpsData(PedalGuru::GPSFixData &gpsFixData);
     public:
         void Enable() override;

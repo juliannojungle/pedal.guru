@@ -63,7 +63,7 @@ void app_exit(void) {
 
 void app_run(void) {
     app_start();
-    ThreadStart(app_thread);
+    ThreadStart(app_thread, 1024);
     ThreadSchedulerStart();
     app_exit();
 }

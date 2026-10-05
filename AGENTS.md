@@ -431,7 +431,7 @@ app_entry()                         PedalGuru.cpp
   STDIOInitAll()
   MountSdCard() + SelectActiveDrive()      <- before any thread exists
   TaskManager::Execute()
-      ReadSettings / CreateDevices / ConnectToDevices
+      CreateDevices / ConnectToDevices
       ThreadStart(GetDevicesData)  --> thread 2: read every device's sensors in a loop
       CreatePages
       GUINavigator::GetInstance().Setup(pages)
@@ -457,6 +457,17 @@ app_entry()                         PedalGuru.cpp
 currently holds one queue, `std::list<GPSFixData>`, with `Push` (sensor thread) and `Pop` (UI thread),
 both guarded by `Mutex` (§9). `GetInstance()` takes the same lock, because both threads
 reach it (`GPS::LogGpsData` and `PageMap`) and either could be the first.
+
+`DataManager` also **owns `SettingsData`** and is the single reader and writer of the settings file on
+the card. `Settings()` loads it lazily on first call — defaults in RAM (every page enabled, the OSM
+base URL as `MAP_BASE_URL_DEFAULT`), overridden by whatever the file holds, with the defaults standing
+when the file is absent or the read fails — then caches it and returns the same reference thereafter.
+`WritePageSelection` persists a selection back, upserting the six page keys and `MAP_BASE_URL` while
+leaving the WiFi credential lines untouched. The lazy load does **not** hold the lock across the
+self-locking file read (the `Mutex` is non-recursive, §9): `Settings()` locks only to read and set the
+`settingsLoaded_` flag, and `LoadSettings` lets `ReadSettingsFile` take the lock on its own, the same
+shape `WriteCredentials` already uses. `TaskManager::ReadSettings` and its hardcoded defaults are gone;
+`CreatePages` reads the page-enable flags straight from `Settings()` (`TODO-C4` closed).
 
 ### How Mutex is initialized, and why
 
@@ -511,7 +522,7 @@ acting on it.
 ```
 BasePage subclass (PageMap, PageSummary, ...)      the screen
     |  registers PreDraw / Draw / PostDraw callbacks through BasePage::Setup(),
-    |  reaching the drawer via GUIDrawer::GetInstance() (BasePage no longer holds a drawer_)
+    |  reaching the drawer via GUIDrawer::GetInstance() (BasePage holds neither a drawer_ nor settings_)
 GUIDrawer            owns the loop, calls the current page's callbacks (singleton, GetInstance())
 GUINavigator         HID events -> page change -> new page's Setup() (singleton, GetInstance())
     |
@@ -526,9 +537,13 @@ gui.ll  ->  GC9A01 panel over SPI, or an SDL2 window on Simulator
 `PedalGuru::Color` to gui.ll's RGB565 via the `COLOR_LL` macro; `Area.hpp` holds `Point` / `Size` /
 `Rectangle`.
 
-Pages are created in `TaskManager::CreatePages()`, conditionally on `SettingsData`. **The order in
-that function is the page cycle order** — it matters. `PageMapSync` is appended last and is not
-optional ("settings pages aren't optional").
+Pages are created in `TaskManager::CreatePages()`, conditionally on the page-enable flags it reads from
+`DataManager::GetInstance()->Settings()`. **The order in that function is the page cycle order** — it
+matters. `PageMapSync` is appended last and is not optional ("settings pages aren't optional"). Pages
+no longer receive a `SettingsData&`: `BasePage` is default-constructible, `GUINavigator` default-
+constructs each page, and the one page that needs a setting (`PageMapSync`, the map base URL) reads it
+from `Settings()` at draw time. The six optional pages are now chosen by the user on the provisioning
+page (§13), not hardcoded.
 
 Screen status today: `PageMap` and `PageMapSync` have real implementations. `PageAltimetry`,
 `PageDistance`, `PageHillsGraph`, `PageRoute` and `PageSummary` are empty stubs (`TODO-D3`). More
@@ -886,9 +901,16 @@ Wave 4 is done, and everything it settled — the API shape, the Simulator's `ne
 `src/Dependency/net.ll/AGENTS.md`, which is where it belongs now that the library exists. **Read that
 file before touching net.ll.** Only what pedal.guru itself has to know is kept here:
 
-- **net.ll offers a WiFi scan and a download.** `WiFiInitialize` / `WiFiDeinitialize` /
-  `WiFiScan(networks, maxNetworks, &found)`, filling an array the caller owns, and
-  `HttpDownloadFile(url, filePath)` streaming the body straight to the card.
+- **net.ll offers a WiFi scan and a download.** `WiFiInitialize` / `WiFiDeinitialize`, a scan, and
+  `HttpDownloadFile(url, filePath)` streaming the body straight to the card. The scan has two shapes in
+  net.ll's `WiFi.h`: a blocking `WiFiScan(networks, maxNetworks, &found)` and an async trio
+  `WiFiScanStart` / `WiFiScanIsComplete` / `WiFiScanGetResults`. pedal.guru's provisioning server
+  (`Server.cpp`) drives the **async trio** so the scan does not block the HTTP handler — the browser
+  polls `/network/scan/status` between start and results. **Trap:** only net.ll's RP2040 `WiFi.c`
+  defines the async trio today; its Simulator and ESP32 `WiFi.c` define only the blocking `WiFiScan`,
+  so a Simulator or ESP32 link currently fails with undefined references to the three async symbols.
+  That gap is net.ll's to close and is driven from here as the consumer — ask the dev. The RP2040,
+  which is what the dev builds and flashes, links and runs.
 - **The download function lost its underscore.** `HttpClient_DownloadFile` became `HttpDownloadFile`; the
   old name was legacy. Parameters and behaviour are unchanged. Done in wave 5.
 - **`HttpDownloadFile` is a stub on RP2040 and ESP32**, so the move to net.ll changed nothing about what
@@ -933,8 +955,13 @@ All three now compile net.ll's WiFi code and link its radio libraries. The warni
 from wave 3, and every warning is one of the pre-existing `TODO-B10` / `TODO-B12` items — wave 5 added
 none. The ESP32 binary grew from the ~422 KB wave 3 baseline, which is where the radio code landed.
 
-The **Simulator has been run by the dev and works correctly**. Neither firmware has been flashed or
-executed (§15).
+The **Simulator has been run by the dev and works correctly**. The **RP2040 firmware runs on the
+Waveshare RP2040-LCD-1.28**, and the settings flow has been validated there: the provisioning page's
+page checkboxes render correctly, the chosen selection persists to the card, and `DataManager`'s
+`Settings()` reads it back so `CreatePages` builds the cycle from it. What is still owed is a pass over
+the page cycle driven by physical navigation, which waits on the `HIDHandler` being wired to hardware
+and on the hall sensors — the one component not yet installed (`TODO-D1`, `TODO-D2`). The ESP32
+firmware has not been flashed (§15).
 
 ### Warnings, and why the three platforms disagree
 
@@ -978,12 +1005,19 @@ and that is a property of the toolchains, not of the code.
   *built*, not visually checked. gui.ll's own Simulator sample was started post-wave-3 and ran without
   crashing or printing an error, which says the SDL window comes up and nothing aborts — it says nothing
   about what is on screen. **A visual pass on both is still owed.**
-- The RP2040 and ESP32 firmwares have **never been flashed or run**. They compile and link; nothing more
-  than that is established. In particular the `Mutex` constructor running during static initialization,
-  before `main`/`app_main`, is reasoned about and compiles on both, but is unverified at runtime — on
-  ESP32 it allocates via `xSemaphoreCreateMutex()` at that point (§6).
-- Nothing in this file is validated **on hardware**. Statements about the RP2040 and ESP32 platform
-  code come from reading and compiling it.
+- The **RP2040 firmware runs on the Waveshare RP2040-LCD-1.28**, so the `Mutex` constructor running
+  during static initialization before `main` does not fault on that board, and the settings flow is
+  confirmed end to end there: the provisioning checkboxes render, the selection persists to the card,
+  and `Settings()` reads it back into the page cycle (§6, §13). What is **not** yet confirmed is
+  navigation across that cycle on the device, because the `HIDHandler` is not wired to hardware and the
+  hall sensors — the navigation input — are the one component not yet installed, so there is no
+  physical way to move between pages yet (`TODO-D1`, `TODO-D2`). A visual pass over the cycle is still
+  owed. The **ESP32 firmware has never been flashed or run** — it compiles and links, nothing more; on
+  ESP32 the `Mutex` constructor allocates via `xSemaphoreCreateMutex()` during static initialization
+  (§6) and that is unverified at runtime.
+- Statements about the **ESP32** platform code come from reading and compiling it, not from running it.
+  The RP2040 statements above are now backed by a run; the deeper hardware integration (GPS over UART,
+  the switches) is still unvalidated — see §3 and `TODO-D2`.
 - Everything in §3 about the planned expansion board (microSD slot, two reed switches, GPS, WiFi+BT
   module for the RP2040, single shared design, waterproof case, magnetic ring), and everything in §1
   about the coaching features, is **stated by the dev** and has no counterpart in the code yet. The
@@ -1040,8 +1074,10 @@ cannot be used as a real drawable colour — is the accepted cost of colour-key 
 **Stale / cosmetic:**
 
 - `TODO-C3` — `src/Model/SensorData.hpp` is an empty struct, referenced by `DIAGRAM.md` but by no code.
-- `TODO-C4` — `TaskManager::ReadSettings` hardcodes the settings with a `TODO`; nothing reads or writes
-  settings from the card yet.
+- `TODO-C4` — ~~`TaskManager::ReadSettings` hardcodes the settings; nothing reads or writes settings from
+  the card.~~ Resolved: `DataManager` owns `SettingsData`, loads it from the card lazily and persists the
+  page selection (§6), and the provisioning page lets the user choose the optional pages (§13). Ride-
+  logging-style persistence from the sensor thread is a separate, still-open concern — see `TODO-E2`.
 
 ## 17. In progress: extracting the HAL into hal.ll
 
@@ -1222,7 +1258,7 @@ as linking, for the first time.
 | ID | Item |
 |---|---|
 | `TODO-C3` | `src/Model/SensorData.hpp` is an empty struct used by nothing. Fill it in or drop it. |
-| `TODO-C4` | `TaskManager::ReadSettings` hardcodes the settings; no persistence to or from the card yet. |
+| `TODO-C4` | ~~`TaskManager::ReadSettings` hardcodes the settings; no persistence to or from the card.~~ Resolved: `DataManager` owns `SettingsData`, loads and persists it on the card, and the provisioning page exposes the optional-page selection (§6, §13). Sensor-thread persistence such as ride logging stays open under `TODO-E2`. |
 | `TODO-C8` | Licence headers are missing in places. All of pedal.guru's `src` is covered now, but the submodules are not, and they need a header **adapted to their own context** (fs.ll and gui.ll are libraries with their own identity, not pedal.guru files). Decide the wording per repository before mass-applying anything. |
 | `TODO-C9` | ~~`src/Platform/Simulator/Time.hpp` has no `#pragma once`, unlike its siblings.~~ Fixed in wave 5. |
 | `TODO-C10` | **Legacy debug plumbing, needs review — not urgent.** `DEBUGMSGS` is gui.ll's mechanism (`Helper/Debug.h` turns `SHOWDEBUG` into `printf`), and it works. What is legacy is the pedal.guru side: `CMakeLists.txt` also defines `_DEBUG`, and `PedalGuru.cpp` / `GPS.cpp` guard `std::cout` traces on it. That path does not even compile — `PedalGuru.cpp` uses `std::cout` without including `<iostream>` (pre-existing, verified identical to `HEAD`). Decide later whether pedal.guru gets its own tracing or just adopts `SHOWDEBUG`; fix it when the tracing is actually needed. |

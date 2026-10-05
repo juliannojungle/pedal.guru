@@ -19,6 +19,7 @@
 
 #include "GPS.hpp"
 #include "DataManager.hpp"
+#include "TextHelper.hpp"
 extern "C" {
     #include "HAL.h"
 }
@@ -42,6 +43,36 @@ void GPS::Enable() {
 void GPS::Disable() {
     UARTDeinit(GPS_UART);
     this->enabled_ = false;
+}
+
+void GPS::ParseGGA(std::string serial_rx, PedalGuru::GPSFixData &gpsFixData) {
+    char data[16][16];
+    TextHelper::Tokenize(serial_rx, ',', '*', data);
+
+    gpsFixData.UTCTime = atof(data[1]);
+    gpsFixData.latitude = atof(data[2]);
+    gpsFixData.latitudeCardinal = data[3][0];
+    gpsFixData.longitude = atof(data[4]);
+    gpsFixData.longitudeCardinal = data[5][0];
+    gpsFixData.fixQuality = atoi(data[6]);
+    gpsFixData.satellitesCount = atoi(data[7]);
+    gpsFixData.horizontalAccuracy = atof(data[8]);
+    gpsFixData.altitude = atof(data[9]);
+    gpsFixData.altitudeUnit = data[10][0];
+    gpsFixData.geoidalSeparation = data[11];
+    gpsFixData.geoidalSeparationUnit = data[12][0];
+    gpsFixData.differentialGPSLastUpdate = atof(data[13]);
+    gpsFixData.differentialGPSStationId = data[14];
+    gpsFixData.checksum = data[15];
+}
+
+double GPS::NMEA2DecimalDegrees(double coordinate, char cardinal) {
+    double degrees = (int)(coordinate / 100);
+    double decimalDegrees = degrees + (coordinate - degrees * 100) / 60.0;
+
+    if (cardinal == 'S' || cardinal == 'W') decimalDegrees *= -1;
+
+    return decimalDegrees;
 }
 
 void GPS::LogGpsData(PedalGuru::GPSFixData &gpsFixData) {
@@ -85,18 +116,9 @@ void GPS::GetData() {
     if (!IsGpsFixInfo(serial_rx)) return;
 
     PedalGuru::GPSFixData gpsFixData;
-    gpsFixData.set(serial_rx);
-
-    // convert NMEA (DDMM.MMMM) to decimal degrees
-    double latDegrees = (int)(gpsFixData.latitude / 100);
-    gpsFixData.latitude = latDegrees + (gpsFixData.latitude - latDegrees * 100) / 60.0;
-
-    double lonDegrees = (int)(gpsFixData.longitude / 100);
-    gpsFixData.longitude = lonDegrees + (gpsFixData.longitude - lonDegrees * 100) / 60.0;
-
-    if (gpsFixData.latitudeCardinal == 'S') gpsFixData.latitude *= -1;
-    if (gpsFixData.longitudeCardinal == 'W') gpsFixData.longitude *= -1;
-
+    ParseGGA(serial_rx, gpsFixData);
+    gpsFixData.latitude = NMEA2DecimalDegrees(gpsFixData.latitude, gpsFixData.latitudeCardinal);
+    gpsFixData.longitude = NMEA2DecimalDegrees(gpsFixData.longitude, gpsFixData.longitudeCardinal);
     LogGpsData(gpsFixData);
 }
 

@@ -23,37 +23,35 @@
 
 namespace PedalGuru {
 
-class GPSFixData {
-    public:
-        double UTCTime;
-        double latitude;
-        char latitudeCardinal;
-        double longitude;
-        char longitudeCardinal;
-        int fixQuality;
-        int satellitesCount;
-        double horizontalAccuracy;
-        double altitude;
-        char altitudeUnit;
-        std::string geoidalSeparation;
-        char geoidalSeparationUnit;
-        double differentialGPSLastUpdate;
-        std::string differentialGPSStationId;
-        std::string checksum;
-        GPSFixData() :
-            UTCTime(0),
-            latitude(0),
-            latitudeCardinal('\0'),
-            longitude(0),
-            longitudeCardinal('\0'),
-            fixQuality(0),
-            satellitesCount(0),
-            horizontalAccuracy(0),
-            altitude(0),
-            altitudeUnit('\0'),
-            geoidalSeparationUnit('\0'),
-            differentialGPSLastUpdate(0) {}
-        void set(std::string serial_rx);
+struct GPSFixData {
+    double UTCTime;
+    double latitude;
+    char latitudeCardinal;
+    double longitude;
+    char longitudeCardinal;
+    int fixQuality;
+    int satellitesCount;
+    double horizontalAccuracy;
+    double altitude;
+    char altitudeUnit;
+    std::string geoidalSeparation;
+    char geoidalSeparationUnit;
+    double differentialGPSLastUpdate;
+    std::string differentialGPSStationId;
+    std::string checksum;
+    GPSFixData() :
+        UTCTime(0),
+        latitude(0),
+        latitudeCardinal('\0'),
+        longitude(0),
+        longitudeCardinal('\0'),
+        fixQuality(0),
+        satellitesCount(0),
+        horizontalAccuracy(0),
+        altitude(0),
+        altitudeUnit('\0'),
+        geoidalSeparationUnit('\0'),
+        differentialGPSLastUpdate(0) {}
 };
 
 }

@@ -42,7 +42,7 @@ void TaskManager::Execute() {
     } else {
         CreateDevices();
         ConnectToDevices();
-        ThreadStart(GetDevicesData); // Separated task to "read devices data".
+        ThreadStart(GetDevicesData, 1024); // Separated task to "read devices data".
         CreatePages();
     }
 
