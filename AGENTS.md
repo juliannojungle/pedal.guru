@@ -423,8 +423,11 @@ Existing:
 
 ### Two threads, because the RP2040 has two cores
 
-The system is levelled down to the weakest target: **exactly two threads**, because the RP2040 has
-two cores. Do not introduce a third.
+The application levels its own design down to the weakest target: **two application threads**, because
+the RP2040 has two cores. Do not introduce a third *application* thread. (This counts only pedal.guru's
+own threads: on the RP2040 the pico-sdk and lwIP run their own tasks — `tcpip_thread`, the cyw43 service
+task — and net.ll's HTTP server adds one more during provisioning. Those are not "a third thread" in the
+sense of this rule; see §6b and net.ll's `AGENTS.md` §1b.)
 
 ```
 app_entry()                         PedalGuru.cpp
@@ -432,19 +435,25 @@ app_entry()                         PedalGuru.cpp
   MountSdCard() + SelectActiveDrive()      <- before any thread exists
   TaskManager::Execute()
       CreateDevices / ConnectToDevices
-      ThreadStart(GetDevicesData)  --> thread 2: read every device's sensors in a loop
+      ThreadStart(GetDevicesData, 1024, "DevicesData")  --> thread 2: read every device's sensors in a loop
       CreatePages
       GUINavigator::GetInstance().Setup(pages)
-          RegisterEvents + first page Setup() + ThreadStart(ExecuteGuiDrawer)
+          RegisterEvents + first page Setup() + ThreadStart(ExecuteGuiDrawer, 3072, "GuiDrawer")
           GUIDrawer::GetInstance().Execute() --> thread 1: HID + GUI render loop
   UnMountSdCard()
 ```
 
+`ThreadStart` now takes a per-thread stack size (in FreeRTOS words) and a name — see §6b for why the two
+threads are sized differently. When the device is **not** provisioned, `TaskManager::Execute` creates
+*neither* application thread: it queues only the provisioning page and the UI runs on the `GuiDrawer`
+thread alone (the sensor thread is created only in the provisioned path).
+
 - **Thread 2 (sensors)** — `TaskManager::GetDevicesData()`, a `while (running_)` loop that calls
-  `GetData()` on each connected device, with a `Delay(1000)` between passes. On the RP2040 this
-  is literally core 1 (`multicore_launch_core1`).
+  `GetData()` on each connected device, with a `Delay(1000)` between passes. It is a FreeRTOS task
+  (`ThreadStart` -> `xTaskCreate`) scheduled across the two cores by the SMP kernel; it is **not**
+  `multicore_launch_core1` (that was the pre-FreeRTOS design).
 - **Thread 1 (UI)** — `GUIDrawer::Execute()`, a `while (!window.ShouldClose())` loop that invokes the
-  current page's draw callback. It runs on a thread started by `ThreadStart(ExecuteGuiDrawer)` inside
+  current page's draw callback. It runs on a thread started by `ThreadStart(ExecuteGuiDrawer, 3072, "GuiDrawer")` inside
   `GUINavigator::Setup()`. `GUINavigator` uses `HIDHandler` to move between pages (and, in the future,
   between items inside a page: menus, buttons). `GUIDrawer`, `HIDHandler` and `GUINavigator` are each a
   Meyers singleton (`GetInstance()` over a function-local `static`), so the permanent, whole-run objects
@@ -579,6 +588,43 @@ reboot: `PageProvisioning` calls `DataManager::SetRestartRequested()`, and after
 The practical rule this sets: on the hardware targets, anything that must happen before a reboot has to
 be called **explicitly** before `DeviceRestart()` — never left to a destructor. The SD unmount already
 follows this (it is an explicit `UnMountSdCard()` in `app_exit`, not a destructor side effect).
+
+## 6b. RP2040 memory: the three pools that compete, and how they were balanced
+
+The RP2040 has 264 KB of SRAM and three allocators drawing from it, and getting the map and the Wi-Fi
+provisioning to coexist took balancing all three. This section records what was learned, because the
+symptoms were misleading and the balance is easy to upset.
+
+**The three pools.**
+- **FreeRTOS heap** (`configTOTAL_HEAP_SIZE = 64 KB`, in hal.ll's `FreeRTOSConfig.h`): every task stack
+  (`ThreadStart`) plus everything the pico-sdk's cyw43/lwIP allocates. The radio stack is a heavy, and
+  essential, consumer.
+- **libc heap** (the rest of SRAM, via `malloc`): the 240x240 map texture (115 KB) and, by default,
+  libpng's zlib inflate window (32 KB for a 256x256 tile).
+- **Per-task stacks**: carved from the FreeRTOS heap, so an over-sized stack is heap spent.
+
+**Thread stack sizes are deliberate, not arbitrary.** `GuiDrawer` is 3072 words (12 KB) because the GUI
+render path plus the provisioning HTTP callbacks run there; `DevicesData` and `AppThread` are 1024 words
+(4 KB), which measured well under their real use. They were all 4096 before `ThreadStart` took a size;
+sizing each one is what keeps the FreeRTOS heap in budget for the radio.
+
+**Two bugs this balance fixed, both of which looked like something else:**
+
+1. **Map tile decode panicked with "out of memory"** — a *libc* heap panic, not FreeRTOS. The 32 KB zlib
+   window and the 115 KB texture could not both fit the libc heap's contiguous space. Fix: gui.ll's
+   opt-in `GUI_LL_PNG_HEAP_VIA_HAL` (set in `pedal.guru.cmake`) serves the window from the FreeRTOS heap
+   through hal.ll's `HeapAlloc`/`HeapFree`, keeping the two off each other. See gui.ll's `AGENTS.md`.
+2. **Provisioning hung the moment the phone opened the page** — the net.ll HTTP server was spawning a
+   FreeRTOS task per connection, and the per-request stack+TCB churn (reclaimed only later by the idle
+   task) drained the FreeRTOS heap under the browser's burst of connections. Fix lives in net.ll (serve
+   connections inline on the server task; see its `AGENTS.md` §1b). From this side, the lesson is that
+   `configNUMBER_OF_CORES` must stay **2** (single core broke the radio bring-up) and the heap must stay
+   at 64 KB (shrinking it starves lwIP).
+
+**Diagnostics left in place.** hal.ll's `FreeRTOSConfig.h` keeps `configCHECK_FOR_STACK_OVERFLOW` and the
+malloc-failed hook on permanently — cheap insurance that turns the next memory regression into a serial
+message instead of a silent hang. A stack overflow prints `[hal.ll] STACK OVERFLOW in task '<name>'`, a
+heap exhaustion `[hal.ll] MALLOC FAILED`. Build with `-DDEBUGMSGS` to see them.
 
 ## 7. Maps
 
