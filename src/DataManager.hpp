@@ -63,10 +63,12 @@ public:
     /** Singletons should not be assignable. */
     void operator=(const DataManager &) = delete;
 
-    void Push(PedalGuru::GPSFixData &gpsFixData);
-    void Pop(PedalGuru::GPSFixData &gpsFixData);
+    void PushGpsFixData(PedalGuru::GPSFixData &gpsFixData);
+    bool PopGpsFixData(PedalGuru::GPSFixData &gpsFixData);
     bool ReadCredentials(PedalGuru::CredentialData &credentials);
     bool WriteCredentials(const std::string &ssid, const std::string &password);
+    bool SetLastGpsFixData(const std::string &value);
+    std::string GetLastGpsFixData();
     bool WritePageSelection(const PedalGuru::SettingsData &selection);
     PedalGuru::SettingsData &Settings();
     void SetRestartRequested();

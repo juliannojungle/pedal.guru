@@ -29,6 +29,7 @@ class PageMap : public PedalGuru::BasePage {
         Texture mapTexture_ { 240, 240 };
         PedalGuru::MapGrid mapGrid_;
         double previousLatitude, previousLongitude;
+        bool previousFixed;
         void InputGpsLocation(double &latitude, double &longitude, bool &fixed);
         void LoadGridTexture();
     public:

@@ -22,6 +22,7 @@
 #include "DataManager.hpp"
 #include "GPSFixData.hpp"
 #include <algorithm>
+#include <string>
 
 extern "C" {
     #include "HAL.h"
@@ -34,10 +35,16 @@ void PageMap::PreDrawPageContents() {
 
 void PageMap::InputGpsLocation(double &latitude, double &longitude, bool &fixed) {
     GPSFixData gpsFixData;
-    DataManager::GetInstance()->Pop(gpsFixData);
-    latitude = gpsFixData.latitude;
-    longitude = gpsFixData.longitude;
-    fixed = gpsFixData.fixQuality > 0;
+
+    if (DataManager::GetInstance()->PopGpsFixData(gpsFixData)) {
+        latitude = gpsFixData.latitude;
+        longitude = gpsFixData.longitude;
+        fixed = gpsFixData.fixQuality > 0;
+    } else {
+        latitude = previousLatitude;
+        longitude = previousLongitude;
+        fixed = previousFixed;
+    }
 }
 
 void PageMap::LoadGridTexture() {
@@ -80,10 +87,10 @@ void PageMap::DrawPageContents() {
     double latitude, longitude;
     bool fixed;
     InputGpsLocation(latitude, longitude, fixed);
-
     if ((previousLatitude != latitude) || (previousLongitude != longitude)) {
         previousLatitude = latitude;
         previousLongitude = longitude;
+        previousFixed = fixed;
         mapApi_.MapGridForCoordinate(mapGrid_, latitude, longitude, 16);
         LoadGridTexture();
     }

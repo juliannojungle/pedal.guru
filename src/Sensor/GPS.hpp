@@ -27,13 +27,20 @@ namespace PedalGuru {
 
 class GPS : public Sensor {
     private:
-        const std::string GPS_FIX = "GGA,"; // $GNGGA, $GPGGA.
+        /*
+         * $GPGGA - GPS NAVSTAR (USA)
+         * $GLGGA - GLONASS (Russia)
+         * $GAGGA - Galileo (Europe)
+         * $GBGGA - BeiDou (China)
+         * $GQGGA - QZSS (Japan)
+         * $GNGGA - combined fix (generic GNSS)
+         */
+        const std::string GPS_FIX_SUFIX = "GGA,";
         const std::string::size_type startingPos = 3;
-        bool IsGpsFixInfo(std::string &info);
+        bool IsGpsFixData(std::string &info);
         void UartGetLine(std::string &line);
         void ParseGGA(std::string serial_rx, PedalGuru::GPSFixData &gpsFixData);
         double NMEA2DecimalDegrees(double coordinate, char cardinal);
-        void LogGpsData(PedalGuru::GPSFixData &gpsFixData);
     public:
         void Enable() override;
         void Disable() override;

@@ -45,7 +45,7 @@ void GPS::Disable() {
     this->enabled_ = false;
 }
 
-void GPS::ParseGGA(std::string serial_rx, PedalGuru::GPSFixData &gpsFixData) {
+void GPS::ParseGGA(std::string serial_rx, GPSFixData &gpsFixData) {
     char data[16][16];
     TextHelper::Tokenize(serial_rx, ',', '*', data);
 
@@ -75,12 +75,8 @@ double GPS::NMEA2DecimalDegrees(double coordinate, char cardinal) {
     return decimalDegrees;
 }
 
-void GPS::LogGpsData(PedalGuru::GPSFixData &gpsFixData) {
-    PedalGuru::DataManager::GetInstance()->Push(gpsFixData);
-}
-
-bool GPS::IsGpsFixInfo(std::string &info) {
-    return info.rfind(GPS_FIX, startingPos) == startingPos;
+bool GPS::IsGpsFixData(std::string &info) {
+    return info.rfind(GPS_FIX_SUFIX, startingPos) == startingPos;
 }
 
 void GPS::UartGetLine(std::string &line) {
@@ -108,18 +104,27 @@ void GPS::GetData() {
     std::string serial_rx = "";
     int attempts = 0;
 
-    while (!IsGpsFixInfo(serial_rx) && (attempts < 50)) {
+    while (!IsGpsFixData(serial_rx) && (attempts < 50)) {
         attempts++;
         UartGetLine(serial_rx);
     }
 
-    if (!IsGpsFixInfo(serial_rx)) return;
+    if (!IsGpsFixData(serial_rx)) return;
 
-    PedalGuru::GPSFixData gpsFixData;
+    GPSFixData gpsFixData;
     ParseGGA(serial_rx, gpsFixData);
+
+    if (gpsFixData.fixQuality > 0) {
+        DataManager::GetInstance()->SetLastGpsFixData(serial_rx);
+    } else {
+        serial_rx = DataManager::GetInstance()->GetLastGpsFixData();
+        ParseGGA(serial_rx, gpsFixData);
+        gpsFixData.fixQuality = 0;
+    }
+
     gpsFixData.latitude = NMEA2DecimalDegrees(gpsFixData.latitude, gpsFixData.latitudeCardinal);
     gpsFixData.longitude = NMEA2DecimalDegrees(gpsFixData.longitude, gpsFixData.longitudeCardinal);
-    LogGpsData(gpsFixData);
+    DataManager::GetInstance()->PushGpsFixData(gpsFixData);
 }
 
 }

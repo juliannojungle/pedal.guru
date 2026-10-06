@@ -37,6 +37,7 @@ const char *PAGE_MAP_KEY = "PAGE_MAP";
 const char *PAGE_ROUTE_KEY = "PAGE_ROUTE";
 const char *PAGE_SUMMARY_KEY = "PAGE_SUMMARY";
 const char *MAP_BASE_URL_KEY = "MAP_BASE_URL";
+const char *LAST_GPS_FIX_DATA_KEY = "LAST_GPS_FIX_DATA";
 const char *MAP_BASE_URL_DEFAULT = "https://tile.openstreetmap.org";
 const unsigned int SETTINGS_BUFFER_SIZE = 512;
 const unsigned int SETTINGS_MAX_SIZE = 4096;
@@ -78,21 +79,23 @@ static void ParseSettingsContent(const std::string &content, SettingsFileData &f
     }
 }
 
-void DataManager::Push(PedalGuru::GPSFixData &gpsFixData) {
+void DataManager::PushGpsFixData(PedalGuru::GPSFixData &gpsFixData) {
     mutex_->Lock();
     this->gpsFixData_.push_back(gpsFixData);
     mutex_->Release();
 }
 
-void DataManager::Pop(PedalGuru::GPSFixData &gpsFixData) {
+bool DataManager::PopGpsFixData(PedalGuru::GPSFixData &gpsFixData) {
     mutex_->Lock();
+    bool hasElements = !this->gpsFixData_.empty();
 
-    if (!this->gpsFixData_.empty()) {
+    if (hasElements) {
         gpsFixData = *(this->gpsFixData_.cbegin());
         this->gpsFixData_.pop_front();
     }
 
     mutex_->Release();
+    return hasElements;
 }
 
 bool DataManager::ReadSettingsFile(PedalGuru::SettingsFileData &fileData) {
@@ -264,6 +267,36 @@ bool DataManager::WriteCredentials(const std::string &ssid, const std::string &p
 
     bool written = WriteSettingsFile(fileData);
     return written;
+}
+
+bool DataManager::SetLastGpsFixData(const std::string &value) {
+    PedalGuru::SettingsFileData fileData;
+    ReadSettingsFile(fileData);
+    UpsertEntry(fileData, LAST_GPS_FIX_DATA_KEY, value);
+
+    return WriteSettingsFile(fileData);
+}
+
+std::string DataManager::GetLastGpsFixData() {
+    if (!PathOrFileExists(SETTINGS_FILE_NAME)) {
+        return std::string();
+    }
+
+    PedalGuru::SettingsFileData fileData;
+
+    if (!ReadSettingsFile(fileData)) {
+        MountSdCard();
+        SelectActiveDrive();
+        return std::string();
+    }
+
+    for (const auto &entry : fileData.entries) {
+        if (entry.key == LAST_GPS_FIX_DATA_KEY) {
+            return entry.value;
+        }
+    }
+
+    return std::string();
 }
 
 bool DataManager::WritePageSelection(const PedalGuru::SettingsData &selection) {
